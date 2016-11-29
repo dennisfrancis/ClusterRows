@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<oor:component-data oor:name="Jobs" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <node oor:name="Jobs">
+	<!--            vvvvvvvvvvv    ClusterRowsImpl is the alias -->
+        <node oor:name="ClusterRowsImpl" oor:op="replace">
+            <prop oor:name="Service" oor:type="xs:string">
+                <value>com.github.dennisfrancis.ClusterRowsImpl</value>
+            </prop>
+        </node>
+    </node>
+    <node oor:name="Events">
+        <node oor:name="onClusterRowsReq" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+    </node>
+</oor:component-data>
