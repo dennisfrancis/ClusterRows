@@ -9,11 +9,13 @@
 #include <memory>
 #include <algorithm>
 #include <random>
+#include <chrono>
 #include <math.h>
 
 #include "datatypes.hxx"
 
 #define NUMITER 100
+#define MAXEPOCHS 10
 
 using com::sun::star::uno::Sequence;
 using com::sun::star::uno::Any;
@@ -52,6 +54,7 @@ private:
 
     double dnorm( double fX, double fMean, double fStd );
     double dnormNominal( double fX, double fMean, double fStd );
+    void initParms();
 
     sal_Int32 mnNumClusters;
     const GMM* mpGMM;
@@ -141,6 +144,7 @@ void GMM::TrainModel( const std::vector<sal_Int32>& rNumClustersArray )
 {
     std::unique_ptr<GMMModel> pModel;
     double fBestBIC = 9999999;
+    sal_Int32 nBestNumClusters = 2;
 
     for ( sal_Int32 nNumClusters : rNumClustersArray )
     {
@@ -150,8 +154,11 @@ void GMM::TrainModel( const std::vector<sal_Int32>& rNumClustersArray )
         {
             fBestBIC = fCurrBIC;
             mpBestModel.reset( pModel.release() );
+            nBestNumClusters = nNumClusters;
         }
     }
+
+    std::cout << "\n########### Best model BIC score = " << fBestBIC << ", num clusters = " << nBestNumClusters << "\n" << std::flush;
 }
 
 void GMM::GetClusterLabels( std::vector<sal_Int32>& rClusterLabels,
@@ -175,27 +182,36 @@ GMMModel::GMMModel( sal_Int32 nNumClusters, const GMM* pTrainer ):
     for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
         maPhi[nClusterIdx] = fPhi;
 
-    // Select mnNumClusters data points at random from the samples to act as cluster centers.
-    std::vector<sal_Int32> aSampleIndices( mpGMM->mnNumSamples );
-    for ( sal_Int32 nIdx = 0; nIdx < mpGMM->mnNumSamples; ++nIdx )
-        aSampleIndices[nIdx] = nIdx;
-    std::shuffle( aSampleIndices.begin(), aSampleIndices.end(), std::default_random_engine( 16 ) );
-
     maMeans.resize( mnNumClusters );
     maStd.resize( mnNumClusters );
     for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
     {
-        sal_Int32 nRandIdx = aSampleIndices[nClusterIdx];
         maMeans[nClusterIdx].resize( mpGMM->mnNumDimensions );
-        for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
-            maMeans[nClusterIdx][nDimIdx] = mpGMM->maData[nRandIdx][nDimIdx];
-        //maMeans[nClusterIdx] = mpGMM->maData[nRandIdx];
-        // Init std for all dimensions in all clusters to 1.5
-        maStd[nClusterIdx].resize( mpGMM->mnNumDimensions, 1.5 );
+        maStd[nClusterIdx].resize( mpGMM->mnNumDimensions );
     }
 
     maClusterLabels.resize( mpGMM->mnNumSamples );
     maLabelConfidence.resize( mpGMM->mnNumSamples );
+}
+
+void GMMModel::initParms()
+{
+    // obtain a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    // Select mnNumClusters data points at random from the samples to act as cluster centers.
+    std::vector<sal_Int32> aSampleIndices( mpGMM->mnNumSamples );
+    for ( sal_Int32 nIdx = 0; nIdx < mpGMM->mnNumSamples; ++nIdx )
+        aSampleIndices[nIdx] = nIdx;
+    std::shuffle( aSampleIndices.begin(), aSampleIndices.end(), std::default_random_engine( seed ) );
+
+    for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
+    {
+        sal_Int32 nRandIdx = aSampleIndices[nClusterIdx];
+        maMeans[nClusterIdx] = mpGMM->maData[nRandIdx];
+        maStd[nClusterIdx].assign( mpGMM->mnNumDimensions, 1.5 );
+    }
+    // Do not init maClusterLabels or maLabelConfidence
+    // as they are holding the best of all epochs.
 }
 
 double GMMModel::dnorm( double fX, double fMean, double fStd )
@@ -217,168 +233,184 @@ double GMMModel::dnormNominal( double fX, double fMean, double fStd )
 
 double GMMModel::Fit()
 {
+    std::vector<double> aEpochLabelConfidence( mpGMM->mnNumSamples );
+    std::vector<sal_Int32> aEpochClusterLabels( mpGMM->mnNumSamples );
     std::vector<double> aTmpLabelConfidence( mpGMM->mnNumSamples );
     std::vector<sal_Int32> aTmpClusterLabels( mpGMM->mnNumSamples );
-    std::cout << "Fitting for #clusters = " << mnNumClusters << "\n" << std::flush;
-    for ( int nIter = 0; nIter < NUMITER; ++nIter )
+    std::cout << "\nFitting for #clusters = " << mnNumClusters << "\n" << std::flush;
+    for ( int nEpochIdx = 0; nEpochIdx < MAXEPOCHS; ++nEpochIdx )
     {
-        // E step
+        initParms();
+        double fEpochBICScore = 9999999;
+        std::cout << "\n\tEpoch #" << nEpochIdx << " : ";
+        for ( int nIter = 0; nIter < NUMITER; ++nIter )
         {
-            double fBICScore = 0.0;
-            for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+            // E step
             {
-                double fNormalizer = 0.0;
+                double fBICScore = 0.0;
+                for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                {
+                    double fNormalizer = 0.0;
+                    for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
+                    {
+                        double fWeightVal = maPhi[nClusterIdx];
+                        for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
+                        {
+                            if ( mpGMM->maNumClasses[nDimIdx] == 0 )
+                                fWeightVal *= dnorm(
+                                    mpGMM->maData[nSampleIdx][nDimIdx],
+                                    maMeans[nClusterIdx][nDimIdx],
+                                    maStd[nClusterIdx][nDimIdx] );
+                            else
+                                fWeightVal *= dnormNominal(
+                                    mpGMM->maData[nSampleIdx][nDimIdx],
+                                    maMeans[nClusterIdx][nDimIdx],
+                                    maStd[nClusterIdx][nDimIdx] );
+                        }
+
+                        maWeights[nSampleIdx][nClusterIdx] = fWeightVal;
+
+                        fNormalizer += fWeightVal;
+                    }
+
+                    // Find best cluster for sample nSampleIdx
+                    double fBestClusterWeight = 0.0;
+                    sal_Int32 nBestCluster = 0;
+                
+                    // Apply normalization factor to all elems of maWeights[nSampleIdx] 
+                    for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
+                    {
+                        double fWt = maWeights[nSampleIdx][nClusterIdx];
+                        fWt /= fNormalizer;
+                        maWeights[nSampleIdx][nClusterIdx] = fWt;
+                        if ( fWt > fBestClusterWeight )
+                        {
+                            fBestClusterWeight = fWt;
+                            nBestCluster = nClusterIdx;
+                        }
+                    }
+                    aTmpClusterLabels[nSampleIdx]   = nBestCluster;
+                    aTmpLabelConfidence[nSampleIdx] = fBestClusterWeight;
+                    fBICScore += ( -log( abs( fBestClusterWeight ) ) );
+                }
+
+                std::cout << fBICScore << ", " << std::flush;
+                if ( fEpochBICScore > fBICScore )
+                {
+                    // There is improvement in BIC score in this epoch.
+                    fEpochBICScore         = fBICScore;
+                    aEpochClusterLabels    = aTmpClusterLabels;
+                    aEpochLabelConfidence  = aTmpLabelConfidence;
+                }
+                else
+                {
+                    std::cout << "\n\tBest BIC score of epoch#" << nEpochIdx << " = " << fEpochBICScore << std::flush;
+                    break;
+                }
+
+            } // End of E step
+
+            // M step
+            {
+                // Update maPhi
                 for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
                 {
-                    double fWeightVal = maPhi[nClusterIdx];
+                    double fPhi = 0.0;
+                    for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                        fPhi += maWeights[nSampleIdx][nClusterIdx];
+                    fPhi /= static_cast<double>(mpGMM->mnNumSamples);
+                    maPhi[nClusterIdx] = fPhi;
+                }
+
+                //Update maMeans
+                for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
+                {
+                    double fDen = ( static_cast<double>(mpGMM->mnNumSamples) *
+                                    maPhi[nClusterIdx] );
                     for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
                     {
-                        if ( mpGMM->maNumClasses[nDimIdx] == 0 )
-                            fWeightVal *= dnorm(
-                                mpGMM->maData[nSampleIdx][nDimIdx],
-                                maMeans[nClusterIdx][nDimIdx],
-                                maStd[nClusterIdx][nDimIdx] );
-                        else
-                            fWeightVal *= dnormNominal(
-                                mpGMM->maData[nSampleIdx][nDimIdx],
-                                maMeans[nClusterIdx][nDimIdx],
-                                maStd[nClusterIdx][nDimIdx] );
-                    }
+                        sal_Int32 nNumClasses = mpGMM->maNumClasses[nDimIdx];
+                        // Ordinal variable
+                        if ( nNumClasses == 0 )
+                        {
+                            double fNum = 0.0;
+                            for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                                fNum += ( maWeights[nSampleIdx][nClusterIdx] * mpGMM->maData[nSampleIdx][nDimIdx] );
+                            maMeans[nClusterIdx][nDimIdx] = (fNum / fDen);
+                        }
+                        else // Nominal variable
+                        {
+                            // Estimate the most probable label for this cluster.
+                            double fBestLabelScore = 0.0;
+                            double fBestLabel = 0;
+                            for ( sal_Int32 nLabel = 0; nLabel < nNumClasses; ++nLabel )
+                            {
+                                double fLabelScore = 0.0;
+                                for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                                    if ( nLabel == static_cast<sal_Int32>( mpGMM->maData[nSampleIdx][nDimIdx] ) )
+                                        fLabelScore += maWeights[nSampleIdx][nClusterIdx];
+                                if ( fLabelScore > fBestLabelScore )
+                                {
+                                    fBestLabelScore = fLabelScore;
+                                    fBestLabel      = static_cast<double>( nLabel );
+                                }
+                            }
 
-                    maWeights[nSampleIdx][nClusterIdx] = fWeightVal;
-
-                    fNormalizer += fWeightVal;
+                            maMeans[nClusterIdx][nDimIdx] = fBestLabel;
+                        }
+                    
+                    }                
                 }
 
-                // Find best cluster for sample nSampleIdx
-                double fBestClusterWeight = 0.0;
-                sal_Int32 nBestCluster = 0;
-                
-                // Apply normalization factor to all elems of maWeights[nSampleIdx] 
+
+                // Update maStd
                 for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
                 {
-                    double fWt = maWeights[nSampleIdx][nClusterIdx];
-                    fWt /= fNormalizer;
-                    maWeights[nSampleIdx][nClusterIdx] = fWt;
-                    if ( fWt > fBestClusterWeight )
+                    double fDen = ( static_cast<double>(mpGMM->mnNumSamples) *
+                                    maPhi[nClusterIdx] );
+                    for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
                     {
-                        fBestClusterWeight = fWt;
-                        nBestCluster = nClusterIdx;
-                    }
-                }
-                aTmpClusterLabels[nSampleIdx]   = nBestCluster;
-                aTmpLabelConfidence[nSampleIdx] = fBestClusterWeight;
-                fBICScore += ( -log( abs( fBestClusterWeight ) ) );
-            }
-
-            std::cout << fBICScore << ", " << std::flush;
-            if ( mfBICScore > fBICScore )
-            {
-                mfBICScore = fBICScore;
-                for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
-                {
-                    maClusterLabels[nSampleIdx]   = aTmpClusterLabels[nSampleIdx];
-                    maLabelConfidence[nSampleIdx] = aTmpLabelConfidence[nSampleIdx];
-                }
-            }
-            else
-            {
-                break;
-            }
-
-        } // End of E step
-
-        // M step
-        {
-            // Update maPhi
-            for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
-            {
-                double fPhi = 0.0;
-                for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
-                    fPhi += maWeights[nSampleIdx][nClusterIdx];
-                fPhi /= static_cast<double>(mpGMM->mnNumSamples);
-                maPhi[nClusterIdx] = fPhi;
-            }
-
-            //Update maMeans
-            for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
-            {
-                double fDen = ( static_cast<double>(mpGMM->mnNumSamples) *
-                                maPhi[nClusterIdx] );
-                for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
-                {
-                    sal_Int32 nNumClasses = mpGMM->maNumClasses[nDimIdx];
-                    // Ordinal variable
-                    if ( nNumClasses == 0 )
-                    {
-                        double fNum = 0.0;
-                        for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
-                            fNum += ( maWeights[nSampleIdx][nClusterIdx] * mpGMM->maData[nSampleIdx][nDimIdx] );
-                        maMeans[nClusterIdx][nDimIdx] = (fNum / fDen);
-                    }
-                    else // Nominal variable
-                    {
-                        // Estimate the most probable label for this cluster.
-                        double fBestLabelScore = 0.0;
-                        double fBestLabel = 0;
-                        for ( sal_Int32 nLabel = 0; nLabel < nNumClasses; ++nLabel )
+                        sal_Int32 nNumClasses = mpGMM->maNumClasses[nDimIdx];
+                        const double fMean = maMeans[nClusterIdx][nDimIdx];
+                        // Ordinal variable
+                        if ( nNumClasses == 0 )
                         {
-                            double fLabelScore = 0.0;
+                            double fNum = 0.0;
                             for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
-                                if ( nLabel == static_cast<sal_Int32>( mpGMM->maData[nSampleIdx][nDimIdx] ) )
-                                    fLabelScore += maWeights[nSampleIdx][nClusterIdx];
-                            if ( fLabelScore > fBestLabelScore )
                             {
-                                fBestLabelScore = fLabelScore;
-                                fBestLabel      = static_cast<double>( nLabel );
+                                const double fX = mpGMM->maData[nSampleIdx][nDimIdx];
+                                fNum += ( maWeights[nSampleIdx][nClusterIdx] * fX * fX );
                             }
+                            maStd[nClusterIdx][nDimIdx] = sqrt( (fNum / fDen) - (fMean*fMean) );
                         }
-
-                        maMeans[nClusterIdx][nDimIdx] = fBestLabel;
-                    }
-                    
-                }                
-            }
-
-
-            // Update maStd
-            for ( sal_Int32 nClusterIdx = 0; nClusterIdx < mnNumClusters; ++nClusterIdx )
-            {
-                double fDen = ( static_cast<double>(mpGMM->mnNumSamples) *
-                                maPhi[nClusterIdx] );
-                for ( sal_Int32 nDimIdx = 0; nDimIdx < mpGMM->mnNumDimensions; ++nDimIdx )
-                {
-                    sal_Int32 nNumClasses = mpGMM->maNumClasses[nDimIdx];
-                    const double fMean = maMeans[nClusterIdx][nDimIdx];
-                    // Ordinal variable
-                    if ( nNumClasses == 0 )
-                    {
-                        double fNum = 0.0;
-                        for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                        else // Nominal variable
                         {
-                            const double fX = mpGMM->maData[nSampleIdx][nDimIdx];
-                            fNum += ( maWeights[nSampleIdx][nClusterIdx] * fX * fX );
+                            double fNum = 0.0;
+                            for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
+                            {
+                                const double fX = mpGMM->maData[nSampleIdx][nDimIdx];
+                                const double fDiff = (fX == fMean) ? 0.0 : 1.0;
+                                fNum += ( maWeights[nSampleIdx][nClusterIdx] * fDiff );
+                            }
+                            maStd[nClusterIdx][nDimIdx] = sqrt( fNum / fDen );
                         }
-                        maStd[nClusterIdx][nDimIdx] = sqrt( (fNum / fDen) - (fMean*fMean) );
-                    }
-                    else // Nominal variable
-                    {
-                        double fNum = 0.0;
-                        for ( sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx )
-                        {
-                            const double fX = mpGMM->maData[nSampleIdx][nDimIdx];
-                            const double fDiff = (fX == fMean) ? 0.0 : 1.0;
-                            fNum += ( maWeights[nSampleIdx][nClusterIdx] * fDiff );
-                        }
-                        maStd[nClusterIdx][nDimIdx] = sqrt( fNum / fDen );
                     }
                 }
-            }
 
             
-        } // End of M step
-    }
-    std::cout << "\n" << std::flush;
+            } // End of M step
+        } // End of one epoch
+
+        if ( fEpochBICScore < mfBICScore )
+        {
+            mfBICScore        = fEpochBICScore;
+            maClusterLabels   = aEpochClusterLabels;
+            maLabelConfidence = aEpochLabelConfidence;
+            std::cout << "\n\tThere is improvement in global BIC score, improved score = " << mfBICScore << std::flush;
+        }
+
+    } // End of epoch loop
+    std::cout << "\n\t**** Best BIC score over all epochs = " << mfBICScore << "\n" << std::flush;
     return mfBICScore;
 }
 
