@@ -16,6 +16,7 @@
 
 #define NUMITER 100
 #define MAXEPOCHS 10
+#define EPSILON 0.001
 
 using com::sun::star::uno::Sequence;
 using com::sun::star::uno::Any;
@@ -295,7 +296,7 @@ double GMMModel::Fit()
                 }
 
                 std::cout << fBICScore << ", " << std::flush;
-                if ( fEpochBICScore > fBICScore )
+                if ( fEpochBICScore > fBICScore && ( ( fEpochBICScore - fBICScore ) > EPSILON ) )
                 {
                     // There is improvement in BIC score in this epoch.
                     fEpochBICScore         = fBICScore;
