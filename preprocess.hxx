@@ -49,7 +49,7 @@ void flagEmptyEntries( Sequence< Sequence< Any > >& rDataArray,
     {
 	for ( sal_Int32 nRowIdx : rCol2BlankRowIdx[nColIdx] )
 	{
-	    if ( rColType[nColIdx] == STRING )
+	    if ( rColType[nColIdx] == DataType::STRING )
 		rDataArray[nRowIdx][nColIdx] <<= EMPTYSTRING;
 	    else
 		rDataArray[nRowIdx][nColIdx] <<= EMPTYDOUBLE;
@@ -64,16 +64,16 @@ void imputeAllColumns( Sequence< Sequence< Any > >& rDataArray,
     sal_Int32 nNumCols = rColType.size();
     for ( sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx )
     {
-	if ( rColType[nColIdx] == STRING )
+	if ( rColType[nColIdx] == DataType::STRING )
 	    imputeWithMode( rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx] );
-	else if ( rColType[nColIdx] == DOUBLE )
+	else if ( rColType[nColIdx] == DataType::DOUBLE )
 	    imputeWithMedian( rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx] );
-	else if ( rColType[nColIdx] == INTEGER )
+	else if ( rColType[nColIdx] == DataType::INTEGER )
 	{
 	    if ( !imputeWithMode( rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx] ) )
 	    {
 		// Better to treat the numbers as continuous rather than discrete classes.
-		//rColType[nColIdx] = DOUBLE;
+		//rColType[nColIdx] = DataType::DOUBLE;
 		imputeWithMedian( rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx] );
 	    }
 	}
@@ -94,12 +94,12 @@ bool imputeWithMode( Sequence< Sequence< Any > >& rDataArray,
     for ( sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx )
     {
 	Any aElement = rDataArray[nRowIdx][nColIdx];
-	if ( ( aType == STRING && aElement == EMPTYSTRING ) ||
-	     ( aType == DOUBLE && aElement == EMPTYDOUBLE ) )
+	if ( ( aType == DataType::STRING && aElement == EMPTYSTRING ) ||
+	     ( aType == DataType::DOUBLE && aElement == EMPTYDOUBLE ) )
 	    continue;
 
 	sal_Int32 nCount = 0;
-	if ( aType == STRING )
+	if ( aType == DataType::STRING )
 	{
 	    OUString aStr;
 	    aElement >>= aStr;
@@ -115,7 +115,7 @@ bool imputeWithMode( Sequence< Sequence< Any > >& rDataArray,
 	}
 	if ( nCount > nMaxCount )
 	{
-	    if ( aType == STRING )
+	    if ( aType == DataType::STRING )
 		aElement >>= aImputeString;
 	    else
 		aElement >>= fImputeDouble;
@@ -125,7 +125,7 @@ bool imputeWithMode( Sequence< Sequence< Any > >& rDataArray,
     }
 
     bool bGood = true;
-    if ( aType == INTEGER )
+    if ( aType == DataType::INTEGER )
     {
 	if ( nMaxCount < 3 ) // Ensure at least 3 samples of top class
 	    bGood = false;
@@ -133,7 +133,7 @@ bool imputeWithMode( Sequence< Sequence< Any > >& rDataArray,
 
     if ( bGood )
     {
-	if ( aType == STRING )
+	if ( aType == DataType::STRING )
 	    for ( sal_Int32 nMissingIdx : rEmptyRowIndices )
 		rDataArray[nMissingIdx][nColIdx] <<= aImputeString;
 	else
@@ -151,7 +151,7 @@ bool imputeWithMedian( Sequence< Sequence< Any > >& rDataArray,
 		       const std::vector< sal_Int32 >& rEmptyRowIndices )
 {
     // We are sure that this function is not called for Any == OUString
-    assert( aType != STRING && "imputeWithMedian called with type OUString !!!" );
+    assert( aType != DataType::STRING && "imputeWithMedian called with type OUString !!!" );
 
     sal_Int32 nNumRows = rDataArray.getLength();
     sal_Int32 nNumEmptyElements = rEmptyRowIndices.size();
@@ -187,7 +187,7 @@ void calculateFeatureScales( Sequence< Sequence< Any > >& rDataArray,
 
     for ( sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx )
     {
-	if ( rColType[nColIdx] == STRING )
+	if ( rColType[nColIdx] == DataType::STRING )
 	    continue;
 	double fSum = 0.0, fSum2 = 0.0;
 	for ( sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx )

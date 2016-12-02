@@ -105,7 +105,7 @@ GMM::GMM( const Sequence< Sequence< Any > >& rDataArray,
     for ( sal_Int32 nColIdx = 0; nColIdx < mnNumDimensions; ++nColIdx )
     {
         // Convert strings to numeric labels
-        if ( rColType[nColIdx] == STRING )
+        if ( rColType[nColIdx] == DataType::STRING )
         {
             std::map<OUString, sal_Int32> aLabelMap;
             std::map<OUString, sal_Int32>::iterator aItr;

@@ -365,7 +365,7 @@ sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellR
 
 	for ( sal_Int32 nCol = rRange.StartColumn, nColIdx = 0; nCol <= rRange.EndColumn; ++nCol, ++nColIdx )
 	{
-	    aType = INTEGER;
+	    aType = DataType::INTEGER;
 	    bool bIsComplete = true;
 	    std::vector<sal_Int32> aBlankRowIdx;
 	    double fMin = 1.0E10, fMax = -1.0E10;
@@ -378,14 +378,14 @@ sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellR
 		{
 		    if ( xCell->getType() == CellContentType_TEXT )
 		    {
-			aType = STRING;
+			aType = DataType::STRING;
 		    }
-		    else if ( xCell->getType() == CellContentType_VALUE && aType == INTEGER )
+		    else if ( xCell->getType() == CellContentType_VALUE && aType == DataType::INTEGER )
 		    {
 			double fVal = xCell->getValue();
 			if ( fVal != static_cast<double>(static_cast<sal_Int64>(fVal)) )
-			    aType = DOUBLE;
-			if ( aType == INTEGER )
+			    aType = DataType::DOUBLE;
+			if ( aType == DataType::INTEGER )
 			{
 			    fMin = ( fMin > fVal ) ? fVal : fMin;
 			    fMax = ( fMax < fVal ) ? fVal : fMax;
@@ -399,8 +399,8 @@ sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellR
 		}
 	    }
 
-	    if ( aType == INTEGER && (fMax - fMin) > 100.0 )
-		aType = DOUBLE;
+	    if ( aType == DataType::INTEGER && (fMax - fMin) > 100.0 )
+		aType = DataType::DOUBLE;
 
 	    aIsColComplete[nColIdx]    = bIsComplete;
 	    aColType[nColIdx]          = aType;
