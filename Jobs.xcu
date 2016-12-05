@@ -14,5 +14,40 @@
                 <node oor:name="ClusterRowsImpl" oor:op="replace"/>
             </node>
         </node>
+        <node oor:name="onClusterRowsReq2" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq3" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq4" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq5" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq6" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq7" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
+        <node oor:name="onClusterRowsReq8" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
     </node>
 </oor:component-data>

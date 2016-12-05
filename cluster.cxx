@@ -73,7 +73,8 @@ bool getClusterLabels( const Sequence< Sequence< Any > >& rDataArray,
                        sal_Int32& rNumClusters );
 
 sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet,
-                           const CellRangeAddress& rRange );
+                           const CellRangeAddress& rRange,
+                           const sal_Int32 nUserNumClusters );
 
 
 // Helper functions for the implementation of UNO component interfaces.
@@ -143,7 +144,21 @@ Any SAL_CALL ClusterRowsImpl::execute( const Sequence<NamedValue>& rArgs )
     }
 
     if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
-	clusterRows( aJobInfo );
+	clusterRows( aJobInfo, 0 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq2"))
+	clusterRows( aJobInfo, 2 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq3"))
+	clusterRows( aJobInfo, 3 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq4"))
+	clusterRows( aJobInfo, 4 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq5"))
+	clusterRows( aJobInfo, 5 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq6"))
+	clusterRows( aJobInfo, 6 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq7"))
+	clusterRows( aJobInfo, 7 );
+    else if ( aJobInfo.aEventName.equalsAscii("onClusterRowsReq8"))
+	clusterRows( aJobInfo, 8 );
 
     bool bIsDispatch = aJobInfo.aEnvType.equalsAscii("DISPATCH");
     Sequence<NamedValue> aReturn( ( bIsDispatch ? 1 : 0 ) );
@@ -215,7 +230,7 @@ OUString ClusterRowsImpl::validateGetInfo( const Sequence<NamedValue>& rArgs,
     return OUString("");
 }
 
-void ClusterRowsImpl::clusterRows( const ClusterRowsImpl::ClusterRowsImplInfo& rJobInfo )
+void ClusterRowsImpl::clusterRows( const ClusterRowsImpl::ClusterRowsImplInfo& rJobInfo, const sal_Int32 nUserNumClusters )
 {
     TimePerf aTotal("clusterRows");
 
@@ -254,7 +269,7 @@ void ClusterRowsImpl::clusterRows( const ClusterRowsImpl::ClusterRowsImplInfo& r
 
     Reference< XSpreadsheet > xSheet = getSheet( xModel, aRange.Sheet );
     TimePerf aPerfColor("clusterColorRows");
-    sal_Bool bOK = clusterColorRows( xSheet, aRange );
+    sal_Bool bOK = clusterColorRows( xSheet, aRange, nUserNumClusters );
     aPerfColor.Stop();
     if ( !bOK )
     {
@@ -344,7 +359,7 @@ Reference< XSpreadsheet > getSheet( const Reference< XModel >& rxModel, const sa
     return xSpreadsheet;
 }
 
-sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellRangeAddress& rRange )
+sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellRangeAddress& rRange, const sal_Int32 nUserNumClusters )
 {
     sal_Int32 nNumCols = rRange.EndColumn - rRange.StartColumn + 1;
     sal_Int32 nNumRows = rRange.EndRow - rRange.StartRow; // Don't count the header
@@ -442,7 +457,7 @@ sal_Bool clusterColorRows( const Reference< XSpreadsheet >& rxSheet, const CellR
     TimePerf aPerfCompute("computeClusters");
     std::vector<sal_Int32> aClusterLabels( nNumRows );
     std::vector<double>    aLabelConfidence( nNumRows );
-    sal_Int32              nNumClusters = 6;
+    sal_Int32              nNumClusters = nUserNumClusters;
     bool bClusterOK = getClusterLabels( aDataArray, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters );
     if ( !bClusterOK )
     {
