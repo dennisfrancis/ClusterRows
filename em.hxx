@@ -467,8 +467,16 @@ void performEMClustering( const Sequence< Sequence< Any > >& rDataArray,
                           sal_Int32& rNumClusters )
 {
     GMM aGMM( rDataArray, rColType, rFeatureScales );
-    const std::vector<sal_Int32> aNumClustersArray = { 2, 3, 4, 5 };
-    aGMM.TrainModel( aNumClustersArray );
+    if ( rNumClusters <= 1 ) // Auto computer optimum number of clusters
+    {
+        const std::vector<sal_Int32> aNumClustersArray = { 2, 3, 4, 5 };
+        aGMM.TrainModel( aNumClustersArray );
+    }
+    else
+    {
+        const std::vector<sal_Int32> aNumClustersArray = { rNumClusters };
+        aGMM.TrainModel( aNumClustersArray );
+    }
     aGMM.GetClusterLabels( rClusterLabels, rLabelConfidence, rNumClusters );
 }
 
