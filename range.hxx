@@ -2,6 +2,8 @@
 #include <com/sun/star/table/XCell.hpp>
 #include <com/sun/star/table/CellRangeAddress.hpp>
 #include <com/sun/star/table/CellContentType.hpp>
+#include <vector>
+#include "datatypes.hxx"
 
 #define MAXROW 1048575
 #define MAXCOL 1023
@@ -280,5 +282,25 @@ void expandRangeToData( const Reference< XSpreadsheet >& rxSheet, CellRangeAddre
     rRangeExtended.EndRow       = nEndRow;
     rRangeExtended.StartColumn  = nStartCol;
     rRangeExtended.EndColumn    = nEndCol;
+
+}
+
+void excludeResultColumns( const Reference< XSpreadsheet >& rxSheet, CellRangeAddress& rRangeExtended )
+{
+    // Result headers in reverse order ( with rightmost header first )
+    std::vector<OUString> aResultHeaders = { "Confidence", "ClusterId" };
+    Reference< XCell > xCell;
+    for ( OUString& aHdr : aResultHeaders )
+    {
+        xCell = rxSheet->getCellByPosition( rRangeExtended.EndColumn, rRangeExtended.StartRow );
+        if ( !xCell.is() )
+        {
+            printf("DEBUG>>> excludeResultColumns : xCell(%d, %d) is invalid.\n", rRangeExtended.EndColumn, rRangeExtended.StartRow );
+            fflush(stdout);
+            return;
+        }
+        if ( xCell->getFormula() == aHdr )
+            --rRangeExtended.EndColumn;
+    }
 
 }
