@@ -332,6 +332,7 @@ bool getDataRange( const Reference< XModel >& rxModel, CellRangeAddress& rRangeE
 
     shrinkRangeToData( xSheet, rRangeExtended );
     expandRangeToData( xSheet, rRangeExtended );
+    excludeResultColumns( xSheet, rRangeExtended );
 
     return true;
 }
