@@ -31,7 +31,7 @@ If you get errors in compilation, please check if the SDK's environment variable
 If you are compiling in a GNU/Linux platform and used the standard defaults while setting up the SDK, the oxt file can be found at the location
 `/home/$username/libreoffice5.4_sdk/LINUXexample.out/bin/`
 
-# Sample usage of the extension
+## Sample usage of the extension
 In `testdocs` directory there is a spreadsheet file called `three-clusters.ods`. In that file there is a dataset artificially created from a 3-cluster Gausian mixture model in the range `A1:C301`.
 This dataset has just two dimensions/variables(column A and B). Column C has the ground truth cluster id information of each row. To test the extension a copy of the dataset is made(excluding the ground-truth column) to `F1:G301`. Now place the cursor anywhere in the range `F1:G301` and go to the menu `Clustering > Find 3 clusters`. The extension will compute the 3 clusters and produce the columns `ClusterId` and `Confidence`. The cell `L9` now will indicate the clustering accuracy. This is a measure of how well the clustering algorithm was able to assign clusters compared to the ground truths in the original dataset. Typically we get around 97% accuracy for this dataset.
 ![Clustering Output](img/output.png)
