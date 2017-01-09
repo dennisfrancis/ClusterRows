@@ -111,13 +111,13 @@ $(COMP_COMPONENTS) :
 	@echo $(OSEP)/components$(CSEP) >> $@
 
 # rule for component package file
-$(COMP_PACKAGE) : $(SHAREDLIB_OUT)/$(COMP_IMPL_NAME) Addons.xcu Jobs.xcu $(COMP_UNOPKG_MANIFEST) $(COMP_COMPONENTS)
+$(COMP_PACKAGE) : $(SHAREDLIB_OUT)/$(COMP_IMPL_NAME) Addons.xcu Jobs.xcu $(COMP_UNOPKG_MANIFEST) $(COMP_COMPONENTS) description.xml description-en-US.txt img/icon.png img/icon_hc.png
 	-$(MKDIR) $(subst /,$(PS),$(@D)) && $(DEL) $(subst \\,\,$(subst /,$(PS),$@))
-	-$(MKDIR) $(subst /,$(PS),$(OUT_COMP_GEN)/$(UNOPKG_PLATFORM))	 
+	-$(MKDIR) $(subst /,$(PS),$(OUT_COMP_GEN)/$(UNOPKG_PLATFORM))
 	$(COPY) $(subst /,$(PS),$<) $(subst /,$(PS),$(OUT_COMP_GEN)/$(UNOPKG_PLATFORM))
 	cd $(subst /,$(PS),$(OUT_COMP_GEN)) && $(SDK_ZIP) ../../bin/$(@F) $(COMP_NAME).components
 	cd $(subst /,$(PS),$(OUT_COMP_GEN)) && $(SDK_ZIP) -u ../../bin/$(@F) $(UNOPKG_PLATFORM)/$(<F)
-	$(SDK_ZIP) -u $@ Addons.xcu Jobs.xcu
+	$(SDK_ZIP) -u $@ Addons.xcu Jobs.xcu description.xml description-en-US.txt img/icon.png img/icon_hc.png
 	cd $(subst /,$(PS),$(OUT_COMP_GEN)/$(subst .$(UNOOXT_EXT),,$(@F))) && $(SDK_ZIP) -u ../../../bin/$(@F) META-INF/manifest.xml
 
 $(REGISTERFLAG) : $(COMP_PACKAGE)
