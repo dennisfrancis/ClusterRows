@@ -16,7 +16,8 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
 -->
-<oor:component-data xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="Addons" oor:package="org.openoffice.Office">
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" oor:name="Addons" oor:package="org.openoffice.Office">
     <node oor:name="AddonUI">
         <node oor:name="OfficeMenuBar">
             <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu" oor:op="replace">
@@ -25,7 +26,7 @@
                     <value xml:lang="en-US">Clustering</value>
                 </prop>
                 <node oor:name="Submenu">
-		    <node oor:name="m2" oor:op="replace">
+                    <node oor:name="m2" oor:op="replace">
                         <prop oor:name="URL" oor:type="xs:string">
                             <value>vnd.sun.star.job:event=onClusterRowsReq</value>
                         </prop>

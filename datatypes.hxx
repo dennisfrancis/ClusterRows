@@ -9,7 +9,12 @@ using rtl::OUString;
 using rtl::OUStringBuffer;
 using rtl::OUStringHash;
 
-enum class DataType{ INTEGER, DOUBLE, STRING };
+enum class DataType
+{
+    INTEGER,
+    DOUBLE,
+    STRING
+};
 
 struct ColorsRGB
 {

@@ -26,16 +26,16 @@ using namespace ::com::sun::star::registry;
  * @param pRegistryKey    the registry key for this component, need for persistent data
  * @return a component factory
  */
-extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL component_getFactory(const sal_Char * pImplName, void * /*pServiceManager*/, void * pRegistryKey)
+extern "C" SAL_DLLPUBLIC_EXPORT void *SAL_CALL component_getFactory(const sal_Char *pImplName, void * /*pServiceManager*/, void *pRegistryKey)
 {
-    void * pRet = 0;
+    void *pRet = 0;
 
-    if (rtl_str_compare( pImplName, IMPLEMENTATION_NAME ) == 0)
+    if (rtl_str_compare(pImplName, IMPLEMENTATION_NAME) == 0)
     {
-        Reference< XSingleComponentFactory > xFactory( createSingleComponentFactory(
+        Reference<XSingleComponentFactory> xFactory(createSingleComponentFactory(
             ClusterRowsImpl_createInstance,
-            OUString( IMPLEMENTATION_NAME ),
-            ClusterRowsImpl_getSupportedServiceNames() ) );
+            OUString(IMPLEMENTATION_NAME),
+            ClusterRowsImpl_getSupportedServiceNames()));
 
         if (xFactory.is())
         {
@@ -48,10 +48,8 @@ extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL component_getFactory(const sal_C
 }
 
 extern "C" SAL_DLLPUBLIC_EXPORT void SAL_CALL
-    component_getImplementationEnvironment(
-        char const ** ppEnvTypeName, uno_Environment **)
+component_getImplementationEnvironment(
+    char const **ppEnvTypeName, uno_Environment **)
 {
     *ppEnvTypeName = CPPU_CURRENT_LANGUAGE_BINDING_NAME;
 }
-
-
