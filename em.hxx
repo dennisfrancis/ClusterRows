@@ -12,6 +12,7 @@
 #include <chrono>
 #include <math.h>
 
+#include "logging.hxx"
 #include "datatypes.hxx"
 
 #define NUMITER 100
@@ -94,8 +95,7 @@ GMM::GMM(const Sequence<Sequence<Any>> &rDataArray,
 {
     mnNumSamples = rDataArray.getLength();
     mnNumDimensions = rColType.size();
-    std::cout << "mnNumSamples = " << mnNumSamples << ", mnNumDimensions = " << mnNumDimensions << "\n"
-              << std::flush;
+    writeLog("mnNumSamples = %d, mnNumDimensions = %d\n", mnNumSamples, mnNumDimensions);
     maData.resize(mnNumSamples);
     for (sal_Int32 nRowIdx = 0; nRowIdx < mnNumSamples; ++nRowIdx)
         maData[nRowIdx].resize(mnNumDimensions);
@@ -159,8 +159,7 @@ void GMM::TrainModel(const std::vector<sal_Int32> &rNumClustersArray)
         }
     }
 
-    std::cout << "\n########### Best model BIC score = " << fBestBIC << ", num clusters = " << nBestNumClusters << "\n"
-              << std::flush;
+    writeLog("\n########### Best model BIC score = %f, num clusters = %d\n", fBestBIC, nBestNumClusters);
 }
 
 void GMM::GetClusterLabels(std::vector<sal_Int32> &rClusterLabels,
@@ -238,13 +237,12 @@ double GMMModel::Fit()
     std::vector<sal_Int32> aEpochClusterLabels(mpGMM->mnNumSamples);
     std::vector<double> aTmpLabelConfidence(mpGMM->mnNumSamples);
     std::vector<sal_Int32> aTmpClusterLabels(mpGMM->mnNumSamples);
-    std::cout << "\nFitting for #clusters = " << mnNumClusters << "\n"
-              << std::flush;
+    writeLog("\nFitting for #clusters = %d\n", mnNumClusters);
     for (int nEpochIdx = 0; nEpochIdx < MAXEPOCHS; ++nEpochIdx)
     {
         initParms();
         double fEpochBICScore = 9999999;
-        std::cout << "\n\tEpoch #" << nEpochIdx << " : ";
+        writeLog("\n\tEpoch #%d : ", nEpochIdx);
         for (int nIter = 0; nIter < NUMITER; ++nIter)
         {
             // E step
@@ -296,7 +294,7 @@ double GMMModel::Fit()
                     fBICScore += (-log(abs(fBestClusterWeight)));
                 }
 
-                std::cout << fBICScore << ", " << std::flush;
+                writeLog("%f, ", fBICScore);
                 if (fEpochBICScore > fBICScore && ((fEpochBICScore - fBICScore) > EPSILON))
                 {
                     // There is improvement in BIC score in this epoch.
@@ -306,7 +304,7 @@ double GMMModel::Fit()
                 }
                 else
                 {
-                    std::cout << "\n\tBest BIC score of epoch#" << nEpochIdx << " = " << fEpochBICScore << std::flush;
+                    writeLog("\n\tBest BIC score of epoch#%d = %f", nEpochIdx, fEpochBICScore);
                     break;
                 }
 
@@ -405,12 +403,11 @@ double GMMModel::Fit()
             mfBICScore = fEpochBICScore;
             maClusterLabels = aEpochClusterLabels;
             maLabelConfidence = aEpochLabelConfidence;
-            std::cout << "\n\tThere is improvement in global BIC score, improved score = " << mfBICScore << std::flush;
+            writeLog("\n\tThere is improvement in global BIC score, improved score = %f", mfBICScore);
         }
 
     } // End of epoch loop
-    std::cout << "\n\t**** Best BIC score over all epochs = " << mfBICScore << "\n"
-              << std::flush;
+    writeLog("\n\t**** Best BIC score over all epochs = %f\n", mfBICScore);
     return mfBICScore;
 }
 

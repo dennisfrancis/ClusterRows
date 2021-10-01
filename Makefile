@@ -56,6 +56,10 @@ CXXFILES = component.cxx \
 
 SLOFILES = $(patsubst %.cxx,$(OUT_COMP_SLO)/%.$(OBJ_EXT),$(CXXFILES))
 
+ifeq "$(ENABLE_LOGGING)" "1"
+CLUSTER_DEFINES = -DLOGGING_ENABLED
+endif
+
 # Targets
 .PHONY: ALL
 ALL : \
@@ -65,7 +69,7 @@ include $(SETTINGS)/stdtarget.mk
 
 $(OUT_COMP_SLO)/%.$(OBJ_EXT) : %.cxx $(SDKTYPEFLAG) cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
 	-$(MKDIR) $(subst /,$(PS),$(@D))
-	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++11 $(CC_INCLUDES) -I$(OUT_COMP_INC) $(CC_DEFINES) $(CC_OUTPUT_SWITCH)$(subst /,$(PS),$@) $<
+	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++11 $(CC_INCLUDES) -I$(OUT_COMP_INC) $(CC_DEFINES) $(CLUSTER_DEFINES) $(CC_OUTPUT_SWITCH)$(subst /,$(PS),$@) $<
 
 ifeq "$(OS)" "WIN"
 $(SHAREDLIB_OUT)/%.$(SHAREDLIB_EXT) : $(SLOFILES)

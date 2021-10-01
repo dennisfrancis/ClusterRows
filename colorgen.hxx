@@ -5,6 +5,7 @@
 #include <cppu/unotype.hxx>
 #include <vector>
 
+#include "logging.hxx"
 #include "datatypes.hxx"
 
 void getRowColors(const std::vector<sal_Int32> &rClusterLabels,
@@ -50,9 +51,8 @@ void getRowColors(const std::vector<sal_Int32> &rClusterLabels,
                   std::vector<sal_Int32> &rRowColors)
 {
     for (auto nClusterIdx : rClusterLabels)
-        printf("%d, ", nClusterIdx);
-    printf("\n");
-    fflush(stdout);
+        writeLog("%d, ", nClusterIdx);
+    writeLog("\n");
     std::vector<ColorsRGB> aBaseColors(nNumClusters);
     getLabelBaseColors(nNumClusters, aBaseColors);
 

@@ -39,12 +39,8 @@ private:
     ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> mxContext;
 
 public:
-    ClusterRowsImpl(const ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> &rxContext)
-        : mxContext(rxContext)
-    {
-        printf("DEBUG>>> Created ClusterRowsImpl object : %p\n", this);
-        fflush(stdout);
-    }
+    ClusterRowsImpl(const ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> &rxContext);
+    ~ClusterRowsImpl();
 
     // XAsyncJob methods
     virtual ::com::sun::star::uno::Any SAL_CALL execute(

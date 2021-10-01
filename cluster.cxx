@@ -91,6 +91,17 @@ Reference<XInterface> SAL_CALL ClusterRowsImpl_createInstance(const Reference<XC
     return (cppu::OWeakObject *)new ClusterRowsImpl(rContext);
 }
 
+ClusterRowsImpl::ClusterRowsImpl(const Reference<XComponentContext> &rxContext):
+    mxContext(rxContext)
+{
+    writeLog("DEBUG>>> Created ClusterRowsImpl object : %p\n", this);
+}
+
+ClusterRowsImpl::~ClusterRowsImpl()
+{
+    writeLog("DEBUG>>> Destructing ClusterRowsImpl object : %p\n", this);
+}
+
 // Implementation of the recommended/mandatory interfaces of a UNO component.
 // XServiceInfo
 OUString SAL_CALL ClusterRowsImpl::getImplementationName()
@@ -112,8 +123,7 @@ Sequence<OUString> SAL_CALL ClusterRowsImpl::getSupportedServiceNames()
 
 Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
 {
-    printf("DEBUG>>> Called execute() : this = %p\n", this);
-    fflush(stdout);
+    writeLog("DEBUG>>> Called execute() : this = %p\n", this);
 
     ClusterRowsImplInfo aJobInfo;
     OUString aErr = validateGetInfo(rArgs, aJobInfo);
@@ -250,8 +260,7 @@ void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJ
     }
     sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
-    printf("DEBUG>>> nNumCols = %d, nNumRows = %d\n", nNumCols, nNumRows);
-    fflush(stdout);
+    writeLog("DEBUG>>> nNumCols = %d, nNumRows = %d\n", nNumCols, nNumRows);
 
     Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
     TimePerf aPerfColor("clusterColorRows");
@@ -259,7 +268,7 @@ void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJ
     aPerfColor.Stop();
     if (!bOK)
     {
-        logError("clusterRows : clusterColorRows() failed");
+        logError("clusterRows : clusterColorRows() failed\n");
         return;
     }
 
@@ -271,8 +280,7 @@ void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJ
 
 void logError(const char *pStr)
 {
-    /*printf("DEBUG>>> %s\n", pStr);
-    fflush(stdout);*/
+    writeLog(pStr);
 }
 
 Reference<XModel> getModel(const Reference<XFrame> &rxFrame)
@@ -351,8 +359,7 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     sal_Int32 nNumRows = rRange.EndRow - rRange.StartRow; // Don't count the header
     if (nNumRows < 10)
     {
-        printf("DEBUG>>> Too few samples(%d) in the table, need at least 10.\n", nNumRows);
-        fflush(stdout);
+        writeLog("DEBUG>>> Too few samples(%d) in the table, need at least 10.\n", nNumRows);
         return false;
     }
 
@@ -408,15 +415,13 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
             aColType[nColIdx] = aType;
             aCol2BlankRowIdx[nColIdx] = std::move(aBlankRowIdx);
 
-            printf("DEBUG>>> col = %d, Type = %d, isComplete = %d\n", nColIdx, aType, int(bIsComplete));
-            fflush(stdout);
+            writeLog("DEBUG>>> col = %d, Type = %d, isComplete = %d\n", nColIdx, aType, int(bIsComplete));
         }
     }
     catch (Exception &e)
     {
-        fprintf(stderr, "DEBUG>>> clusterColorRows : caught UNO exception: %s\n",
+        writeLog("DEBUG>>> clusterColorRows : caught UNO exception: %s\n",
                 OUStringToOString(e.Message, RTL_TEXTENCODING_ASCII_US).getStr());
-        fflush(stderr);
         return false;
     }
 
@@ -437,8 +442,7 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     std::vector<std::pair<double, double>> aFeatureScales(nNumCols);
     calculateFeatureScales(aDataArray, aColType, aFeatureScales);
     for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
-        printf("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n", nColIdx, aColType[nColIdx], aFeatureScales[nColIdx].first, aFeatureScales[nColIdx].second);
-    fflush(stdout);
+        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n", nColIdx, aColType[nColIdx], aFeatureScales[nColIdx].first, aFeatureScales[nColIdx].second);
     aPerfPreprocess.Stop();
 
     TimePerf aPerfCompute("computeClusters");
@@ -477,8 +481,7 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
         Reference<XPropertySet> xPropSet(xThisRow, UNO_QUERY);
         if (!xPropSet.is())
         {
-            printf("DEBUG>>> clusterColorRows : Cannot get xPropSet for Row = %d !\n", nRow);
-            fflush(stdout);
+            writeLog("DEBUG>>> clusterColorRows : Cannot get xPropSet for Row = %d !\n", nRow);
             continue;
         }
         xPropSet->setPropertyValue("CellBackColor", makeAny(aRowColors[nRowIdx]));

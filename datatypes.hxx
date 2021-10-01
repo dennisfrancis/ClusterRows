@@ -2,6 +2,7 @@
 #ifndef __CLUSTERROWS_DATATYPES__
 #define __CLUSTERROWS_DATATYPES__
 
+#include <sal/types.h>
 #include <rtl/ustring.hxx>
 #include <rtl/ustrbuf.hxx>
 

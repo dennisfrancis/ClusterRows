@@ -1,8 +1,12 @@
+#ifndef __CLUSTERROWS_RANGE__
+#define __CLUSTERROWS_RANGE__
+
 #include <com/sun/star/sheet/XSpreadsheet.hpp>
 #include <com/sun/star/table/XCell.hpp>
 #include <com/sun/star/table/CellRangeAddress.hpp>
 #include <com/sun/star/table/CellContentType.hpp>
 #include <vector>
+#include "logging.hxx"
 #include "datatypes.hxx"
 
 #define MAXROW 1048575
@@ -31,8 +35,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -59,8 +62,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -77,7 +79,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nEndCol = nStartCol;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
 
 	bStop = false;
 	// Shrink nStartRow
@@ -89,12 +91,11 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
-				//printf("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow ); fflush(stdout);
+				//writeLog("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow );
 				bRowEmpty = false;
 				break;
 			}
@@ -108,8 +109,8 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nStartRow = nEndRow;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
-	//printf("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
+	//writeLog("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow);
 
 	bStop = false;
 	// Shrink nEndRow
@@ -121,8 +122,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -139,8 +139,8 @@ void shrinkRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nEndRow = nStartRow;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
-	//printf("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
+	//writeLog("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow);
 
 	rRangeExtended.StartRow = nStartRow;
 	rRangeExtended.EndRow = nEndRow;
@@ -165,8 +165,7 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -193,8 +192,7 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -211,7 +209,7 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nEndCol = MAXCOL;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
 
 	bStop = false;
 	// Extend nStartRow
@@ -223,12 +221,11 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
-				//printf("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow ); fflush(stdout);
+				//writeLog("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow );
 				bRowEmpty = false;
 				break;
 			}
@@ -242,8 +239,8 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nStartRow = 0;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
-	//printf("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
+	//writeLog("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow);
 
 	bStop = false;
 	// Extend nEndRow
@@ -255,8 +252,7 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
 			if (!xCell.is())
 			{
-				printf("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-				fflush(stdout);
+				writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
 			}
 			else if (xCell->getType() != CellContentType_EMPTY)
 			{
@@ -273,8 +269,8 @@ void expandRangeToData(const Reference<XSpreadsheet> &rxSheet, CellRangeAddress 
 			nEndRow = MAXROW;
 	}
 
-	//printf("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol); fflush(stdout);
-	//printf("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow); fflush(stdout);
+	//writeLog("DEBUG>>> nStartCol = %d, nEndCol = %d\n", nStartCol, nEndCol);
+	//writeLog("DEBUG>>> nStartRow = %d, nEndRow = %d\n", nStartRow, nEndRow);
 
 	rRangeExtended.StartRow = nStartRow;
 	rRangeExtended.EndRow = nEndRow;
@@ -292,11 +288,12 @@ void excludeResultColumns(const Reference<XSpreadsheet> &rxSheet, CellRangeAddre
 		xCell = rxSheet->getCellByPosition(rRangeExtended.EndColumn, rRangeExtended.StartRow);
 		if (!xCell.is())
 		{
-			printf("DEBUG>>> excludeResultColumns : xCell(%d, %d) is invalid.\n", rRangeExtended.EndColumn, rRangeExtended.StartRow);
-			fflush(stdout);
+			writeLog("DEBUG>>> excludeResultColumns : xCell(%d, %d) is invalid.\n", rRangeExtended.EndColumn, rRangeExtended.StartRow);
 			return;
 		}
 		if (xCell->getFormula() == aHdr)
 			--rRangeExtended.EndColumn;
 	}
 }
+
+#endif
