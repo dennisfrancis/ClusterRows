@@ -1,14 +1,2 @@
-A LibreOffice Calc extension that clusters the rows in a table
- and color them to indicate the clusters. The number of clusters
- can be chosen by the user, but can also let the extension auto
- estimate the "right number" of clusters using Bayesian
- Information Criterion (BIC). As of now the extension uses a
- form of Expectation Maximization algorithm to compute the
- clusters. Whole of the extension was written from scratch
- and it does not depend on any Machine Learning or
- Linear Algebra library. The complete source code is made
- available under GPL3 license at
- https://github.com/dennisfrancis/ClusterRows.
- A fair amount of documentation on how to use the extension
- is also available at
- https://github.com/dennisfrancis/ClusterRows.
+A LibreOffice Calc extension that clusters the rows in a table and color them to indicate the clusters. The number of clusters can be chosen by the user, but can also let the extension auto estimate the "right number" of clusters using Bayesian Information Criterion (BIC). As of now the extension uses a form of Expectation Maximization algorithm to compute the clusters. Whole of the extension was written from scratch and it does not depend on any Machine Learning or Linear Algebra library. The complete source code is made available under GPL3 license at https://github.com/dennisfrancis/ClusterRows.
+
