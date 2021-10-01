@@ -3,12 +3,9 @@
     xmlns="http://openoffice.org/extensions/description/2006"
     xmlns:d="http://openoffice.org/extensions/description/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-    <dependencies>
-        <OpenOffice.org-minimal-version value="3.0.1" d:name="OpenOffice.org 3.0.1" />
-    </dependencies>
     <identifier value="com.github.dennisfrancis.ClusterRowsImpl"/>
     <platform value="linux_x86_64" />
-    <version value="0.1.0"/>
+    <version value="0.2.0"/>
     <display-name>
         <name lang="en">Cluster Rows Calc Extension</name>
     </display-name>
