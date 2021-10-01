@@ -90,29 +90,13 @@ endif
 endif
 
 # rule for component package manifest
-$(OUT_COMP_GEN)/%/manifest.xml :
+$(OUT_COMP_GEN)/%/manifest.xml : manifest.xml.tmpl
 	-$(MKDIR) $(subst /,$(PS),$(@D))
-	@echo $(OSEP)?xml version="$(QM)1.0$(QM)" encoding="$(QM)UTF-8$(QM)"?$(CSEP) > $@
-	@echo $(OSEP)!DOCTYPE manifest:manifest PUBLIC "$(QM)-//OpenOffice.org//DTD Manifest 1.0//EN$(QM)" "$(QM)Manifest.dtd$(QM)"$(CSEP) >> $@
-	@echo $(OSEP)manifest:manifest xmlns:manifest="$(QM)http://openoffice.org/2001/manifest$(QM)"$(CSEP) >> $@
-	@echo $(SQM)  $(SQM)$(OSEP)manifest:file-entry manifest:media-type="$(QM)application/vnd.sun.star.configuration-data$(QM)" >> $@
-	@echo $(SQM)                       $(SQM)manifest:full-path="$(QM)Addons.xcu$(QM)"/$(CSEP) >> $@
-	@echo $(SQM)  $(SQM)$(OSEP)manifest:file-entry manifest:media-type="$(QM)application/vnd.sun.star.configuration-data$(QM)" >> $@
-	@echo $(SQM)                       $(SQM)manifest:full-path="$(QM)Jobs.xcu$(QM)"/$(CSEP) >> $@
-	@echo $(SQM)  $(SQM)$(OSEP)manifest:file-entry manifest:media-type="$(QM)application/vnd.sun.star.uno-components;platform=$(UNOPKG_PLATFORM)$(QM)">> $@
-	@echo $(SQM)                       $(SQM)manifest:full-path="$(QM)$(COMP_NAME).components$(QM)"/$(CSEP)>> $@
-	@echo $(OSEP)/manifest:manifest$(CSEP) >> $@
+	COMP_NAME=$(COMP_NAME) UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) envsubst < manifest.xml.tmpl > $@
 
-$(COMP_COMPONENTS) :
+$(COMP_COMPONENTS) : ClusterRows.components.tmpl
 	-$(MKDIR) $(subst /,$(PS),$(@D))
-	@echo $(OSEP)?xml version="$(QM)1.0$(QM)" encoding="$(QM)UTF-8$(QM)"?$(CSEP) > $@
-	@echo $(OSEP)components xmlns="$(QM)http://openoffice.org/2010/uno-components$(QM)"$(CSEP) >> $@
-	@echo $(SQM)  $(SQM)$(OSEP)component loader="$(QM)com.sun.star.loader.SharedLibrary$(QM)" uri="$(QM)$(UNOPKG_PLATFORM)/$(COMP_IMPL_NAME)$(QM)"$(CSEP) >> $@
-	@echo $(SQM)    $(SQM)$(OSEP)implementation name="$(QM)com.github.dennisfrancis.ClusterRowsImpl$(QM)"$(CSEP) >> $@
-	@echo $(SQM)      $(SQM)$(OSEP)service name="$(QM)com.sun.star.task.Job$(QM)"/$(CSEP) >> $@
-	@echo $(SQM)    $(SQM)$(OSEP)/implementation$(CSEP) >> $@
-	@echo $(SQM)  $(SQM)$(OSEP)/component$(CSEP) >> $@
-	@echo $(OSEP)/components$(CSEP) >> $@
+	UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_IMPL_NAME=$(COMP_IMPL_NAME) envsubst < ClusterRows.components.tmpl > $@
 
 # rule for component package file
 $(COMP_PACKAGE) : $(SHAREDLIB_OUT)/$(COMP_IMPL_NAME) Addons.xcu Jobs.xcu $(COMP_UNOPKG_MANIFEST) $(COMP_COMPONENTS) description.xml description-en-US.txt img/icon.png img/icon_hc.png
