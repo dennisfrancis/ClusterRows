@@ -2,7 +2,7 @@
 #
 #  The Contents of this file are made available subject to the terms of
 #  the BSD license.
-#  
+#
 #  Copyright 2000, 2010 Oracle and/or its affiliates.
 #  All rights reserved.
 #
@@ -29,7 +29,7 @@
 #  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 #  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 #  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#     
+#
 #**************************************************************************
 
 PRJ=$(OO_SDK_HOME)
@@ -65,7 +65,7 @@ include $(SETTINGS)/stdtarget.mk
 
 $(OUT_COMP_SLO)/%.$(OBJ_EXT) : %.cxx $(SDKTYPEFLAG) cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
 	-$(MKDIR) $(subst /,$(PS),$(@D))
-	$(CC) -c -fpic -fvisibility=hidden -O3 -std=c++11 $(CC_INCLUDES) -I$(OUT_COMP_INC) $(CC_DEFINES) $(CC_OUTPUT_SWITCH)$(subst /,$(PS),$@) $<
+	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++11 $(CC_INCLUDES) -I$(OUT_COMP_INC) $(CC_DEFINES) $(CC_OUTPUT_SWITCH)$(subst /,$(PS),$@) $<
 
 ifeq "$(OS)" "WIN"
 $(SHAREDLIB_OUT)/%.$(SHAREDLIB_EXT) : $(SLOFILES)
@@ -83,7 +83,7 @@ $(SHAREDLIB_OUT)/%.$(SHAREDLIB_EXT) : $(SLOFILES)
 ifeq "$(OS)" "MACOSX"
 	$(INSTALL_NAME_URELIBS)  $@
 endif
-endif	
+endif
 
 # rule for component package manifest
 $(OUT_COMP_GEN)/%/manifest.xml :
@@ -128,12 +128,12 @@ ifeq "$(SDK_AUTO_DEPLOYMENT)" "YES"
 else
 	@echo --------------------------------------------------------------------------------
 	@echo  If you want to install your component automatically, please set the environment
-	@echo  variable SDK_AUTO_DEPLOYMENT = YES. But note that auto deployment is only 
-	@echo  possible if no office instance is running. 
+	@echo  variable SDK_AUTO_DEPLOYMENT = YES. But note that auto deployment is only
+	@echo  possible if no office instance is running.
 	@echo --------------------------------------------------------------------------------
 endif
 
-Example : $(REGISTERFLAG) 
+Example : $(REGISTERFLAG)
 	@echo --------------------------------------------------------------------------------
 	@echo The "$(QM)ClusterRows$(QM)" addon component was installed if SDK_AUTO_DEPLOYMENT = YES.
 	@echo You can use this component inside your office installation, see the example
