@@ -2,11 +2,10 @@
 
 A LibreOffice Calc extension that clusters the rows in a table and color them to indicate the clusters.
 
-To install the prebuilt extension, use the Extension Manager of LibreOffice and browse to this repo's file ClusterRows.oxt. Alternatively you can install the extension using terminal as :
+## Install
+Use the extension manager of LibreOffice to install the pre-built extension downloaded from the Release page. Alternatively you can install the downloaded extension from the console as:
 ```
-$ git clone https://github.com/dennisfrancis/ClusterRows.git
-$ cd ClusterRows
-$ unopkg install ./ClusterRows.oxt
+$ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ```
 
 To use this extension on some data in a sheet in LibreOffice, place the cursor on any cell inside your table with data ( no need to select the whole table ) and go to the menu Clustering, and click on "Cluster rows and color them". The rows are colored with respect to the cluster assignment. Two new columns [ClusterId and Confidence] are added to the right of the table. **ClusterId** specifies the cluster to which the row is assigned and **Confidence** indicates the algorithm's confidence in scale [0,1] that this cluster assignment may be correct (higher number means higher confidence).
