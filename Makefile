@@ -40,21 +40,41 @@ include $(SETTINGS)/std.mk
 
 # Define non-platform/compiler specific settings
 COMP_NAME=ClusterRows
+COMP_IDENTIFIER=com.github.dennisfrancis.ClusterRowsImpl
+
+BUILD_DIR=./build
+INCLUDES_DIR=$(BUILD_DIR)/include
+OBJECTS_DIR=$(BUILD_DIR)/objects
+FLAGS_DIR=$(BUILD_DIR)/flags
+
+META_DIR=$(BUILD_DIR)/meta
+MANIFEST_DIR=$(META_DIR)/META-INF
+MANIFEST_FILE=$(MANIFEST_DIR)/manifest.xml
+MANIFEST_TEMPLATE_FILE=manifest.xml.tmpl
+
+COMPONENTS_FILE=$(META_DIR)/$(COMP_NAME).components
+COMPONENTS_TEMPLATE_FILE=ClusterRows.components.tmpl
+
+EXT_DIR=$(BUILD_DIR)/extension
+EXT_FILE=$(EXT_DIR)/$(COMP_NAME).$(UNOOXT_EXT)
+
+PACKAGE_DIR=$(BUILD_DIR)/pkg
+
+TYPES_DONE=$(FLAGS_DIR)/types.done
+
 COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
-OUT_COMP_INC=$(OUT_INC)/$(COMP_NAME)
-OUT_COMP_GEN=$(OUT_MISC)/$(COMP_NAME)
-OUT_COMP_SLO=$(OUT_SLO)/$(COMP_NAME)
-COMP_PACKAGE = $(OUT_BIN)/$(COMP_NAME).$(UNOOXT_EXT)
-COMP_PACKAGE_URL = $(subst \\,\,"$(COMP_PACKAGE_DIR)$(PS)$(COMP_NAME).$(UNOOXT_EXT)")
-COMP_UNOPKG_MANIFEST = $(OUT_COMP_GEN)/$(COMP_NAME)/META-INF/manifest.xml
-COMP_COMPONENTS = $(OUT_COMP_GEN)/$(COMP_NAME).components
 
-REGISTERFLAG = $(OUT_MISC)/cpp_$(COMP_NAME)_register_component.flag
+CXXFILES = component.cxx cluster.cxx
 
-CXXFILES = component.cxx \
-	   cluster.cxx
+XCUFILES = Addons.xcu Jobs.xcu
 
-SLOFILES = $(patsubst %.cxx,$(OUT_COMP_SLO)/%.$(OBJ_EXT),$(CXXFILES))
+DESCRIPTIONFILES = description.xml description-en-US.txt
+
+IMG_DIR = img
+
+IMG_FILES = img/icon.png img/icon_hc.png
+
+OBJECT_FILES = $(patsubst %.cxx,$(OBJECTS_DIR)/%.$(OBJ_EXT),$(CXXFILES))
 
 ifeq "$(ENABLE_LOGGING)" "1"
 CLUSTER_DEFINES = -DLOGGING_ENABLED
@@ -62,78 +82,50 @@ endif
 
 # Targets
 .PHONY: ALL
-ALL : \
-	Example
+ALL : $(EXT_FILE)
 
 include $(SETTINGS)/stdtarget.mk
 
-$(OUT_COMP_SLO)/%.$(OBJ_EXT) : %.cxx $(SDKTYPEFLAG) cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
-	-$(MKDIR) $(subst /,$(PS),$(@D))
-	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++11 $(CC_INCLUDES) -I$(OUT_COMP_INC) $(CC_DEFINES) $(CLUSTER_DEFINES) $(CC_OUTPUT_SWITCH)$(subst /,$(PS),$@) $<
+$(TYPES_DONE):
+	@mkdir -p $(INCLUDES_DIR)
+	@mkdir -p $(FLAGS_DIR)
+	$(CPPUMAKER) -Gc -O$(INCLUDES_DIR)/ $(URE_TYPES) $(OFFICE_TYPES)
+	touch $@
 
-ifeq "$(OS)" "WIN"
-$(SHAREDLIB_OUT)/%.$(SHAREDLIB_EXT) : $(SLOFILES)
-	-$(MKDIR) $(subst /,$(PS),$(@D))
-	-$(MKDIR) $(subst /,$(PS),$(OUT_COMP_GEN))
-	$(LINK) $(COMP_LINK_FLAGS) /OUT:$@ \
-	/MAP:$(OUT_COMP_GEN)/$(subst $(SHAREDLIB_EXT),map,$(@F)) $(SLOFILES) \
-	$(CPPUHELPERLIB) $(CPPULIB) $(SALLIB) msvcprt.lib $(LIBO_SDK_LDFLAGS_STDLIBS)
-	$(LINK_MANIFEST)
-else
-$(SHAREDLIB_OUT)/%.$(SHAREDLIB_EXT) : $(SLOFILES)
-	-$(MKDIR) $(subst /,$(PS),$(@D))
-	$(LINK) $(COMP_LINK_FLAGS) $(LINK_LIBS) -o $@ $(SLOFILES) \
+$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
+	@mkdir -p $(OBJECTS_DIR)
+	$(CC) -c -fpic -fvisibility=hidden -O2 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
+
+$(OBJECTS_DIR)/$(COMP_IMPL_NAME): $(OBJECT_FILES)
+	$(LINK) $(COMP_LINK_FLAGS) $(LINK_LIBS) -o $@ $(OBJECT_FILES) \
 	$(CPPUHELPERLIB) $(CPPULIB) $(SALLIB) $(STC++LIB)
-ifeq "$(OS)" "MACOSX"
-	$(INSTALL_NAME_URELIBS)  $@
-endif
-endif
 
 # rule for component package manifest
-$(OUT_COMP_GEN)/%/manifest.xml : manifest.xml.tmpl
-	-$(MKDIR) $(subst /,$(PS),$(@D))
-	COMP_NAME=$(COMP_NAME) UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) envsubst < manifest.xml.tmpl > $@
+$(MANIFEST_FILE): $(MANIFEST_TEMPLATE_FILE)
+	@mkdir -p $(MANIFEST_DIR)
+	COMP_NAME=$(COMP_NAME) UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) envsubst < $< > $@
 
-$(COMP_COMPONENTS) : ClusterRows.components.tmpl
-	-$(MKDIR) $(subst /,$(PS),$(@D))
-	UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_IMPL_NAME=$(COMP_IMPL_NAME) envsubst < ClusterRows.components.tmpl > $@
+$(COMPONENTS_FILE): $(COMPONENTS_TEMPLATE_FILE)
+	@mkdir -p $(META_DIR)
+	UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_IMPL_NAME=$(COMP_IMPL_NAME) envsubst < $< > $@
 
 # rule for component package file
-$(COMP_PACKAGE) : $(SHAREDLIB_OUT)/$(COMP_IMPL_NAME) Addons.xcu Jobs.xcu $(COMP_UNOPKG_MANIFEST) $(COMP_COMPONENTS) description.xml description-en-US.txt img/icon.png img/icon_hc.png
-	-$(MKDIR) $(subst /,$(PS),$(@D)) && $(DEL) $(subst \\,\,$(subst /,$(PS),$@))
-	-$(MKDIR) $(subst /,$(PS),$(OUT_COMP_GEN)/$(UNOPKG_PLATFORM))
-	$(COPY) $(subst /,$(PS),$<) $(subst /,$(PS),$(OUT_COMP_GEN)/$(UNOPKG_PLATFORM))
-	cd $(subst /,$(PS),$(OUT_COMP_GEN)) && $(SDK_ZIP) ../../bin/$(@F) $(COMP_NAME).components
-	cd $(subst /,$(PS),$(OUT_COMP_GEN)) && $(SDK_ZIP) -u ../../bin/$(@F) $(UNOPKG_PLATFORM)/$(<F)
-	$(SDK_ZIP) -u $@ Addons.xcu Jobs.xcu description.xml description-en-US.txt img/icon.png img/icon_hc.png
-	cd $(subst /,$(PS),$(OUT_COMP_GEN)/$(subst .$(UNOOXT_EXT),,$(@F))) && $(SDK_ZIP) -u ../../../bin/$(@F) META-INF/manifest.xml
+$(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(XCUFILES) $(MANIFEST_FILE) $(COMPONENTS_FILE) $(DESCRIPTIONFILES) $(IMG_FILES)
+	@mkdir -p $(EXT_DIR) $(PACKAGE_DIR)
+	@mkdir -p $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)
+	@mkdir -p $(PACKAGE_DIR)/$(IMG_DIR)
+	@cp $(COMPONENTS_FILE) $(PACKAGE_DIR)/
+	@cp $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)/
+	@cp $(XCUFILES) $(PACKAGE_DIR)/
+	@cp $(DESCRIPTIONFILES) $(PACKAGE_DIR)/
+	@cp $(IMG_FILES) $(PACKAGE_DIR)/$(IMG_DIR)/
+	@cp -r $(MANIFEST_DIR) $(PACKAGE_DIR)/
+	@cd $(PACKAGE_DIR) && zip -r ../../$@ *
 
-$(REGISTERFLAG) : $(COMP_PACKAGE)
-ifeq "$(SDK_AUTO_DEPLOYMENT)" "YES"
-	-$(DEL) $(subst \\,\,$(subst /,$(PS),$@))
-	$(DEPLOYTOOL) $(COMP_PACKAGE_URL)
-	@echo flagged > $(subst /,$(PS),$@)
-else
-	@echo --------------------------------------------------------------------------------
-	@echo  If you want to install your component automatically, please set the environment
-	@echo  variable SDK_AUTO_DEPLOYMENT = YES. But note that auto deployment is only
-	@echo  possible if no office instance is running.
-	@echo --------------------------------------------------------------------------------
-endif
-
-Example : $(REGISTERFLAG)
-	@echo --------------------------------------------------------------------------------
-	@echo The "$(QM)ClusterRows$(QM)" addon component was installed if SDK_AUTO_DEPLOYMENT = YES.
-	@echo You can use this component inside your office installation, see the example
-	@echo description.
-	@echo --------------------------------------------------------------------------------
+install: $(EXT_FILE)
+	-unopkg remove $(COMP_IDENTIFIER)
+	unopkg add $(EXT_FILE)
 
 .PHONY: clean
 clean :
-	-$(DELRECURSIVE) $(subst /,$(PS),$(OUT_COMP_INC))
-	-$(DELRECURSIVE) $(subst /,$(PS),$(OUT_COMP_GEN))
-	-$(DELRECURSIVE) $(subst /,$(PS),$(OUT_COMP_SLO))
-	-$(DEL) $(subst \\,\,$(subst /,$(PS),$(COMP_PACKAGE_URL)))
-	-$(DEL) $(subst \\,\,$(subst /,$(PS),$(COMP_COMPONENTS)))
-	-$(DEL) $(subst \\,\,$(subst /,$(PS),$(REGISTERFLAG)))
-	-$(DEL) $(subst \\,\,$(subst /,$(PS),$(SHAREDLIB_OUT)/$(COMP_NAME).*))
+	rm -rf $(BUILD_DIR)
