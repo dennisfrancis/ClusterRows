@@ -14,7 +14,7 @@ The project uses an in-house implementation of [Expectation Maximization](http:/
 
 The project is under heavy development, but is usable. Whole of the project was written from scratch and it does not depend on any Machine Learning or Linear Algebra library. Full source code is made available under [GPL3 license](https://www.gnu.org/licenses/gpl-3.0.en.html). If you are interested in understanding how to build LibreOffice extensions like this, I have a blog for that at [https://niocs.github.io/LOBook/extensions/index.html](https://niocs.github.io/LOBook/extensions/index.html).
 
-A major issue is that the prebuilt extension (.oxt file) supports only modern GNU/Linux 64 bit systems comparable to Fedora 24. However support for MS Windows and MacOSX is planned. Another caveat is that for the extension to work, at least 10 samples(rows) are needed in the table.
+A major issue is that the prebuilt extension (.oxt file) supports only modern GNU/Linux 64 bit systems comparable to Ubuntu 20.04+. However support for MS Windows and MacOSX is planned. Another caveat is that for the extension to work, at least 10 samples(rows) are needed in the table.
 
 ## Sample usage of the extension
 In `testdocs` directory there is a spreadsheet file called `three-clusters.ods`. In that file there is a dataset artificially created from a 3-cluster Gausian mixture model in the range `A1:C301`.
@@ -32,9 +32,8 @@ Then do the below :
 $ cd ClusterRows
 $ make
 ```
+After this the extension file `ClusterRows.oxt` can be found in `build/extension/`.
 
-If you get errors in compilation, please check if the SDK's environment variables are set properly after setting up the SDK. If that does not solve it, open an issue here.
-If you are compiling in a GNU/Linux platform and used the standard defaults while setting up the SDK, the oxt file can be found at the location
-`/home/$username/libreoffice5.4_sdk/LINUXexample.out/bin/`
+If you get errors on running `make`, please check if the SDK's environment variables are set properly after setting up the SDK. If that does not solve it, open an issue here.
 
 As always pull-requests are welcome. Happy hacking !
