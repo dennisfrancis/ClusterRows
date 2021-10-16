@@ -32,6 +32,13 @@
 #
 #**************************************************************************
 
+ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+WORKING_DIR := $(shell pwd)
+
+ifneq (${ROOT_DIR}, ${WORKING_DIR})
+$(error Run make from the directory of the Makefile.)
+endif
+
 PRJ=$(OO_SDK_HOME)
 SETTINGS=$(PRJ)/settings
 
