@@ -1,5 +1,4 @@
-#ifndef __CLUSTERROWS_RANGE__
-#define __CLUSTERROWS_RANGE__
+#pragma once
 
 #include <com/sun/star/sheet/XSpreadsheet.hpp>
 #include <com/sun/star/table/XCell.hpp>
@@ -295,5 +294,3 @@ void excludeResultColumns(const Reference<XSpreadsheet> &rxSheet, CellRangeAddre
 			--rRangeExtended.EndColumn;
 	}
 }
-
-#endif

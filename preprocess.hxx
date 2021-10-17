@@ -1,5 +1,4 @@
-#ifndef __CLUSTERROWS_PREPROCESS__
-#define __CLUSTERROWS_PREPROCESS__
+#pragma once
 
 #include "datatypes.hxx"
 
@@ -13,6 +12,10 @@
 
 using com::sun::star::uno::Any;
 using com::sun::star::uno::Sequence;
+
+void getColTypes(const Sequence < Sequence < Any > >& rData,
+                 std::vector< DataType >& rColType,
+                 std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
 void flagEmptyEntries(Sequence<Sequence<Any>> &rDataArray,
                       const std::vector<DataType> &rColType,
@@ -35,6 +38,63 @@ bool imputeWithMedian(Sequence<Sequence<Any>> &rDataArray,
 void calculateFeatureScales(Sequence<Sequence<Any>> &rDataArray,
                             const std::vector<DataType> &rColType,
                             std::vector<std::pair<double, double>> &rFeatureScales);
+
+void getColTypes(const Sequence < Sequence < Any > >& rData,
+                 std::vector< DataType >& rColType,
+                 std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
+{
+    sal_Int32 nNumRows = rData.getLength();
+    assert(nNumRows && "nNumRows cannot be 0!");
+
+    sal_Int32 nNumCols = rData[0].getLength();
+
+    for (sal_Int32 nCol = 0; nCol < nNumCols; ++nCol)
+    {
+        DataType aType = DataType::INTEGER;
+        bool bIsComplete = true;
+        std::vector<sal_Int32> aBlankRowIdx;
+        double fMin = 1.0E10, fMax = -1.0E10;
+
+        for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
+        {
+            Any aVal = rData[nRow][nCol];
+            OUString aTest;
+            double fVal;
+            if (!aVal.hasValue())
+            {
+                bIsComplete = false;
+                aBlankRowIdx.push_back(nRow);
+                continue;
+            }
+
+            if (aType != DataType::STRING && (aVal >>= aTest))
+            {
+                aType = DataType::STRING;
+                if (!bIsComplete)
+                    break;
+            }
+
+            else if (aType != DataType::STRING && (aVal >>= fVal))
+            {
+                if (fVal != static_cast<double>(static_cast<sal_Int64>(fVal)))
+                    aType = DataType::DOUBLE;
+                if (aType == DataType::INTEGER)
+                {
+                    fMin = (fMin > fVal) ? fVal : fMin;
+                    fMax = (fMax < fVal) ? fVal : fMax;
+                }
+            }
+        }
+
+        if (aType == DataType::INTEGER && (fMax - fMin) > 100.0)
+            aType = DataType::DOUBLE;
+
+        rColType[nCol] = aType;
+        rCol2BlankRowIdx[nCol] = std::move(aBlankRowIdx);
+
+        writeLog("DEBUG>>> col = %d, Type = %s, isComplete = %d\n", nCol, DataType2String(aType), int(bIsComplete));
+    }
+}
 
 void flagEmptyEntries(Sequence<Sequence<Any>> &rDataArray,
                       const std::vector<DataType> &rColType,
@@ -200,4 +260,3 @@ void calculateFeatureScales(Sequence<Sequence<Any>> &rDataArray,
     }
 }
 
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef __CLUSTERROWS_EM__
-#define __CLUSTERROWS_EM__
+#pragma once
 
 #include <cppu/unotype.hxx>
 #include <iostream>
@@ -472,5 +471,3 @@ void performEMClustering(const Sequence<Sequence<Any>> &rDataArray,
     }
     aGMM.GetClusterLabels(rClusterLabels, rLabelConfidence, rNumClusters);
 }
-
-#endif

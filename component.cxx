@@ -9,7 +9,8 @@
 #include <com/sun/star/registry/XRegistryKey.hpp>
 
 // include our specific addon header to get access to functions and definitions
-#include <cluster.hxx>
+#include "cluster.hxx"
+#include "GMMCluster.hxx"
 
 using namespace ::rtl;
 using namespace ::osl;
@@ -36,6 +37,19 @@ extern "C" SAL_DLLPUBLIC_EXPORT void *SAL_CALL component_getFactory(const sal_Ch
             ClusterRowsImpl_createInstance,
             OUString(IMPLEMENTATION_NAME),
             ClusterRowsImpl_getSupportedServiceNames()));
+
+        if (xFactory.is())
+        {
+            xFactory->acquire();
+            pRet = xFactory.get();
+        }
+    }
+    else if (rtl_str_compare(pImplName, ADDIN_IMPLEMENTATION_NAME) == 0)
+    {
+        Reference<XSingleComponentFactory> xFactory(createSingleComponentFactory(
+            GMMClusterImpl_createInstance,
+            OUString(ADDIN_IMPLEMENTATION_NAME),
+            GMMClusterImpl_getSupportedServiceNames()));
 
         if (xFactory.is())
         {

@@ -53,6 +53,8 @@ BUILD_DIR=./build
 INCLUDES_DIR=$(BUILD_DIR)/include
 OBJECTS_DIR=$(BUILD_DIR)/objects
 FLAGS_DIR=$(BUILD_DIR)/flags
+URD_DIR=$(BUILD_DIR)/urd
+RDB_DIR=$(BUILD_DIR)/rdb
 
 META_DIR=$(BUILD_DIR)/meta
 MANIFEST_DIR=$(META_DIR)/META-INF
@@ -61,6 +63,9 @@ MANIFEST_TEMPLATE_FILE=manifest.xml.tmpl
 
 COMPONENTS_FILE=$(META_DIR)/$(COMP_NAME).components
 COMPONENTS_TEMPLATE_FILE=ClusterRows.components.tmpl
+
+COMP_RDB_NAME = GMMCluster.uno.rdb
+COMP_RDB = $(RDB_DIR)/$(COMP_RDB_NAME)
 
 EXT_DIR=$(BUILD_DIR)/extension
 EXT_FILE=$(EXT_DIR)/$(COMP_NAME).$(UNOOXT_EXT)
@@ -73,7 +78,9 @@ COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
 
 CXXFILES = component.cxx cluster.cxx
 
-XCUFILES = Addons.xcu Jobs.xcu
+IDL_FILES = XGMMCluster.idl
+
+XCUFILES = Addons.xcu Jobs.xcu GMMCluster.xcu
 
 DESCRIPTIONFILES = description.xml description-en-US.txt
 
@@ -82,6 +89,10 @@ IMG_DIR = img
 IMG_FILES = img/icon.png img/icon_hc.png
 
 OBJECT_FILES = $(patsubst %.cxx,$(OBJECTS_DIR)/%.$(OBJ_EXT),$(CXXFILES))
+
+URD_FILES = $(patsubst %.idl,$(URD_DIR)/%.urd,$(IDL_FILES))
+
+TYPESLIST = -Tcom.github.dennisfrancis.XGMMCluster -Tcom.github.dennisfrancis.GMMCluster
 
 ifeq "$(ENABLE_LOGGING)" "1"
 CLUSTER_DEFINES = -DLOGGING_ENABLED
@@ -93,13 +104,23 @@ ALL : $(EXT_FILE)
 
 include $(SETTINGS)/stdtarget.mk
 
-$(TYPES_DONE):
+$(URD_DIR)/%.urd : %.idl
+	@mkdir -p $(URD_DIR)
+	$(IDLC) -I. -I$(IDL_DIR) -O$(URD_DIR) $<
+
+$(RDB_DIR)/%.rdb : $(URD_FILES)
+	@rm -rf $(RDB_DIR)
+	@mkdir -p $(RDB_DIR)
+	$(REGMERGE) $@ /UCR $(URD_FILES)
+
+$(TYPES_DONE): $(COMP_RDB)
 	@mkdir -p $(INCLUDES_DIR)
 	@mkdir -p $(FLAGS_DIR)
 	$(CPPUMAKER) -Gc -O$(INCLUDES_DIR)/ $(URE_TYPES) $(OFFICE_TYPES)
+	$(CPPUMAKER) -Gc -O$(INCLUDES_DIR)/ $(TYPESLIST) $(COMP_RDB) -X$(URE_TYPES) -X$(OFFICE_TYPES)
 	touch $@
 
-$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
+$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
 	@mkdir -p $(OBJECTS_DIR)
 	$(CC) -c -fpic -fvisibility=hidden -O2 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
 
@@ -110,18 +131,19 @@ $(OBJECTS_DIR)/$(COMP_IMPL_NAME): $(OBJECT_FILES)
 # rule for component package manifest
 $(MANIFEST_FILE): $(MANIFEST_TEMPLATE_FILE)
 	@mkdir -p $(MANIFEST_DIR)
-	COMP_NAME=$(COMP_NAME) UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) envsubst < $< > $@
+	COMP_NAME=$(COMP_NAME) UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_RDB_NAME=$(COMP_RDB_NAME) envsubst < $< > $@
 
 $(COMPONENTS_FILE): $(COMPONENTS_TEMPLATE_FILE)
 	@mkdir -p $(META_DIR)
 	UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_IMPL_NAME=$(COMP_IMPL_NAME) envsubst < $< > $@
 
 # rule for component package file
-$(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(XCUFILES) $(MANIFEST_FILE) $(COMPONENTS_FILE) $(DESCRIPTIONFILES) $(IMG_FILES)
+$(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST_FILE) $(COMPONENTS_FILE) $(DESCRIPTIONFILES) $(IMG_FILES)
 	@mkdir -p $(EXT_DIR) $(PACKAGE_DIR)
 	@mkdir -p $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)
 	@mkdir -p $(PACKAGE_DIR)/$(IMG_DIR)
 	@cp $(COMPONENTS_FILE) $(PACKAGE_DIR)/
+	@cp $(COMP_RDB) $(PACKAGE_DIR)/
 	@cp $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)/
 	@cp $(XCUFILES) $(PACKAGE_DIR)/
 	@cp $(DESCRIPTIONFILES) $(PACKAGE_DIR)/

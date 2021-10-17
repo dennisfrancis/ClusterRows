@@ -1,6 +1,5 @@
 
-#ifndef __CLUSTERROWS_DATATYPES__
-#define __CLUSTERROWS_DATATYPES__
+#pragma once
 
 #include <sal/types.h>
 #include <rtl/ustring.hxx>
@@ -17,6 +16,21 @@ enum class DataType
     STRING
 };
 
+static const char* DataType2String(DataType eType)
+{
+    switch (eType)
+    {
+        case DataType::INTEGER:
+            return "INTEGER";
+        case DataType::DOUBLE:
+            return "DOUBLE";
+        case DataType::STRING:
+            return "STRING";
+    }
+
+    return "UNKNOWN";
+}
+
 struct ColorsRGB
 {
     double Red;
@@ -24,4 +38,3 @@ struct ColorsRGB
     double Blue;
 };
 
-#endif

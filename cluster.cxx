@@ -1,4 +1,5 @@
 #include "cluster.hxx"
+#include "GMMCluster.hxx"
 #include "perf.hxx"
 
 #include <com/sun/star/beans/NamedValue.hpp>
@@ -507,3 +508,176 @@ bool getClusterLabels(const Sequence<Sequence<Any>> &rDataArray,
     performEMClustering(rDataArray, rColType, rFeatureScales, rClusterLabels, rLabelConfidence, rNumClusters);
     return true;
 }
+
+
+// This is the service name an Add-On has to implement
+#define ADDIN_BASE_SERVICE_NAME "com.sun.star.sheet.AddIn"
+#define ADDIN_SERVICE_NAME "com.github.dennisfrancis.GMMCluster"
+
+// Helper functions for the implementation of UNO component interfaces.
+OUString GMMClusterImpl_getImplementationName()
+{
+    return OUString ( ADDIN_IMPLEMENTATION_NAME );
+}
+
+Sequence< OUString > SAL_CALL GMMClusterImpl_getSupportedServiceNames()
+{
+    Sequence < OUString > aRet(2);
+    OUString* pArray = aRet.getArray();
+    pArray[0] =  OUString ( ADDIN_BASE_SERVICE_NAME );
+    pArray[1] =  OUString ( ADDIN_SERVICE_NAME );
+    return aRet;
+}
+
+Reference< XInterface > SAL_CALL GMMClusterImpl_createInstance( const Reference< XComponentContext > & rContext)
+{
+    return (cppu::OWeakObject*) new GMMClusterImpl();
+}
+
+OUString GMMClusterImpl::getServiceName()
+{
+    return ADDIN_SERVICE_NAME;
+}
+
+// Implementation of the recommended/mandatory interfaces of a UNO component.
+// XServiceInfo
+OUString SAL_CALL GMMClusterImpl::getImplementationName()
+{
+    return GMMClusterImpl_getImplementationName();
+}
+
+sal_Bool SAL_CALL GMMClusterImpl::supportsService( const OUString& rServiceName )
+{
+    return ( rServiceName == ADDIN_BASE_SERVICE_NAME || rServiceName == ADDIN_SERVICE_NAME );
+}
+
+Sequence< OUString > SAL_CALL GMMClusterImpl::getSupportedServiceNames(  )
+{
+    return GMMClusterImpl_getSupportedServiceNames();
+}
+
+const OUString GMMClusterImpl::aFunctionNames[NUMFUNCTIONS] = {
+    "gmmCluster",
+};
+
+const OUString GMMClusterImpl::aDisplayFunctionNames[NUMFUNCTIONS] = {
+    "gmmcluster",
+};
+
+const OUString GMMClusterImpl::aDescriptions[NUMFUNCTIONS] = {
+    "Computes cluster index and membership confidence scores",
+};
+
+const OUString GMMClusterImpl::aArgumentNames[NUMFUNCTIONS][2] = {
+    {
+        "data",
+        "numClusters",
+    },
+};
+
+const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][2] = {
+    {
+        "cell range of data to be clustered",
+        "number of clusters (use 0 to auto-compute)",
+    },
+};
+
+sal_Int32 GMMClusterImpl::getFunctionID( const OUString aProgrammaticFunctionName ) const
+{
+    writeLog("getFunctionID : aProgrammat = %s\n", aProgrammaticFunctionName.toUtf8().getStr());fflush(stdout);
+    for ( sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx )
+        if ( aProgrammaticFunctionName == aFunctionNames[nIdx] )
+            return nIdx;
+    return -1;
+}
+
+Sequence< Sequence< double > > SAL_CALL
+GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst, const sal_Int32 numClusters)
+{
+    if (!dataConst.getLength())
+        return Sequence< Sequence<double> >();
+
+    const sal_Int32 nNumRows = dataConst.getLength();
+    const sal_Int32 nNumCols = dataConst[0].getLength();
+    Sequence< Sequence< Any > > data(dataConst.getLength());
+    for (sal_Int32 nIdx = 0; nIdx < nNumRows; ++nIdx)
+        data[nIdx] = dataConst[nIdx];
+
+    TimePerf aPerfPreprocess("dataPreprocess");
+
+    std::vector<DataType> aColType(nNumCols);
+    std::vector<std::vector<sal_Int32>> aCol2BlankRowIdx(nNumCols);
+
+    getColTypes(data, aColType, aCol2BlankRowIdx);
+    flagEmptyEntries(data, aColType, aCol2BlankRowIdx);
+    imputeAllColumns(data, aColType, aCol2BlankRowIdx);
+    std::vector<std::pair<double, double>> aFeatureScales(nNumCols);
+    calculateFeatureScales(data, aColType, aFeatureScales);
+    for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
+    {
+        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n",
+            nColIdx, aColType[nColIdx], aFeatureScales[nColIdx].first,
+            aFeatureScales[nColIdx].second);
+    }
+    aPerfPreprocess.Stop();
+
+    TimePerf aPerfCompute("computeClusters");
+    std::vector<sal_Int32> aClusterLabels(nNumRows);
+    std::vector<double> aLabelConfidence(nNumRows);
+    sal_Int32 nNumClusters = numClusters;
+    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters);
+    Sequence< Sequence <double> > aSeq(nNumRows);
+    for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
+    {
+        aSeq[nRow].realloc(2);
+        aSeq[nRow][0] = static_cast<double>(aClusterLabels[nRow]),
+        aSeq[nRow][1] = aLabelConfidence[nRow];
+    }
+
+    return aSeq;
+}
+
+OUString GMMClusterImpl::getProgrammaticFuntionName( const OUString& aDisplayName )
+{
+    writeLog("getProgrammaticFuntionName : aDisplayName = %s\n", aDisplayName.toUtf8().getStr());fflush(stdout);
+    for ( sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx )
+        if ( aDisplayName == aDisplayFunctionNames[nIdx] )
+            return aFunctionNames[nIdx];
+    return "";
+}
+
+OUString GMMClusterImpl::getDisplayFunctionName( const OUString& aProgrammaticName )
+{
+    writeLog("getProgrammaticFuntionName : aPro = %s\n", aProgrammaticName.toUtf8().getStr());fflush(stdout);
+    sal_Int32 nFIdx = getFunctionID( aProgrammaticName );
+    return ( nFIdx == -1 ) ? "" : aDisplayFunctionNames[nFIdx];
+}
+
+OUString GMMClusterImpl::getFunctionDescription( const OUString& aProgrammaticName )
+{
+    sal_Int32 nFIdx = getFunctionID( aProgrammaticName );
+    return ( nFIdx == -1 ) ? "" : aDescriptions[nFIdx];
+}
+
+OUString GMMClusterImpl::getDisplayArgumentName( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
+{
+    sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
+    return ( nFIdx == -1 || (nArgument != 0 && nArgument != 1) ) ? "" : aArgumentNames[nFIdx][nArgument];
+}
+
+OUString GMMClusterImpl::getArgumentDescription( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
+{
+    sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
+    return ( nFIdx == -1 || (nArgument != 0 && nArgument != 1) ) ? "" : aArgumentDescriptions[nFIdx][nArgument];
+}
+
+OUString GMMClusterImpl::getProgrammaticCategoryName( const OUString& aProgrammaticFunctionName )
+{
+    return "Add-In";
+}
+
+OUString GMMClusterImpl::getDisplayCategoryName( const OUString& aProgrammaticFunctionName )
+{
+    return "Add-In";
+}
+

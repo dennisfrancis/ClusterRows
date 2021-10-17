@@ -1,5 +1,4 @@
-#ifndef __CLUSTERROWS_PERF__
-#define __CLUSTERROWS_PERF__
+#pragma once
 
 #include <chrono>
 #include "logging.hxx"
@@ -27,5 +26,3 @@ void TimePerf::Stop()
     float fSec = float(std::chrono::duration_cast<std::chrono::milliseconds>(nEnd - nStart).count()) / 1000.0;
     writeLog("DEBUG>>> Finished %s in %.4f seconds.\n", pStr, fSec);
 }
-
-#endif
