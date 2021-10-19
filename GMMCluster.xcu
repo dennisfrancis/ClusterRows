@@ -17,7 +17,7 @@
           <value xml:lang="en">AutoAddIn.dennisfrancis.gmmCluster</value>
         </prop>
         <node oor:name="Parameters">
-          <node oor:name="a" oor:op="replace">
+          <node oor:name="data" oor:op="replace">
             <prop oor:name="DisplayName">
               <value xml:lang="en">data</value>
             </prop>
@@ -25,12 +25,20 @@
               <value xml:lang="en">Cell area containing data to be clustered</value>
             </prop>
           </node>
-          <node oor:name="b" oor:op="replace">
+          <node oor:name="numClusters" oor:op="replace">
             <prop oor:name="DisplayName">
               <value xml:lang="en">numClusters</value>
             </prop>
             <prop oor:name="Description">
               <value xml:lang="en">Number of clusters (use 0 to auto compute this)</value>
+            </prop>
+          </node>
+          <node oor:name="numEpochs" oor:op="replace">
+            <prop oor:name="DisplayName">
+              <value xml:lang="en">numEpochs</value>
+            </prop>
+            <prop oor:name="Description">
+              <value xml:lang="en">Maximum number of epochs to use (use 0 to use implementation default)</value>
             </prop>
           </node>
         </node>

@@ -568,17 +568,19 @@ const OUString GMMClusterImpl::aDescriptions[NUMFUNCTIONS] = {
     "Computes cluster index and membership confidence scores",
 };
 
-const OUString GMMClusterImpl::aArgumentNames[NUMFUNCTIONS][2] = {
+const OUString GMMClusterImpl::aArgumentNames[NUMFUNCTIONS][NUMARGS] = {
     {
         "data",
         "numClusters",
+        "numEpochs",
     },
 };
 
-const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][2] = {
+const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][NUMARGS] = {
     {
         "cell range of data to be clustered",
         "number of clusters (use 0 to auto-compute)",
+        "number of epochs (use 0 to use implementation default)",
     },
 };
 
@@ -592,7 +594,8 @@ sal_Int32 GMMClusterImpl::getFunctionID( const OUString aProgrammaticFunctionNam
 }
 
 Sequence< Sequence< double > > SAL_CALL
-GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst, const sal_Int32 numClusters)
+GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst,
+    const sal_Int32 numClusters, const sal_Int32 numEpochs)
 {
     if (!dataConst.getLength())
         return Sequence< Sequence<double> >();
@@ -625,7 +628,7 @@ GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst, const
     std::vector<sal_Int32> aClusterLabels(nNumRows);
     std::vector<double> aLabelConfidence(nNumRows);
     sal_Int32 nNumClusters = numClusters;
-    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters);
+    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, numEpochs);
     Sequence< Sequence <double> > aSeq(nNumRows);
     for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
     {
@@ -662,13 +665,13 @@ OUString GMMClusterImpl::getFunctionDescription( const OUString& aProgrammaticNa
 OUString GMMClusterImpl::getDisplayArgumentName( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
 {
     sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
-    return ( nFIdx == -1 || (nArgument != 0 && nArgument != 1) ) ? "" : aArgumentNames[nFIdx][nArgument];
+    return ( nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS) ) ? "" : aArgumentNames[nFIdx][nArgument];
 }
 
 OUString GMMClusterImpl::getArgumentDescription( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
 {
     sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
-    return ( nFIdx == -1 || (nArgument != 0 && nArgument != 1) ) ? "" : aArgumentDescriptions[nFIdx][nArgument];
+    return ( nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS) ) ? "" : aArgumentDescriptions[nFIdx][nArgument];
 }
 
 OUString GMMClusterImpl::getProgrammaticCategoryName( const OUString& aProgrammaticFunctionName )

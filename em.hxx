@@ -33,7 +33,8 @@ void performEMClustering(const Sequence<Sequence<Any>> &rDataArray,
                          const std::vector<std::pair<double, double>> &rFeatureScales,
                          std::vector<sal_Int32> &rClusterLabels,
                          std::vector<double> &rLabelConfidence,
-                         sal_Int32 &rNumClusters);
+                         sal_Int32 &rNumClusters,
+                         sal_Int32 nNumEpochs = static_cast<sal_Int32>(MAXEPOCHS));
 
 class GMM;
 
@@ -41,7 +42,8 @@ class GMMModel
 {
 
 public:
-    GMMModel(sal_Int32 nNumClusters, const GMM *pTrainer);
+    GMMModel(sal_Int32 nNumClusters, const GMM *pTrainer,
+        sal_Int32 nNumEpochs = static_cast<sal_Int32>(MAXEPOCHS));
     ~GMMModel() {}
 
     double Fit();
@@ -63,6 +65,7 @@ private:
     std::vector<sal_Int32> maClusterLabels;
     std::vector<double> maLabelConfidence;
     double mfBICScore;
+    sal_Int32 mnNumEpochs;
 };
 
 class GMM
@@ -72,7 +75,8 @@ class GMM
 public:
     GMM(const Sequence<Sequence<Any>> &rDataArray,
         const std::vector<DataType> &rColType,
-        const std::vector<std::pair<double, double>> &rFeatureScales);
+        const std::vector<std::pair<double, double>> &rFeatureScales,
+        const sal_Int32 nNumEpochs = static_cast<sal_Int32>(MAXEPOCHS));
     ~GMM() {}
 
     void TrainModel(const std::vector<sal_Int32> &rNumClustersArray);
@@ -86,11 +90,14 @@ private:
     std::vector<std::vector<double>> maData;
     std::vector<sal_Int32> maNumClasses;
     std::unique_ptr<GMMModel> mpBestModel;
+    sal_Int32 mnNumEpochs;
 };
 
 GMM::GMM(const Sequence<Sequence<Any>> &rDataArray,
          const std::vector<DataType> &rColType,
-         const std::vector<std::pair<double, double>> &rFeatureScales)
+         const std::vector<std::pair<double, double>> &rFeatureScales,
+         const sal_Int32 nNumEpochs) :
+         mnNumEpochs(nNumEpochs)
 {
     mnNumSamples = rDataArray.getLength();
     mnNumDimensions = rColType.size();
@@ -148,7 +155,7 @@ void GMM::TrainModel(const std::vector<sal_Int32> &rNumClustersArray)
 
     for (sal_Int32 nNumClusters : rNumClustersArray)
     {
-        pModel.reset(new GMMModel(nNumClusters, this));
+        pModel.reset(new GMMModel(nNumClusters, this, mnNumEpochs));
         const double fCurrBIC = pModel->Fit();
         if (fCurrBIC < fBestBIC)
         {
@@ -168,9 +175,11 @@ void GMM::GetClusterLabels(std::vector<sal_Int32> &rClusterLabels,
     mpBestModel->GetClusterLabels(rClusterLabels, rLabelConfidence, rNumClusters);
 }
 
-GMMModel::GMMModel(sal_Int32 nNumClusters, const GMM *pTrainer) : mnNumClusters(nNumClusters),
-                                                                  mpGMM(pTrainer),
-                                                                  mfBICScore(9999999)
+GMMModel::GMMModel(sal_Int32 nNumClusters, const GMM *pTrainer, const sal_Int32 nNumEpochs) :
+    mnNumClusters(nNumClusters),
+    mpGMM(pTrainer),
+    mfBICScore(9999999),
+    mnNumEpochs(nNumEpochs)
 {
     maWeights.resize(mpGMM->mnNumSamples);
     for (sal_Int32 nSampleIdx = 0; nSampleIdx < mpGMM->mnNumSamples; ++nSampleIdx)
@@ -237,7 +246,7 @@ double GMMModel::Fit()
     std::vector<double> aTmpLabelConfidence(mpGMM->mnNumSamples);
     std::vector<sal_Int32> aTmpClusterLabels(mpGMM->mnNumSamples);
     writeLog("\nFitting for #clusters = %d\n", mnNumClusters);
-    for (int nEpochIdx = 0; nEpochIdx < MAXEPOCHS; ++nEpochIdx)
+    for (int nEpochIdx = 0; nEpochIdx < mnNumEpochs; ++nEpochIdx)
     {
         initParms();
         double fEpochBICScore = 9999999;
@@ -456,9 +465,10 @@ void performEMClustering(const Sequence<Sequence<Any>> &rDataArray,
                          const std::vector<std::pair<double, double>> &rFeatureScales,
                          std::vector<sal_Int32> &rClusterLabels,
                          std::vector<double> &rLabelConfidence,
-                         sal_Int32 &rNumClusters)
+                         sal_Int32 &rNumClusters,
+                         sal_Int32 nNumEpochs)
 {
-    GMM aGMM(rDataArray, rColType, rFeatureScales);
+    GMM aGMM(rDataArray, rColType, rFeatureScales, nNumEpochs);
     if (rNumClusters <= 1) // Auto computer optimum number of clusters
     {
         const std::vector<sal_Int32> aNumClustersArray = {2, 3, 4, 5};

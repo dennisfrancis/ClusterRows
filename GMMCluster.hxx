@@ -10,6 +10,7 @@
 
 #define ADDIN_IMPLEMENTATION_NAME "com.github.dennisfrancis.GMMClusterImpl"
 #define NUMFUNCTIONS 1
+#define NUMARGS 3
 
 class GMMClusterImpl : public cppu::WeakImplHelper4
 <
@@ -24,8 +25,8 @@ private:
     static const ::rtl::OUString aFunctionNames[NUMFUNCTIONS];
     static const ::rtl::OUString aDisplayFunctionNames[NUMFUNCTIONS];
     static const ::rtl::OUString aDescriptions[NUMFUNCTIONS];
-    static const ::rtl::OUString aArgumentNames[NUMFUNCTIONS][2];
-    static const ::rtl::OUString aArgumentDescriptions[NUMFUNCTIONS][2];
+    static const ::rtl::OUString aArgumentNames[NUMFUNCTIONS][NUMARGS];
+    static const ::rtl::OUString aArgumentDescriptions[NUMFUNCTIONS][NUMARGS];
 
     com::sun::star::lang::Locale aFuncLocale;
 
@@ -38,7 +39,7 @@ public:
     // XGMMCluster
     virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< double > > SAL_CALL
     gmmCluster( const ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Any > >& data,
-        const sal_Int32 numClusters);
+        const sal_Int32 numClusters, const sal_Int32 numEpochs);
 
     // XAddIn
     rtl::OUString getProgrammaticFuntionName( const rtl::OUString& aDisplayName );
