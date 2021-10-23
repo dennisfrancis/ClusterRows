@@ -13,8 +13,8 @@ module com { module github { module dennisfrancis {
     {
         sequence< sequence< double > > gmmCluster(
             [in] sequence < sequence < any > > data,
-            [in] long numClusters,
-            [in] long numEpochs);
+            [in] any numClusters,
+            [in] any numEpochs);
     };
 
     service GMMCluster

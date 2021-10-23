@@ -38,8 +38,10 @@ public:
 
     // XGMMCluster
     virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< double > > SAL_CALL
-    gmmCluster( const ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Any > >& data,
-        const sal_Int32 numClusters, const sal_Int32 numEpochs);
+    gmmCluster(
+        const ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Any > >& data,
+        const ::com::sun::star::uno::Any& numClusters,
+        const ::com::sun::star::uno::Any& numEpochs);
 
     // XAddIn
     rtl::OUString getProgrammaticFuntionName( const rtl::OUString& aDisplayName );

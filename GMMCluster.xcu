@@ -30,7 +30,7 @@
               <value xml:lang="en">numClusters</value>
             </prop>
             <prop oor:name="Description">
-              <value xml:lang="en">Number of clusters (use 0 to auto compute this)</value>
+              <value xml:lang="en">Number of clusters (optional)</value>
             </prop>
           </node>
           <node oor:name="numEpochs" oor:op="replace">
@@ -38,7 +38,7 @@
               <value xml:lang="en">numEpochs</value>
             </prop>
             <prop oor:name="Description">
-              <value xml:lang="en">Maximum number of epochs to use (use 0 to use implementation default)</value>
+              <value xml:lang="en">Maximum number of epochs to use (optional)</value>
             </prop>
           </node>
         </node>

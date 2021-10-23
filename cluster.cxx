@@ -579,8 +579,8 @@ const OUString GMMClusterImpl::aArgumentNames[NUMFUNCTIONS][NUMARGS] = {
 const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][NUMARGS] = {
     {
         "cell range of data to be clustered",
-        "number of clusters (use 0 to auto-compute)",
-        "number of epochs (use 0 to use implementation default)",
+        "number of clusters (optional)",
+        "number of epochs (optional)",
     },
 };
 
@@ -595,7 +595,7 @@ sal_Int32 GMMClusterImpl::getFunctionID( const OUString aProgrammaticFunctionNam
 
 Sequence< Sequence< double > > SAL_CALL
 GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst,
-    const sal_Int32 numClusters, const sal_Int32 numEpochs)
+    const Any& numClusters, const Any& numEpochs)
 {
     if (!dataConst.getLength())
         return Sequence< Sequence<double> >();
@@ -627,8 +627,11 @@ GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst,
     TimePerf aPerfCompute("computeClusters");
     std::vector<sal_Int32> aClusterLabels(nNumRows);
     std::vector<double> aLabelConfidence(nNumRows);
-    sal_Int32 nNumClusters = numClusters;
-    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, numEpochs);
+    sal_Int32 nNumClusters = 0;
+    sal_Int32 nNumEpochs = static_cast<sal_Int32>(MAXEPOCHS);
+    numClusters >>= nNumClusters;
+    numEpochs >>= nNumEpochs;
+    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, nNumEpochs);
     Sequence< Sequence <double> > aSeq(nNumRows);
     for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
     {
