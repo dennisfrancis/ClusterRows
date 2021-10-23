@@ -10,7 +10,7 @@
 
 #define ADDIN_IMPLEMENTATION_NAME "com.github.dennisfrancis.GMMClusterImpl"
 #define NUMFUNCTIONS 1
-#define NUMARGS 3
+#define NUMARGS 4
 
 class GMMClusterImpl : public cppu::WeakImplHelper4
 <
@@ -41,7 +41,8 @@ public:
     gmmCluster(
         const ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Sequence < ::com::sun::star::uno::Any > >& data,
         const ::com::sun::star::uno::Any& numClusters,
-        const ::com::sun::star::uno::Any& numEpochs);
+        const ::com::sun::star::uno::Any& numEpochs,
+        const ::com::sun::star::uno::Any& numIterations);
 
     // XAddIn
     rtl::OUString getProgrammaticFuntionName( const rtl::OUString& aDisplayName );

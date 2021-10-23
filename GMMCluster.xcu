@@ -41,6 +41,14 @@
               <value xml:lang="en">Maximum number of epochs to use (optional)</value>
             </prop>
           </node>
+          <node oor:name="numIterations" oor:op="replace">
+            <prop oor:name="DisplayName">
+              <value xml:lang="en">numIterations</value>
+            </prop>
+            <prop oor:name="Description">
+              <value xml:lang="en">Maximum number iterations to do in each epoch (optional)</value>
+            </prop>
+          </node>
         </node>
       </node>
     </node>

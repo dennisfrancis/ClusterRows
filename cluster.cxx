@@ -573,6 +573,7 @@ const OUString GMMClusterImpl::aArgumentNames[NUMFUNCTIONS][NUMARGS] = {
         "data",
         "numClusters",
         "numEpochs",
+        "numIterations",
     },
 };
 
@@ -581,6 +582,7 @@ const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][NUMARGS] = {
         "cell range of data to be clustered",
         "number of clusters (optional)",
         "number of epochs (optional)",
+        "number of iterations (optional)",
     },
 };
 
@@ -593,9 +595,29 @@ sal_Int32 GMMClusterImpl::getFunctionID( const OUString aProgrammaticFunctionNam
     return -1;
 }
 
+namespace
+{
+void getParamNumber(const Any& param, sal_Int32& nParam, const char* name)
+{
+    if (!param.hasValue())
+    {
+        writeLog("param %s has no value!", name);
+        return;
+    }
+    double fVal = 0;
+    if (param >>= fVal)
+        nParam = static_cast<sal_Int32>(fVal);
+}
+
+}
+
+
 Sequence< Sequence< double > > SAL_CALL
-GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst,
-    const Any& numClusters, const Any& numEpochs)
+GMMClusterImpl::gmmCluster(
+    const Sequence < Sequence < Any > >& dataConst,
+    const Any& numClusters,
+    const Any& numEpochs,
+    const Any& numIterations)
 {
     if (!dataConst.getLength())
         return Sequence< Sequence<double> >();
@@ -629,9 +651,12 @@ GMMClusterImpl::gmmCluster(const Sequence < Sequence < Any > >& dataConst,
     std::vector<double> aLabelConfidence(nNumRows);
     sal_Int32 nNumClusters = 0;
     sal_Int32 nNumEpochs = static_cast<sal_Int32>(MAXEPOCHS);
-    numClusters >>= nNumClusters;
-    numEpochs >>= nNumEpochs;
-    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, nNumEpochs);
+    sal_Int32 nNumIter = static_cast<sal_Int32>(NUMITER);
+    getParamNumber(numClusters, nNumClusters, "numClusters");
+    getParamNumber(numEpochs, nNumEpochs, "numEpochs");
+    getParamNumber(numIterations, nNumIter, "numIterations");
+    writeLog("PARAMETER values: numClusters = %d, numEpoch = %d, numIterations = %d\n", nNumClusters, nNumEpochs, nNumIter);
+    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, nNumEpochs, nNumIter);
     Sequence< Sequence <double> > aSeq(nNumRows);
     for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
     {
