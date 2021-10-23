@@ -94,6 +94,10 @@ URD_FILES = $(patsubst %.idl,$(URD_DIR)/%.urd,$(IDL_FILES))
 
 TYPESLIST = -Tcom.github.dennisfrancis.XGMMCluster -Tcom.github.dennisfrancis.GMMCluster
 
+COMPILE_FLAGS = compile_flags.txt
+
+CC_INCLUDES = -I$(PRJ)/include
+
 ifeq "$(ENABLE_LOGGING)" "1"
 CLUSTER_DEFINES = -DLOGGING_ENABLED
 endif
@@ -119,6 +123,9 @@ $(TYPES_DONE): $(COMP_RDB)
 	$(CPPUMAKER) -Gc -O$(INCLUDES_DIR)/ $(URE_TYPES) $(OFFICE_TYPES)
 	$(CPPUMAKER) -Gc -O$(INCLUDES_DIR)/ $(TYPESLIST) $(COMP_RDB) -X$(URE_TYPES) -X$(OFFICE_TYPES)
 	touch $@
+
+compileflags: $(TYPES_DONE)
+	@echo "-c -fpic -fvisibility=hidden -O2 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
 
 $(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
 	@mkdir -p $(OBJECTS_DIR)
