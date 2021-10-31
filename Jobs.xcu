@@ -12,6 +12,11 @@
         </node>
     </node>
     <node oor:name="Events">
+        <node oor:name="onClusterRowsReqDialog" oor:op="replace">
+            <node oor:name="JobList">
+                <node oor:name="ClusterRowsImpl" oor:op="replace"/>
+            </node>
+        </node>
         <node oor:name="onClusterRowsReq" oor:op="replace">
             <node oor:name="JobList">
                 <node oor:name="ClusterRowsImpl" oor:op="replace"/>

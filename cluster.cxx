@@ -141,7 +141,11 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
             nArgPos); // argument pos
     }
 
-    if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
+    if (aJobInfo.aEventName == "onClusterRowsReqDialog")
+    {
+        printf("onClusterRowsReqDialog: Implement me!\n");fflush(stdout);
+    }
+    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
         clusterRows(aJobInfo, 0);
     else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq2"))
         clusterRows(aJobInfo, 2);
