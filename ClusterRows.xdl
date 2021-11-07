@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
-<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ClusterRows" dlg:left="235" dlg:top="114" dlg:width="228" dlg:height="192" dlg:closeable="true" dlg:moveable="true">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ClusterRows" dlg:left="235" dlg:top="114" dlg:width="207" dlg:height="192" dlg:closeable="true" dlg:moveable="true">
  <dlg:styles>
   <dlg:style dlg:style-id="0" dlg:font-name="Liberation Mono" dlg:font-height="11" dlg:font-stylename="Regular" dlg:font-family="modern"/>
  </dlg:styles>
  <dlg:bulletinboard>
   <dlg:text dlg:id="LabelField_DataRangeDesc" dlg:tab-index="7" dlg:left="18" dlg:top="20" dlg:width="103" dlg:height="8" dlg:value="Detected data range" dlg:valign="top"/>
-  <dlg:text dlg:style-id="0" dlg:id="LabelField_DataRange" dlg:tab-index="0" dlg:left="132" dlg:top="20" dlg:width="86" dlg:height="10" dlg:help-text="Computed cell-range where the dataset was found" dlg:value="A1:F301" dlg:valign="center"/>
+  <dlg:text dlg:style-id="0" dlg:id="LabelField_DataRange" dlg:tab-index="0" dlg:left="132" dlg:top="20" dlg:width="60" dlg:height="10" dlg:help-text="Computed cell-range where the dataset was found" dlg:value="A1:F301" dlg:valign="center"/>
   <dlg:text dlg:id="LabelField_NumClusters" dlg:tab-index="8" dlg:left="18" dlg:top="45" dlg:width="103" dlg:height="10" dlg:value="Number of Clusters (optional)" dlg:valign="top" dlg:multiline="true"/>
   <dlg:text dlg:id="LabelField_NumEpochs" dlg:tab-index="9" dlg:left="18" dlg:top="71" dlg:width="103" dlg:height="16" dlg:value="Maximum number of epochs to use" dlg:valign="top" dlg:multiline="true"/>
   <dlg:text dlg:id="LabelField_MaxIter" dlg:tab-index="10" dlg:left="18" dlg:top="100" dlg:width="103" dlg:height="16" dlg:value="Maximum iterations to perform in each epoch" dlg:valign="top" dlg:multiline="true"/>
   <dlg:checkbox dlg:id="CheckBox_ColorRows" dlg:tab-index="4" dlg:left="19" dlg:top="131" dlg:width="143" dlg:height="12" dlg:help-text="Color the data rows according to the computed clusters" dlg:value="Color the rows according to cluster assignments" dlg:checked="false"/>
-  <dlg:text dlg:id="LabelText_Error" dlg:tab-index="11" dlg:left="19" dlg:top="151" dlg:width="185" dlg:height="12"/>
+  <dlg:text dlg:id="LabelText_Error" dlg:tab-index="11" dlg:left="19" dlg:top="151" dlg:width="167" dlg:height="12"/>
   <dlg:button dlg:id="CommandButton_OK" dlg:tab-index="5" dlg:left="21" dlg:top="169" dlg:width="65" dlg:height="13" dlg:value="OK">
    <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:onOKButtonPress" script:language="UNO"/>
   </dlg:button>
@@ -19,13 +19,13 @@
    <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:onCancelButtonPress" script:language="UNO"/>
   </dlg:button>
   <dlg:numericfield dlg:id="NumericField_NumClusters" dlg:tab-index="1" dlg:left="130" dlg:top="45" dlg:width="45" dlg:height="10" dlg:help-text="Number of clusters to estimate. If 0 is provided, this will be auto-computed." dlg:decimal-accuracy="0" dlg:value="3" dlg:value-min="0" dlg:value-max="15" dlg:spin="true">
-   <script:event script:event-name="on-textchange" script:macro-name="vnd.sun.star.UNO:onInputChange" script:language="UNO"/>
+   <script:event script:event-name="on-blur" script:macro-name="vnd.sun.star.UNO:onInputFocusLost" script:language="UNO"/>
   </dlg:numericfield>
   <dlg:numericfield dlg:id="NumericField_NumEpochs" dlg:tab-index="2" dlg:left="130" dlg:top="72" dlg:width="45" dlg:height="12" dlg:help-text="Maximum number of epochs to use" dlg:decimal-accuracy="0" dlg:value="10" dlg:value-min="3" dlg:value-max="100">
-   <script:event script:event-name="on-textchange" script:macro-name="vnd.sun.star.UNO:onInputChange" script:language="UNO"/>
+   <script:event script:event-name="on-blur" script:macro-name="vnd.sun.star.UNO:onInputFocusLost" script:language="UNO"/>
   </dlg:numericfield>
   <dlg:numericfield dlg:id="NumericField_NumIter" dlg:tab-index="3" dlg:left="130" dlg:top="101" dlg:width="45" dlg:height="12" dlg:help-text="Maximum number of iterations to do in each epoch" dlg:decimal-accuracy="0" dlg:value="10" dlg:value-min="5" dlg:value-max="10000">
-   <script:event script:event-name="on-textchange" script:macro-name="vnd.sun.star.UNO:onInputChange" script:language="UNO"/>
+   <script:event script:event-name="on-blur" script:macro-name="vnd.sun.star.UNO:onInputFocusLost" script:language="UNO"/>
   </dlg:numericfield>
  </dlg:bulletinboard>
 </dlg:window>
