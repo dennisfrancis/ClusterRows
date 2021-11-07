@@ -36,11 +36,13 @@
 #include <chrono>
 #include <thread>
 
+#include "DialogHelper.hxx"
 #include "range.hxx"
 #include "preprocess.hxx"
 #include "colorgen.hxx"
 #include "em.hxx"
 
+using namespace com::sun::star::awt;
 using namespace com::sun::star::uno;
 using namespace com::sun::star::frame;
 using namespace com::sun::star::sheet;
@@ -143,7 +145,9 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
 
     if (aJobInfo.aEventName == "onClusterRowsReqDialog")
     {
-        printf("onClusterRowsReqDialog: Implement me!\n");fflush(stdout);
+        Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this);
+        writeLog("onClusterRowsReqDialog: executing dialog!\n");
+        xDialog->execute();
     }
     else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
         clusterRows(aJobInfo, 0);
@@ -176,6 +180,29 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
     }
 
     return makeAny(aReturn);
+}
+
+// XDialogEventHandler methods
+sal_Bool ClusterRowsImpl::callHandlerMethod(
+    const Reference<::com::sun::star::awt::XDialog>& xDialog,
+    const Any& /*eventObject*/,
+    const OUString& methodName)
+{
+    return dialoghelper::onAction(
+        methodName,
+        xDialog,
+        [this](const ClusterParams& aParams) {
+            writeLog("Do Cluster action with given parameters!\n");
+        });
+}
+
+Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()
+{
+    Sequence<OUString> aActions(3);
+    aActions[0] = "onOKButtonPress";
+    aActions[1] = "onCancelButtonPress";
+    aActions[2] = "onInputChange";
+    return aActions;
 }
 
 OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue> &rArgs,

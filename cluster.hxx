@@ -2,9 +2,10 @@
 #define COM_GITHUB_DENNISFRANCIS_CLUSTERROWS_HXX
 
 #include <com/sun/star/task/XJob.hpp>
+#include <com/sun/star/awt/XDialogEventHandler.hpp>
 #include <com/sun/star/lang/XServiceInfo.hpp>
 #include <com/sun/star/lang/IllegalArgumentException.hpp>
-#include <cppuhelper/implbase2.hxx>
+#include <cppuhelper/implbase3.hxx>
 
 #define IMPLEMENTATION_NAME "com.github.dennisfrancis.ClusterRowsImpl"
 
@@ -30,8 +31,9 @@ namespace com
     }
 }
 
-class ClusterRowsImpl : public cppu::WeakImplHelper2<
+class ClusterRowsImpl : public cppu::WeakImplHelper3<
                             com::sun::star::task::XJob,
+                            com::sun::star::awt::XDialogEventHandler,
                             com::sun::star::lang::XServiceInfo>
 {
 
@@ -45,6 +47,13 @@ public:
     // XAsyncJob methods
     virtual ::com::sun::star::uno::Any SAL_CALL execute(
         const ::com::sun::star::uno::Sequence<::com::sun::star::beans::NamedValue> &rArgs) override;
+
+    // XDialogEventHandler methods
+    virtual sal_Bool callHandlerMethod(
+        const ::com::sun::star::uno::Reference<::com::sun::star::awt::XDialog>& xDialog,
+        const ::com::sun::star::uno::Any& eventObject,
+        const ::rtl::OUString& methodName) override;
+    virtual ::com::sun::star::uno::Sequence<::rtl::OUString> getSupportedMethodNames() override;
 
     // XServiceInfo methods
     virtual ::rtl::OUString SAL_CALL getImplementationName();

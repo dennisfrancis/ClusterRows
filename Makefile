@@ -76,11 +76,13 @@ TYPES_DONE=$(FLAGS_DIR)/types.done
 
 COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
 
-CXXFILES = component.cxx cluster.cxx
+CXXFILES = component.cxx cluster.cxx DialogHelper.cxx logging.cxx
 
 IDL_FILES = XGMMCluster.idl
 
 XCUFILES = Addons.xcu Jobs.xcu GMMCluster.xcu
+
+XDLFILES = ClusterRows.xdl
 
 DESCRIPTIONFILES = description.xml description-en-US.txt
 
@@ -125,11 +127,11 @@ $(TYPES_DONE): $(COMP_RDB)
 	touch $@
 
 compileflags: $(TYPES_DONE)
-	@echo "-c -fpic -fvisibility=hidden -O2 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
+	@echo "-c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
 
-$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx
+$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx
 	@mkdir -p $(OBJECTS_DIR)
-	$(CC) -c -fpic -fvisibility=hidden -O2 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
+	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
 
 $(OBJECTS_DIR)/$(COMP_IMPL_NAME): $(OBJECT_FILES)
 	$(LINK) $(COMP_LINK_FLAGS) $(LINK_LIBS) -o $@ $(OBJECT_FILES) \
@@ -153,6 +155,7 @@ $(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST
 	@cp $(COMP_RDB) $(PACKAGE_DIR)/
 	@cp $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)/
 	@cp $(XCUFILES) $(PACKAGE_DIR)/
+	@cp $(XDLFILES) $(PACKAGE_DIR)/
 	@cp $(DESCRIPTIONFILES) $(PACKAGE_DIR)/
 	@cp $(IMG_FILES) $(PACKAGE_DIR)/$(IMG_DIR)/
 	@cp -r $(MANIFEST_DIR) $(PACKAGE_DIR)/
