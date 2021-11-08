@@ -13,6 +13,7 @@
 
 using com::sun::star::sheet::XSpreadsheet;
 using com::sun::star::table::CellContentType_EMPTY;
+using com::sun::star::table::CellContentType_TEXT;
 using com::sun::star::table::CellRangeAddress;
 using com::sun::star::table::XCell;
 using com::sun::star::uno::Reference;
@@ -293,4 +294,32 @@ void excludeResultColumns(const Reference<XSpreadsheet> &rxSheet, CellRangeAddre
 		if (xCell->getFormula() == aHdr)
 			--rRangeExtended.EndColumn;
 	}
+}
+
+bool hasHeader(const Reference<XSpreadsheet>& xSheet, CellRangeAddress& aRange)
+{
+	for (sal_Int32 nCol = aRange.StartColumn; nCol <= aRange.EndColumn; ++nCol)
+	{
+		Reference<XCell> xCell = xSheet->getCellByPosition(nCol, aRange.StartRow);
+		if (xCell->getType() != CellContentType_TEXT)
+			return false;
+	}
+
+	return true;
+}
+
+OUString getCellAddressRepr(sal_Int32 nColumn, sal_Int32 nRow)
+{
+	OUString aStr = "";
+	if (nColumn > 25)
+		aStr += OUString::valueOf(static_cast<sal_Unicode>('A' + nColumn / 26 - 1));
+	aStr += OUString::valueOf(static_cast<sal_Unicode>('A' + nColumn % 26));
+	aStr += OUString::number(nRow + 1);
+	return aStr;
+}
+
+OUString getCellRangeRepr(const CellRangeAddress& aRange)
+{
+	return getCellAddressRepr(aRange.StartColumn, aRange.StartRow) + ":" +
+		getCellAddressRepr(aRange.EndColumn, aRange.EndRow);
 }

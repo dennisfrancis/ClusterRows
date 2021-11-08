@@ -27,6 +27,10 @@ namespace com
             {
                 struct NamedValue;
             }
+            namespace table
+            {
+                struct CellRangeAddress;
+            }
         }
     }
 }
@@ -74,6 +78,8 @@ private:
                                     ClusterRowsImplInfo &rJobInfo);
 
     void clusterRows(const ClusterRowsImplInfo &rJobInfo, const sal_Int32 nUserNumClusters);
+    bool calcDataRange(const ClusterRowsImplInfo &rJobInfo,
+        ::com::sun::star::table::CellRangeAddress& aRange) const;
 };
 
 ::rtl::OUString ClusterRowsImpl_getImplementationName();

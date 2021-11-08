@@ -22,7 +22,8 @@ namespace dialoghelper {
 createDialog(
     const ::rtl::OUString& aDialogXDL,
     const ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext>& xContext,
-    const ::com::sun::star::uno::Reference<::com::sun::star::awt::XDialogEventHandler>& xHandler);
+    const ::com::sun::star::uno::Reference<::com::sun::star::awt::XDialogEventHandler>& xHandler,
+    const rtl::OUString& aCellRangeRepr);
 
 bool onAction(
     const ::rtl::OUString& actionName,

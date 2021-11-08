@@ -30,6 +30,12 @@
 #include <com/sun/star/document/XUndoManager.hpp>
 #include <com/sun/star/document/XUndoManagerSupplier.hpp>
 
+#include <com/sun/star/awt/XToolkit.hpp>
+#include <com/sun/star/awt/WindowDescriptor.hpp>
+#include <com/sun/star/awt/WindowAttribute.hpp>
+#include <com/sun/star/awt/XWindowPeer.hpp>
+#include <com/sun/star/awt/XMessageBox.hpp>
+
 #include <cppuhelper/supportsservice.hxx>
 
 #include <vector>
@@ -47,6 +53,7 @@ using namespace com::sun::star::uno;
 using namespace com::sun::star::frame;
 using namespace com::sun::star::sheet;
 using namespace com::sun::star::table;
+using namespace com::sun::star::awt;
 using com::sun::star::beans::NamedValue;
 using com::sun::star::beans::XPropertySet;
 using com::sun::star::container::XIndexAccess;
@@ -74,6 +81,12 @@ bool getClusterLabels(const Sequence<Sequence<Any>> &rDataArray,
 sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet,
                           const CellRangeAddress &rRange,
                           const sal_Int32 nUserNumClusters);
+
+static void showErrorMessage(
+    const Reference<XFrame>& xFrame,
+    const OUString& aTitle,
+    const OUString& aMsgText,
+    const Reference<XComponentContext>& xCtxt);
 
 // Helper functions for the implementation of UNO component interfaces.
 OUString ClusterRowsImpl_getImplementationName()
@@ -145,9 +158,37 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
 
     if (aJobInfo.aEventName == "onClusterRowsReqDialog")
     {
-        Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this);
-        writeLog("onClusterRowsReqDialog: executing dialog!\n");
-        xDialog->execute();
+        CellRangeAddress aRange;
+        bool bGotRange = calcDataRange(aJobInfo, aRange);
+        if (!bGotRange)
+        {
+            showErrorMessage(aJobInfo.xFrame, "ClusterRows", "Could not calculate data range from cell cursor location!", mxContext);
+        }
+        else
+        {
+            sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
+            sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
+            Reference<XModel> xModel = getModel(aJobInfo.xFrame);
+            Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
+            CellRangeAddress aDataRange = aRange;
+            if (hasHeader(xSheet, aRange))
+            {
+                --nNumRows;
+                ++aDataRange.StartRow;
+            }
+
+            if (nNumRows < 10)
+            {
+                OUString aMsg("Too few samples in the table, need at least 10 rows!");
+                showErrorMessage(aJobInfo.xFrame, "ClusterRows", aMsg, mxContext);
+            }
+            else
+            {
+                Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(aDataRange));
+                writeLog("onClusterRowsReqDialog: executing dialog!\n");
+                xDialog->execute();
+            }
+        }
     }
     else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
         clusterRows(aJobInfo, 0);
@@ -180,6 +221,48 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
     }
 
     return makeAny(aReturn);
+}
+
+static void showErrorMessage(
+    const Reference<XFrame>& xFrame,
+    const OUString& aTitle,
+    const OUString& aMsgText,
+    const Reference<XComponentContext>& xCtxt)
+{
+    Reference<XToolkit> xToolkit(xCtxt->getServiceManager()->
+        createInstanceWithContext("com.sun.star.awt.Toolkit", xCtxt), UNO_QUERY);
+    if (!xToolkit.is())
+    {
+        writeLog("showErrorMessage: Cannot get instance of XToolkit!\n");
+        return;
+    }
+
+    if (!xFrame.is())
+    {
+        writeLog("showErrorMessage: XFrame passes is empty!\n");
+        return;
+    }
+
+    // describe window properties.
+    WindowDescriptor aDescriptor;
+    aDescriptor.Type = WindowClass_MODALTOP;
+    aDescriptor.WindowServiceName = OUString( RTL_CONSTASCII_USTRINGPARAM( "infobox" ));
+    aDescriptor.ParentIndex = -1;
+    aDescriptor.Parent = Reference<XWindowPeer>(xFrame->getContainerWindow(), UNO_QUERY);
+    aDescriptor.Bounds = Rectangle(300,200,300,200);
+    aDescriptor.WindowAttributes = WindowAttribute::BORDER | WindowAttribute::MOVEABLE | WindowAttribute::CLOSEABLE;
+
+    Reference< XWindowPeer > xPeer = xToolkit->createWindow(aDescriptor);
+    if (xPeer.is())
+    {
+        Reference<XMessageBox> xMsgBox(xPeer, UNO_QUERY);
+        if (xMsgBox.is())
+        {
+            xMsgBox->setCaptionText(aTitle);
+            xMsgBox->setMessageText(aMsgText);
+            xMsgBox->execute();
+        }
+    }
 }
 
 // XDialogEventHandler methods
@@ -256,6 +339,28 @@ OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue> &rArgs,
     }
 
     return OUString("");
+}
+
+bool ClusterRowsImpl::calcDataRange(const ClusterRowsImplInfo &rJobInfo, CellRangeAddress& aRange) const
+{
+    TimePerf aTotal("calcDataRange");
+    if (!rJobInfo.xFrame.is())
+    {
+        logError("calcDataRange : Frame passed is null, cannot color data !");
+        return false;
+    }
+    Reference<XModel> xModel = getModel(rJobInfo.xFrame);
+    if (!xModel.is())
+    {
+        logError("calcDataRange : xModel is invalid");
+        return false;
+    }
+
+    TimePerf aPerfGetDataRange("getDataRange");
+    bool bGotRange = getDataRange(xModel, aRange);
+    aPerfGetDataRange.Stop();
+
+    return bGotRange;
 }
 
 void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJobInfo, const sal_Int32 nUserNumClusters)

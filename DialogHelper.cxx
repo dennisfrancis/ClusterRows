@@ -71,7 +71,8 @@ bool dialoghelper::onAction(
 Reference<XDialog> dialoghelper::createDialog(
     const OUString& aDialogXDL,
     const Reference<XComponentContext>& xContext,
-    const Reference<XDialogEventHandler>& xHandler)
+    const Reference<XDialogEventHandler>& xHandler,
+    const OUString& aCellRangeRepr)
 {
     Reference<XDialogProvider2> xDialogProvider(
         xContext->getServiceManager()->
@@ -80,7 +81,19 @@ Reference<XDialog> dialoghelper::createDialog(
     if (!xDialogProvider.is())
         return Reference<XDialog>();
 
-    return xDialogProvider->createDialogWithHandler(convertToURL(aDialogXDL, xContext), xHandler);
+    Reference<XDialog> xDialog = xDialogProvider->createDialogWithHandler(convertToURL(aDialogXDL, xContext), xHandler);
+    if (xDialog.is())
+    {
+        Reference<XFixedText> xLabel(getControl("LabelField_DataRange", xDialog), UNO_QUERY);
+        if (!xLabel.is())
+        {
+            writeLog("createDialog: FAILED: cannot get XFixedText from XControl!\n");
+            return xDialog;
+        }
+        xLabel->setText(aCellRangeRepr);
+    }
+
+    return xDialog;
 }
 
 static OUString convertToURL(
