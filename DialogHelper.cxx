@@ -3,6 +3,7 @@
 #include <com/sun/star/awt/XControlContainer.hpp>
 #include <com/sun/star/awt/XControl.hpp>
 #include <com/sun/star/awt/XFixedText.hpp>
+#include <com/sun/star/awt/XCheckBox.hpp>
 #include <com/sun/star/awt/XButton.hpp>
 #include <com/sun/star/awt/XNumericField.hpp>
 #include <com/sun/star/awt/XDialogProvider2.hpp>
@@ -29,6 +30,7 @@ static OUString convertToURL(
 static void validateInputs(const Reference<XDialog>& xDialog);
 static Reference<XControl> getControl(const OUString& aName, const Reference<XDialog>& xDialog);
 static Reference<XNumericField> getNumericField(const OUString& aName, const Reference<XDialog>& xDialog);
+static Reference<XCheckBox> getCheckBox(const OUString& aName, const Reference<XDialog>& xDialog);
 static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog);
 static void setError(const OUString& aMsg, const Reference<XDialog>& xDialog);
 static void setMessage(const OUString& aMsg, const Reference<XDialog>& xDialog);
@@ -45,8 +47,8 @@ bool dialoghelper::onAction(
     if (actionName == "onOKButtonPress")
     {
         ClusterParams aParams = getParamsFromDialog(xDialog);
-        writeLog("onOKButtonPress: aParams: mnNumClusters = %d, mnNumEpochs = %d, mnNumIterations = %d\n",
-            aParams.mnNumClusters, aParams.mnNumEpochs, aParams.mnNumIterations);
+        writeLog("onOKButtonPress: aParams: mnNumClusters = %d, mnNumEpochs = %d, mnNumIterations = %d mbColorClusters = %s\n",
+            aParams.mnNumClusters, aParams.mnNumEpochs, aParams.mnNumIterations, aParams.mbColorClusters ? "true" : "false");
         setMessage("Computing clusters...", xDialog);
         rClusterCallback(aParams);
         xDialog->endExecute();
@@ -180,7 +182,7 @@ static void setControlStatus(const OUString& aName, bool bEnabledStatus,
 
 static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog)
 {
-    ClusterParams aParams{-1, -1, -1};
+    ClusterParams aParams{-1, -1, -1, false};
     if (Reference<XNumericField> xField = getNumericField("NumericField_NumClusters", xDialog); xField.is())
     {
         aParams.mnNumClusters = xField->getValue();
@@ -194,6 +196,11 @@ static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog)
     if (Reference<XNumericField> xField = getNumericField("NumericField_NumIter", xDialog); xField.is())
     {
         aParams.mnNumIterations = xField->getValue();
+    }
+
+    if (Reference<XCheckBox> xField = getCheckBox("CheckBox_ColorRows", xDialog); xField.is())
+    {
+        aParams.mbColorClusters = static_cast<bool>(xField->getState());
     }
 
     return aParams;
@@ -213,6 +220,22 @@ static Reference<XNumericField> getNumericField(const OUString& aName, const Ref
         writeLog("getNumericField FAILED: could not get XNumericField from XControl for aName = %s\n", aName.toUtf8().getStr());
 
     return xNumField;
+}
+
+static Reference<XCheckBox> getCheckBox(const OUString& aName, const Reference<XDialog>& xDialog)
+{
+    Reference<XControl> xCtrl(getControl(aName, xDialog));
+    if (!xCtrl.is())
+    {
+        writeLog("getCheckBox FAILED: getControl returned no XControl for aName = %s\n", aName.toUtf8().getStr());
+        return Reference<XCheckBox>();
+    }
+
+    Reference<XCheckBox> xCheck(xCtrl, UNO_QUERY);
+    if (!xCheck.is())
+        writeLog("getCheckBox FAILED: could not get XCheckBox from XControl for aName = %s\n", aName.toUtf8().getStr());
+
+    return xCheck;
 }
 
 static Reference<XControl> getControl(const OUString& aName, const Reference<XDialog>& xDialog)
