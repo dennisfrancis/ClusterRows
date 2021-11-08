@@ -192,6 +192,7 @@ sal_Bool ClusterRowsImpl::callHandlerMethod(
         methodName,
         xDialog,
         [this](const ClusterParams& aParams) {
+            // TODO: Compute clusters and write results.
             writeLog("Do Cluster action with given parameters!\n");
         });
 }

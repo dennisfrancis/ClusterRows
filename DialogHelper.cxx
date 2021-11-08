@@ -31,6 +31,7 @@ static Reference<XControl> getControl(const OUString& aName, const Reference<XDi
 static Reference<XNumericField> getNumericField(const OUString& aName, const Reference<XDialog>& xDialog);
 static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog);
 static void setError(const OUString& aMsg, const Reference<XDialog>& xDialog);
+static void setMessage(const OUString& aMsg, const Reference<XDialog>& xDialog);
 static void resetError(const Reference<XDialog>& xDialog);
 static void setControlStatus(const OUString& aName, bool bEnabledStatus,
     const Reference<XDialog>& xDialog);
@@ -43,10 +44,12 @@ bool dialoghelper::onAction(
     writeLog("onAction: actionName = %s\n", actionName.toUtf8().getStr());
     if (actionName == "onOKButtonPress")
     {
-        xDialog->endExecute();
         ClusterParams aParams = getParamsFromDialog(xDialog);
         writeLog("onOKButtonPress: aParams: mnNumClusters = %d, mnNumEpochs = %d, mnNumIterations = %d\n",
             aParams.mnNumClusters, aParams.mnNumEpochs, aParams.mnNumIterations);
+        setMessage("Computing clusters...", xDialog);
+        rClusterCallback(aParams);
+        xDialog->endExecute();
         return true;
     }
     else if (actionName == "onCancelButtonPress")
@@ -126,23 +129,28 @@ static void validateInputs(const Reference<XDialog>& xDialog)
 
 static void setError(const OUString& aMsg, const Reference<XDialog>& xDialog)
 {
+    setMessage(aMsg, xDialog);
+
+    setControlStatus("CommandButton_OK", aMsg.isEmpty(), xDialog);
+}
+
+static void setMessage(const OUString& aMsg, const Reference<XDialog>& xDialog)
+{
     Reference<XControl> xCtrl(getControl("LabelText_Error", xDialog));
     if (!xCtrl.is())
     {
-        writeLog("setError: FAILED: cannot get error label control!\n");
+        writeLog("setMessage: FAILED: cannot get error label control!\n");
         return;
     }
 
     Reference<XFixedText> xLabel(xCtrl, UNO_QUERY);
     if (!xLabel.is())
     {
-        writeLog("setError: FAILED: cannot get XFixedText from XControl!\n");
+        writeLog("setMessage: FAILED: cannot get XFixedText from XControl!\n");
         return;
     }
 
     xLabel->setText(aMsg);
-
-    setControlStatus("CommandButton_OK", aMsg.isEmpty(), xDialog);
 }
 
 static void resetError(const Reference<XDialog>& xDialog)
