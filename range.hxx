@@ -312,8 +312,8 @@ OUString getCellAddressRepr(sal_Int32 nColumn, sal_Int32 nRow)
 {
 	OUString aStr = "";
 	if (nColumn > 25)
-		aStr += OUString::valueOf(static_cast<sal_Unicode>('A' + nColumn / 26 - 1));
-	aStr += OUString::valueOf(static_cast<sal_Unicode>('A' + nColumn % 26));
+		aStr += OUString('A' + nColumn / 26 - 1);
+	aStr += OUString('A' + nColumn % 26);
 	aStr += OUString::number(nRow + 1);
 	return aStr;
 }
