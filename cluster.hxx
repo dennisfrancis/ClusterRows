@@ -5,7 +5,10 @@
 #include <com/sun/star/awt/XDialogEventHandler.hpp>
 #include <com/sun/star/lang/XServiceInfo.hpp>
 #include <com/sun/star/lang/IllegalArgumentException.hpp>
+#include <com/sun/star/table/CellRangeAddress.hpp>
 #include <cppuhelper/implbase3.hxx>
+
+#include "params.hxx"
 
 #define IMPLEMENTATION_NAME "com.github.dennisfrancis.ClusterRowsImpl"
 
@@ -43,6 +46,9 @@ class ClusterRowsImpl : public cppu::WeakImplHelper3<
 
 private:
     ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> mxContext;
+    ClusterParams maParams;
+    ::com::sun::star::table::CellRangeAddress maDataRange;
+    bool mbHasHeader:1;
 
 public:
     ClusterRowsImpl(const ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> &rxContext);

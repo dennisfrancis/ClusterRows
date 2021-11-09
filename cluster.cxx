@@ -110,6 +110,13 @@ Reference<XInterface> SAL_CALL ClusterRowsImpl_createInstance(const Reference<XC
 ClusterRowsImpl::ClusterRowsImpl(const Reference<XComponentContext> &rxContext):
     mxContext(rxContext)
 {
+    maDataRange.StartColumn = maDataRange.EndColumn = -1;
+    maDataRange.StartRow = maDataRange.EndRow = -1;
+    mbHasHeader = false;
+    maParams.mnNumClusters = -1;
+    maParams.mnNumEpochs = -1;
+    maParams.mnNumIterations = -1;
+    maParams.mbColorClusters = false;
     writeLog("DEBUG>>> Created ClusterRowsImpl object : %p\n", this);
 }
 
@@ -249,11 +256,13 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
     Reference<XModel> xModel = getModel(aJobInfo.xFrame);
     Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
-    CellRangeAddress aDataRange = aRange;
+    maDataRange = aRange;
+    mbHasHeader = false;
     if (hasHeader(xSheet, aRange))
     {
+        mbHasHeader = true;
         --nNumRows;
-        ++aDataRange.StartRow;
+        ++maDataRange.StartRow;
     }
 
     if (nNumRows < 10)
@@ -263,7 +272,7 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
         return;
     }
 
-    Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(aDataRange));
+    Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(maDataRange));
     writeLog("onClusterRowsReqDialog: executing dialog!\n");
     xDialog->execute();
 }
@@ -279,6 +288,8 @@ sal_Bool ClusterRowsImpl::callHandlerMethod(
         xDialog,
         [this](const ClusterParams& aParams) {
             // TODO: Compute clusters and write results.
+            maParams = aParams;
+            writeLog("Range = %s, mbHasHeader = %d\n", getCellRangeRepr(maDataRange).toUtf8().getStr(), mbHasHeader);
             writeLog("Do Cluster action with given parameters!\n");
         });
 }
