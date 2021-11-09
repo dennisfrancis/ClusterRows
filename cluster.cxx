@@ -158,37 +158,7 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
 
     if (aJobInfo.aEventName == "onClusterRowsReqDialog")
     {
-        CellRangeAddress aRange;
-        bool bGotRange = calcDataRange(aJobInfo, aRange);
-        if (!bGotRange)
-        {
-            showErrorMessage(aJobInfo.xFrame, "ClusterRows", "Could not calculate data range from cell cursor location!", mxContext);
-        }
-        else
-        {
-            sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
-            sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
-            Reference<XModel> xModel = getModel(aJobInfo.xFrame);
-            Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
-            CellRangeAddress aDataRange = aRange;
-            if (hasHeader(xSheet, aRange))
-            {
-                --nNumRows;
-                ++aDataRange.StartRow;
-            }
-
-            if (nNumRows < 10)
-            {
-                OUString aMsg("Too few samples in the table, need at least 10 rows!");
-                showErrorMessage(aJobInfo.xFrame, "ClusterRows", aMsg, mxContext);
-            }
-            else
-            {
-                Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(aDataRange));
-                writeLog("onClusterRowsReqDialog: executing dialog!\n");
-                xDialog->execute();
-            }
-        }
+        launchClusterDialog(aJobInfo);
     }
     else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
         clusterRows(aJobInfo, 0);
@@ -261,6 +231,41 @@ static void showErrorMessage(
             xMsgBox->setCaptionText(aTitle);
             xMsgBox->setMessageText(aMsgText);
             xMsgBox->execute();
+        }
+    }
+}
+
+void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
+{
+    CellRangeAddress aRange;
+    bool bGotRange = calcDataRange(aJobInfo, aRange);
+    if (!bGotRange)
+    {
+        showErrorMessage(aJobInfo.xFrame, "ClusterRows", "Could not calculate data range from cell cursor location!", mxContext);
+    }
+    else
+    {
+        sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
+        sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
+        Reference<XModel> xModel = getModel(aJobInfo.xFrame);
+        Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
+        CellRangeAddress aDataRange = aRange;
+        if (hasHeader(xSheet, aRange))
+        {
+            --nNumRows;
+            ++aDataRange.StartRow;
+        }
+
+        if (nNumRows < 10)
+        {
+            OUString aMsg("Too few samples in the table, need at least 10 rows!");
+            showErrorMessage(aJobInfo.xFrame, "ClusterRows", aMsg, mxContext);
+        }
+        else
+        {
+            Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(aDataRange));
+            writeLog("onClusterRowsReqDialog: executing dialog!\n");
+            xDialog->execute();
         }
     }
 }

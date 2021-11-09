@@ -80,6 +80,7 @@ private:
     void clusterRows(const ClusterRowsImplInfo &rJobInfo, const sal_Int32 nUserNumClusters);
     bool calcDataRange(const ClusterRowsImplInfo &rJobInfo,
         ::com::sun::star::table::CellRangeAddress& aRange) const;
+    void launchClusterDialog(const ClusterRowsImplInfo& aJobInfo);
 };
 
 ::rtl::OUString ClusterRowsImpl_getImplementationName();
