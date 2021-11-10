@@ -2,9 +2,9 @@
 #include <cstdio>
 #include "logging.hxx"
 
-void writeLog(const char *format, ...)
+void writeLog(const char* format, ...)
 {
-    #ifdef LOGGING_ENABLED
+#ifdef LOGGING_ENABLED
     {
         va_list args;
         va_start(args, format);
@@ -12,9 +12,9 @@ void writeLog(const char *format, ...)
         fflush(stdout);
         va_end(args);
     }
-    #else
+#else
     {
         (void)format;
     }
-    #endif
+#endif
 }
