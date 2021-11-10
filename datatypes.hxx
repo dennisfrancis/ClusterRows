@@ -37,4 +37,3 @@ struct ColorsRGB
     double Green;
     double Blue;
 };
-
