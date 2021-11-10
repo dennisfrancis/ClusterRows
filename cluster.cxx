@@ -66,49 +66,42 @@ using com::sun::star::util::Color;
 // This is the service name an Add-On has to implement
 #define SERVICE_NAME "com.sun.star.task.Job"
 
-void logError(const char *pStr);
-Reference<XModel> getModel(const Reference<XFrame> &rxFrame);
-bool getDataRange(const Reference<XModel> &rxModel, CellRangeAddress &rRangeExtended);
-Reference<XSpreadsheet> getSheet(const Reference<XModel> &rxModel, const sal_Int32 nSheet);
+void logError(const char* pStr);
+Reference<XModel> getModel(const Reference<XFrame>& rxFrame);
+bool getDataRange(const Reference<XModel>& rxModel, CellRangeAddress& rRangeExtended);
+Reference<XSpreadsheet> getSheet(const Reference<XModel>& rxModel, const sal_Int32 nSheet);
 
-bool getClusterLabels(const Sequence<Sequence<Any>> &rDataArray,
-                      const std::vector<DataType> &rColType,
-                      const std::vector<std::pair<double, double>> &rFeatureScales,
-                      std::vector<sal_Int32> &rClusterLabels,
-                      std::vector<double> &rLabelConfidence,
-                      sal_Int32 &rNumClusters);
+bool getClusterLabels(const Sequence<Sequence<Any>>& rDataArray,
+                      const std::vector<DataType>& rColType,
+                      const std::vector<std::pair<double, double>>& rFeatureScales,
+                      std::vector<sal_Int32>& rClusterLabels, std::vector<double>& rLabelConfidence,
+                      sal_Int32& rNumClusters);
 
-sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet,
-                          const CellRangeAddress &rRange,
+sal_Bool clusterColorRows(const Reference<XSpreadsheet>& rxSheet, const CellRangeAddress& rRange,
                           const sal_Int32 nUserNumClusters);
 
-static void showErrorMessage(
-    const Reference<XFrame>& xFrame,
-    const OUString& aTitle,
-    const OUString& aMsgText,
-    const Reference<XComponentContext>& xCtxt);
+static void showErrorMessage(const Reference<XFrame>& xFrame, const OUString& aTitle,
+                             const OUString& aMsgText, const Reference<XComponentContext>& xCtxt);
 
 // Helper functions for the implementation of UNO component interfaces.
-OUString ClusterRowsImpl_getImplementationName()
-{
-    return OUString(IMPLEMENTATION_NAME);
-}
+OUString ClusterRowsImpl_getImplementationName() { return OUString(IMPLEMENTATION_NAME); }
 
 Sequence<OUString> SAL_CALL ClusterRowsImpl_getSupportedServiceNames()
 {
     Sequence<OUString> aRet(1);
-    OUString *pArray = aRet.getArray();
+    OUString* pArray = aRet.getArray();
     pArray[0] = OUString(SERVICE_NAME);
     return aRet;
 }
 
-Reference<XInterface> SAL_CALL ClusterRowsImpl_createInstance(const Reference<XComponentContext> &rContext)
+Reference<XInterface>
+    SAL_CALL ClusterRowsImpl_createInstance(const Reference<XComponentContext>& rContext)
 {
-    return (cppu::OWeakObject *)new ClusterRowsImpl(rContext);
+    return (cppu::OWeakObject*)new ClusterRowsImpl(rContext);
 }
 
-ClusterRowsImpl::ClusterRowsImpl(const Reference<XComponentContext> &rxContext):
-    mxContext(rxContext)
+ClusterRowsImpl::ClusterRowsImpl(const Reference<XComponentContext>& rxContext)
+    : mxContext(rxContext)
 {
     maDataRange.StartColumn = maDataRange.EndColumn = -1;
     maDataRange.StartRow = maDataRange.EndRow = -1;
@@ -132,7 +125,7 @@ OUString SAL_CALL ClusterRowsImpl::getImplementationName()
     return ClusterRowsImpl_getImplementationName();
 }
 
-sal_Bool SAL_CALL ClusterRowsImpl::supportsService(const OUString &rServiceName)
+sal_Bool SAL_CALL ClusterRowsImpl::supportsService(const OUString& rServiceName)
 {
     return cppu::supportsService(this, rServiceName);
 }
@@ -144,7 +137,7 @@ Sequence<OUString> SAL_CALL ClusterRowsImpl::getSupportedServiceNames()
 
 // XJob method implementations
 
-Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
+Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue>& rArgs)
 {
     writeLog("DEBUG>>> Called execute() : this = %p\n", this);
 
@@ -156,11 +149,10 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
         if (aErr.startsWith("Listener"))
             nArgPos = 1;
 
-        throw IllegalArgumentException(
-            aErr,
-            // resolve to XInterface reference:
-            static_cast<::cppu::OWeakObject *>(this),
-            nArgPos); // argument pos
+        throw IllegalArgumentException(aErr,
+                                       // resolve to XInterface reference:
+                                       static_cast<::cppu::OWeakObject*>(this),
+                                       nArgPos); // argument pos
     }
 
     if (aJobInfo.aEventName == "onClusterRowsReqDialog")
@@ -191,7 +183,7 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
     {
         aReturn[0].Name = "SendDispatchResult";
         DispatchResultEvent aResultEvent;
-        aResultEvent.Source = (cppu::OWeakObject *)this;
+        aResultEvent.Source = (cppu::OWeakObject*)this;
         aResultEvent.State = DispatchResultState::SUCCESS;
         aResultEvent.Result <<= true;
         aReturn[0].Value <<= aResultEvent;
@@ -200,14 +192,12 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue> &rArgs)
     return makeAny(aReturn);
 }
 
-static void showErrorMessage(
-    const Reference<XFrame>& xFrame,
-    const OUString& aTitle,
-    const OUString& aMsgText,
-    const Reference<XComponentContext>& xCtxt)
+static void showErrorMessage(const Reference<XFrame>& xFrame, const OUString& aTitle,
+                             const OUString& aMsgText, const Reference<XComponentContext>& xCtxt)
 {
-    Reference<XToolkit> xToolkit(xCtxt->getServiceManager()->
-        createInstanceWithContext("com.sun.star.awt.Toolkit", xCtxt), UNO_QUERY);
+    Reference<XToolkit> xToolkit(
+        xCtxt->getServiceManager()->createInstanceWithContext("com.sun.star.awt.Toolkit", xCtxt),
+        UNO_QUERY);
     if (!xToolkit.is())
     {
         writeLog("showErrorMessage: Cannot get instance of XToolkit!\n");
@@ -223,13 +213,14 @@ static void showErrorMessage(
     // describe window properties.
     WindowDescriptor aDescriptor;
     aDescriptor.Type = WindowClass_MODALTOP;
-    aDescriptor.WindowServiceName = OUString( RTL_CONSTASCII_USTRINGPARAM( "infobox" ));
+    aDescriptor.WindowServiceName = OUString(RTL_CONSTASCII_USTRINGPARAM("infobox"));
     aDescriptor.ParentIndex = -1;
     aDescriptor.Parent = Reference<XWindowPeer>(xFrame->getContainerWindow(), UNO_QUERY);
-    aDescriptor.Bounds = Rectangle(300,200,300,200);
-    aDescriptor.WindowAttributes = WindowAttribute::BORDER | WindowAttribute::MOVEABLE | WindowAttribute::CLOSEABLE;
+    aDescriptor.Bounds = Rectangle(300, 200, 300, 200);
+    aDescriptor.WindowAttributes
+        = WindowAttribute::BORDER | WindowAttribute::MOVEABLE | WindowAttribute::CLOSEABLE;
 
-    Reference< XWindowPeer > xPeer = xToolkit->createWindow(aDescriptor);
+    Reference<XWindowPeer> xPeer = xToolkit->createWindow(aDescriptor);
     if (xPeer.is())
     {
         Reference<XMessageBox> xMsgBox(xPeer, UNO_QUERY);
@@ -248,7 +239,8 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
     bool bGotRange = calcDataRange(aJobInfo, aRange);
     if (!bGotRange)
     {
-        showErrorMessage(aJobInfo.xFrame, "ClusterRows", "Could not calculate data range from cell cursor location!", mxContext);
+        showErrorMessage(aJobInfo.xFrame, "ClusterRows",
+                         "Could not calculate data range from cell cursor location!", mxContext);
         return;
     }
 
@@ -272,26 +264,24 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
         return;
     }
 
-    Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this, getCellRangeRepr(maDataRange));
+    Reference<XDialog> xDialog = dialoghelper::createDialog("ClusterRows.xdl", mxContext, this,
+                                                            getCellRangeRepr(maDataRange));
     writeLog("onClusterRowsReqDialog: executing dialog!\n");
     xDialog->execute();
 }
 
 // XDialogEventHandler methods
-sal_Bool ClusterRowsImpl::callHandlerMethod(
-    const Reference<::com::sun::star::awt::XDialog>& xDialog,
-    const Any& /*eventObject*/,
-    const OUString& methodName)
+sal_Bool
+ClusterRowsImpl::callHandlerMethod(const Reference<::com::sun::star::awt::XDialog>& xDialog,
+                                   const Any& /*eventObject*/, const OUString& methodName)
 {
-    return dialoghelper::onAction(
-        methodName,
-        xDialog,
-        [this](const ClusterParams& aParams) {
-            // TODO: Compute clusters and write results.
-            maParams = aParams;
-            writeLog("Range = %s, mbHasHeader = %d\n", getCellRangeRepr(maDataRange).toUtf8().getStr(), mbHasHeader);
-            writeLog("Do Cluster action with given parameters!\n");
-        });
+    return dialoghelper::onAction(methodName, xDialog, [this](const ClusterParams& aParams) {
+        // TODO: Compute clusters and write results.
+        maParams = aParams;
+        writeLog("Range = %s, mbHasHeader = %d\n", getCellRangeRepr(maDataRange).toUtf8().getStr(),
+                 mbHasHeader);
+        writeLog("Do Cluster action with given parameters!\n");
+    });
 }
 
 Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()
@@ -303,8 +293,8 @@ Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()
     return aActions;
 }
 
-OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue> &rArgs,
-                                          ClusterRowsImpl::ClusterRowsImplInfo &rJobInfo)
+OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue>& rArgs,
+                                          ClusterRowsImpl::ClusterRowsImplInfo& rJobInfo)
 {
     // Extract all sublists from rArgs.
     Sequence<NamedValue> aGenericConfig;
@@ -338,9 +328,9 @@ OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue> &rArgs,
 
     // Further the environment property "EnvType" is required as minimum.
 
-    if (rJobInfo.aEnvType.isEmpty() ||
-        ((!rJobInfo.aEnvType.equalsAscii("EXECUTOR")) &&
-         (!rJobInfo.aEnvType.equalsAscii("DISPATCH"))))
+    if (rJobInfo.aEnvType.isEmpty()
+        || ((!rJobInfo.aEnvType.equalsAscii("EXECUTOR"))
+            && (!rJobInfo.aEnvType.equalsAscii("DISPATCH"))))
         return OUString("Args : \"" + rJobInfo.aEnvType + "\" isn't a valid value for EnvType");
 
     // Analyze the set of shared config data.
@@ -355,7 +345,8 @@ OUString ClusterRowsImpl::validateGetInfo(const Sequence<NamedValue> &rArgs,
     return OUString("");
 }
 
-bool ClusterRowsImpl::calcDataRange(const ClusterRowsImplInfo &rJobInfo, CellRangeAddress& aRange) const
+bool ClusterRowsImpl::calcDataRange(const ClusterRowsImplInfo& rJobInfo,
+                                    CellRangeAddress& aRange) const
 {
     TimePerf aTotal("calcDataRange");
     if (!rJobInfo.xFrame.is())
@@ -377,7 +368,8 @@ bool ClusterRowsImpl::calcDataRange(const ClusterRowsImplInfo &rJobInfo, CellRan
     return bGotRange;
 }
 
-void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJobInfo, const sal_Int32 nUserNumClusters)
+void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo& rJobInfo,
+                                  const sal_Int32 nUserNumClusters)
 {
     TimePerf aTotal("clusterRows");
 
@@ -430,12 +422,9 @@ void ClusterRowsImpl::clusterRows(const ClusterRowsImpl::ClusterRowsImplInfo &rJ
     aTotal.Stop();
 }
 
-void logError(const char *pStr)
-{
-    writeLog(pStr);
-}
+void logError(const char* pStr) { writeLog(pStr); }
 
-Reference<XModel> getModel(const Reference<XFrame> &rxFrame)
+Reference<XModel> getModel(const Reference<XFrame>& rxFrame)
 {
     Reference<XModel> xModel;
     if (!rxFrame.is())
@@ -452,7 +441,7 @@ Reference<XModel> getModel(const Reference<XFrame> &rxFrame)
     return xModel;
 }
 
-bool getDataRange(const Reference<XModel> &rxModel, CellRangeAddress &rRangeExtended)
+bool getDataRange(const Reference<XModel>& rxModel, CellRangeAddress& rRangeExtended)
 {
     Reference<XCellRangeAddressable> xRange(rxModel->getCurrentSelection(), UNO_QUERY);
     if (!xRange.is())
@@ -483,7 +472,7 @@ bool getDataRange(const Reference<XModel> &rxModel, CellRangeAddress &rRangeExte
     return true;
 }
 
-Reference<XSpreadsheet> getSheet(const Reference<XModel> &rxModel, const sal_Int32 nSheet)
+Reference<XSpreadsheet> getSheet(const Reference<XModel>& rxModel, const sal_Int32 nSheet)
 {
     Reference<XSpreadsheet> xSpreadsheet;
 
@@ -505,7 +494,8 @@ Reference<XSpreadsheet> getSheet(const Reference<XModel> &rxModel, const sal_Int
     return xSpreadsheet;
 }
 
-sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRangeAddress &rRange, const sal_Int32 nUserNumClusters)
+sal_Bool clusterColorRows(const Reference<XSpreadsheet>& rxSheet, const CellRangeAddress& rRange,
+                          const sal_Int32 nUserNumClusters)
 {
     sal_Int32 nNumCols = rRange.EndColumn - rRange.StartColumn + 1;
     sal_Int32 nNumRows = rRange.EndRow - rRange.StartRow; // Don't count the header
@@ -524,13 +514,15 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     {
         DataType aType;
 
-        for (sal_Int32 nCol = rRange.StartColumn, nColIdx = 0; nCol <= rRange.EndColumn; ++nCol, ++nColIdx)
+        for (sal_Int32 nCol = rRange.StartColumn, nColIdx = 0; nCol <= rRange.EndColumn;
+             ++nCol, ++nColIdx)
         {
             aType = DataType::INTEGER;
             bool bIsComplete = true;
             std::vector<sal_Int32> aBlankRowIdx;
             double fMin = 1.0E10, fMax = -1.0E10;
-            for (sal_Int32 nRow = rRange.StartRow + 1, nRowIdx = 0; nRow <= rRange.EndRow; ++nRow, ++nRowIdx)
+            for (sal_Int32 nRow = rRange.StartRow + 1, nRowIdx = 0; nRow <= rRange.EndRow;
+                 ++nRow, ++nRowIdx)
             {
                 Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
                 if (!xCell.is())
@@ -541,7 +533,8 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
                     {
                         aType = DataType::STRING;
                     }
-                    else if (xCell->getType() == CellContentType_VALUE && aType == DataType::INTEGER)
+                    else if (xCell->getType() == CellContentType_VALUE
+                             && aType == DataType::INTEGER)
                     {
                         double fVal = xCell->getValue();
                         if (fVal != static_cast<double>(static_cast<sal_Int64>(fVal)))
@@ -567,13 +560,14 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
             aColType[nColIdx] = aType;
             aCol2BlankRowIdx[nColIdx] = std::move(aBlankRowIdx);
 
-            writeLog("DEBUG>>> col = %d, Type = %d, isComplete = %d\n", nColIdx, aType, int(bIsComplete));
+            writeLog("DEBUG>>> col = %d, Type = %d, isComplete = %d\n", nColIdx, aType,
+                     int(bIsComplete));
         }
     }
-    catch (Exception &e)
+    catch (Exception& e)
     {
         writeLog("DEBUG>>> clusterColorRows : caught UNO exception: %s\n",
-                OUStringToOString(e.Message, RTL_TEXTENCODING_ASCII_US).getStr());
+                 OUStringToOString(e.Message, RTL_TEXTENCODING_ASCII_US).getStr());
         return false;
     }
 
@@ -583,7 +577,8 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
 
     TimePerf aPerfAcquire("dataAcquire");
     Reference<XCellRangeData> xData(
-        rxSheet->getCellRangeByPosition(rRange.StartColumn, rRange.StartRow + 1, rRange.EndColumn, rRange.EndRow),
+        rxSheet->getCellRangeByPosition(rRange.StartColumn, rRange.StartRow + 1, rRange.EndColumn,
+                                        rRange.EndRow),
         UNO_QUERY);
     Sequence<Sequence<Any>> aDataArray = xData->getDataArray();
     aPerfAcquire.Stop();
@@ -594,14 +589,16 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     std::vector<std::pair<double, double>> aFeatureScales(nNumCols);
     calculateFeatureScales(aDataArray, aColType, aFeatureScales);
     for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
-        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n", nColIdx, aColType[nColIdx], aFeatureScales[nColIdx].first, aFeatureScales[nColIdx].second);
+        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n", nColIdx,
+                 aColType[nColIdx], aFeatureScales[nColIdx].first, aFeatureScales[nColIdx].second);
     aPerfPreprocess.Stop();
 
     TimePerf aPerfCompute("computeClusters");
     std::vector<sal_Int32> aClusterLabels(nNumRows);
     std::vector<double> aLabelConfidence(nNumRows);
     sal_Int32 nNumClusters = nUserNumClusters;
-    bool bClusterOK = getClusterLabels(aDataArray, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters);
+    bool bClusterOK = getClusterLabels(aDataArray, aColType, aFeatureScales, aClusterLabels,
+                                       aLabelConfidence, nNumClusters);
     if (!bClusterOK)
     {
         logError("clusterColorRows : Clustering failed !");
@@ -629,7 +626,8 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
     {
         sal_Int32 nRow = rRange.StartRow + 1 + nRowIdx;
-        Reference<XCellRange> xThisRow = xCellRange->getCellRangeByPosition(rRange.StartColumn, nRow, rRange.EndColumn, nRow);
+        Reference<XCellRange> xThisRow
+            = xCellRange->getCellRangeByPosition(rRange.StartColumn, nRow, rRange.EndColumn, nRow);
         Reference<XPropertySet> xPropSet(xThisRow, UNO_QUERY);
         if (!xPropSet.is())
         {
@@ -648,47 +646,41 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet> &rxSheet, const CellRang
     return true;
 }
 
-bool getClusterLabels(const Sequence<Sequence<Any>> &rDataArray,
-                      const std::vector<DataType> &rColType,
-                      const std::vector<std::pair<double, double>> &rFeatureScales,
-                      std::vector<sal_Int32> &rClusterLabels,
-                      std::vector<double> &rLabelConfidence,
-                      sal_Int32 &rNumClusters)
+bool getClusterLabels(const Sequence<Sequence<Any>>& rDataArray,
+                      const std::vector<DataType>& rColType,
+                      const std::vector<std::pair<double, double>>& rFeatureScales,
+                      std::vector<sal_Int32>& rClusterLabels, std::vector<double>& rLabelConfidence,
+                      sal_Int32& rNumClusters)
 {
     //performNoOpClustering( rDataArray, rColType, rFeatureScales, rClusterLabels, rLabelConfidence, rNumClusters );
-    performEMClustering(rDataArray, rColType, rFeatureScales, rClusterLabels, rLabelConfidence, rNumClusters);
+    performEMClustering(rDataArray, rColType, rFeatureScales, rClusterLabels, rLabelConfidence,
+                        rNumClusters);
     return true;
 }
-
 
 // This is the service name an Add-On has to implement
 #define ADDIN_BASE_SERVICE_NAME "com.sun.star.sheet.AddIn"
 #define ADDIN_SERVICE_NAME "com.github.dennisfrancis.GMMCluster"
 
 // Helper functions for the implementation of UNO component interfaces.
-OUString GMMClusterImpl_getImplementationName()
-{
-    return OUString ( ADDIN_IMPLEMENTATION_NAME );
-}
+OUString GMMClusterImpl_getImplementationName() { return OUString(ADDIN_IMPLEMENTATION_NAME); }
 
-Sequence< OUString > SAL_CALL GMMClusterImpl_getSupportedServiceNames()
+Sequence<OUString> SAL_CALL GMMClusterImpl_getSupportedServiceNames()
 {
-    Sequence < OUString > aRet(2);
+    Sequence<OUString> aRet(2);
     OUString* pArray = aRet.getArray();
-    pArray[0] =  OUString ( ADDIN_BASE_SERVICE_NAME );
-    pArray[1] =  OUString ( ADDIN_SERVICE_NAME );
+    pArray[0] = OUString(ADDIN_BASE_SERVICE_NAME);
+    pArray[1] = OUString(ADDIN_SERVICE_NAME);
     return aRet;
 }
 
-Reference< XInterface > SAL_CALL GMMClusterImpl_createInstance( const Reference< XComponentContext > & rContext)
+Reference<XInterface>
+    SAL_CALL GMMClusterImpl_createInstance(const Reference<XComponentContext>& rContext)
 {
-    return (cppu::OWeakObject*) new GMMClusterImpl();
+    return (cppu::OWeakObject*)new GMMClusterImpl();
 }
 
-OUString GMMClusterImpl::getServiceName()
-{
-    return ADDIN_SERVICE_NAME;
-}
+OUString GMMClusterImpl::getServiceName() { return ADDIN_SERVICE_NAME; }
 
 // Implementation of the recommended/mandatory interfaces of a UNO component.
 // XServiceInfo
@@ -697,12 +689,12 @@ OUString SAL_CALL GMMClusterImpl::getImplementationName()
     return GMMClusterImpl_getImplementationName();
 }
 
-sal_Bool SAL_CALL GMMClusterImpl::supportsService( const OUString& rServiceName )
+sal_Bool SAL_CALL GMMClusterImpl::supportsService(const OUString& rServiceName)
 {
-    return ( rServiceName == ADDIN_BASE_SERVICE_NAME || rServiceName == ADDIN_SERVICE_NAME );
+    return (rServiceName == ADDIN_BASE_SERVICE_NAME || rServiceName == ADDIN_SERVICE_NAME);
 }
 
-Sequence< OUString > SAL_CALL GMMClusterImpl::getSupportedServiceNames(  )
+Sequence<OUString> SAL_CALL GMMClusterImpl::getSupportedServiceNames()
 {
     return GMMClusterImpl_getSupportedServiceNames();
 }
@@ -737,11 +729,12 @@ const OUString GMMClusterImpl::aArgumentDescriptions[NUMFUNCTIONS][NUMARGS] = {
     },
 };
 
-sal_Int32 GMMClusterImpl::getFunctionID( const OUString aProgrammaticFunctionName ) const
+sal_Int32 GMMClusterImpl::getFunctionID(const OUString aProgrammaticFunctionName) const
 {
-    writeLog("getFunctionID : aProgrammat = %s\n", aProgrammaticFunctionName.toUtf8().getStr());fflush(stdout);
-    for ( sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx )
-        if ( aProgrammaticFunctionName == aFunctionNames[nIdx] )
+    writeLog("getFunctionID : aProgrammat = %s\n", aProgrammaticFunctionName.toUtf8().getStr());
+    fflush(stdout);
+    for (sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx)
+        if (aProgrammaticFunctionName == aFunctionNames[nIdx])
             return nIdx;
     return -1;
 }
@@ -762,20 +755,17 @@ void getParamNumber(const Any& param, sal_Int32& nParam, const char* name)
 
 }
 
-
-Sequence< Sequence< double > > SAL_CALL
-GMMClusterImpl::gmmCluster(
-    const Sequence < Sequence < Any > >& dataConst,
-    const Any& numClusters,
-    const Any& numEpochs,
-    const Any& numIterations)
+Sequence<Sequence<double>>
+    SAL_CALL GMMClusterImpl::gmmCluster(const Sequence<Sequence<Any>>& dataConst,
+                                        const Any& numClusters, const Any& numEpochs,
+                                        const Any& numIterations)
 {
     if (!dataConst.getLength())
-        return Sequence< Sequence<double> >();
+        return Sequence<Sequence<double>>();
 
     const sal_Int32 nNumRows = dataConst.getLength();
     const sal_Int32 nNumCols = dataConst[0].getLength();
-    Sequence< Sequence< Any > > data(dataConst.getLength());
+    Sequence<Sequence<Any>> data(dataConst.getLength());
     for (sal_Int32 nIdx = 0; nIdx < nNumRows; ++nIdx)
         data[nIdx] = dataConst[nIdx];
 
@@ -791,9 +781,8 @@ GMMClusterImpl::gmmCluster(
     calculateFeatureScales(data, aColType, aFeatureScales);
     for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
     {
-        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n",
-            nColIdx, aColType[nColIdx], aFeatureScales[nColIdx].first,
-            aFeatureScales[nColIdx].second);
+        writeLog("DEBUG>>> col %d has type %d, mean = %.4f, std = %.5f\n", nColIdx,
+                 aColType[nColIdx], aFeatureScales[nColIdx].first, aFeatureScales[nColIdx].second);
     }
     aPerfPreprocess.Stop();
 
@@ -806,9 +795,11 @@ GMMClusterImpl::gmmCluster(
     getParamNumber(numClusters, nNumClusters, "numClusters");
     getParamNumber(numEpochs, nNumEpochs, "numEpochs");
     getParamNumber(numIterations, nNumIter, "numIterations");
-    writeLog("PARAMETER values: numClusters = %d, numEpoch = %d, numIterations = %d\n", nNumClusters, nNumEpochs, nNumIter);
-    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence, nNumClusters, nNumEpochs, nNumIter);
-    Sequence< Sequence <double> > aSeq(nNumRows);
+    writeLog("PARAMETER values: numClusters = %d, numEpoch = %d, numIterations = %d\n",
+             nNumClusters, nNumEpochs, nNumIter);
+    performEMClustering(data, aColType, aFeatureScales, aClusterLabels, aLabelConfidence,
+                        nNumClusters, nNumEpochs, nNumIter);
+    Sequence<Sequence<double>> aSeq(nNumRows);
     for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
     {
         aSeq[nRow].realloc(2);
@@ -819,47 +810,54 @@ GMMClusterImpl::gmmCluster(
     return aSeq;
 }
 
-OUString GMMClusterImpl::getProgrammaticFuntionName( const OUString& aDisplayName )
+OUString GMMClusterImpl::getProgrammaticFuntionName(const OUString& aDisplayName)
 {
-    writeLog("getProgrammaticFuntionName : aDisplayName = %s\n", aDisplayName.toUtf8().getStr());fflush(stdout);
-    for ( sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx )
-        if ( aDisplayName == aDisplayFunctionNames[nIdx] )
+    writeLog("getProgrammaticFuntionName : aDisplayName = %s\n", aDisplayName.toUtf8().getStr());
+    fflush(stdout);
+    for (sal_Int32 nIdx = 0; nIdx < nNumFunctions; ++nIdx)
+        if (aDisplayName == aDisplayFunctionNames[nIdx])
             return aFunctionNames[nIdx];
     return "";
 }
 
-OUString GMMClusterImpl::getDisplayFunctionName( const OUString& aProgrammaticName )
+OUString GMMClusterImpl::getDisplayFunctionName(const OUString& aProgrammaticName)
 {
-    writeLog("getProgrammaticFuntionName : aPro = %s\n", aProgrammaticName.toUtf8().getStr());fflush(stdout);
-    sal_Int32 nFIdx = getFunctionID( aProgrammaticName );
-    return ( nFIdx == -1 ) ? "" : aDisplayFunctionNames[nFIdx];
+    writeLog("getProgrammaticFuntionName : aPro = %s\n", aProgrammaticName.toUtf8().getStr());
+    fflush(stdout);
+    sal_Int32 nFIdx = getFunctionID(aProgrammaticName);
+    return (nFIdx == -1) ? "" : aDisplayFunctionNames[nFIdx];
 }
 
-OUString GMMClusterImpl::getFunctionDescription( const OUString& aProgrammaticName )
+OUString GMMClusterImpl::getFunctionDescription(const OUString& aProgrammaticName)
 {
-    sal_Int32 nFIdx = getFunctionID( aProgrammaticName );
-    return ( nFIdx == -1 ) ? "" : aDescriptions[nFIdx];
+    sal_Int32 nFIdx = getFunctionID(aProgrammaticName);
+    return (nFIdx == -1) ? "" : aDescriptions[nFIdx];
 }
 
-OUString GMMClusterImpl::getDisplayArgumentName( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
+OUString GMMClusterImpl::getDisplayArgumentName(const OUString& aProgrammaticFunctionName,
+                                                sal_Int32 nArgument)
 {
-    sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
-    return ( nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS) ) ? "" : aArgumentNames[nFIdx][nArgument];
+    sal_Int32 nFIdx = getFunctionID(aProgrammaticFunctionName);
+    return (nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS))
+               ? ""
+               : aArgumentNames[nFIdx][nArgument];
 }
 
-OUString GMMClusterImpl::getArgumentDescription( const OUString& aProgrammaticFunctionName, sal_Int32 nArgument )
+OUString GMMClusterImpl::getArgumentDescription(const OUString& aProgrammaticFunctionName,
+                                                sal_Int32 nArgument)
 {
-    sal_Int32 nFIdx = getFunctionID( aProgrammaticFunctionName );
-    return ( nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS) ) ? "" : aArgumentDescriptions[nFIdx][nArgument];
+    sal_Int32 nFIdx = getFunctionID(aProgrammaticFunctionName);
+    return (nFIdx == -1 || (nArgument < 0 || nArgument >= NUMARGS))
+               ? ""
+               : aArgumentDescriptions[nFIdx][nArgument];
 }
 
-OUString GMMClusterImpl::getProgrammaticCategoryName( const OUString& aProgrammaticFunctionName )
+OUString GMMClusterImpl::getProgrammaticCategoryName(const OUString& aProgrammaticFunctionName)
 {
     return "Add-In";
 }
 
-OUString GMMClusterImpl::getDisplayCategoryName( const OUString& aProgrammaticFunctionName )
+OUString GMMClusterImpl::getDisplayCategoryName(const OUString& aProgrammaticFunctionName)
 {
     return "Add-In";
 }
-
