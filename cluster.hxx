@@ -14,7 +14,6 @@
 
 namespace com::sun::star
 {
-
 namespace frame
 {
 class XFrame;

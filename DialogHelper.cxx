@@ -22,33 +22,32 @@ using namespace com::sun::star::beans;
 using namespace com::sun::star::uno;
 using namespace rtl;
 
-
-static OUString convertToURL(
-    const OUString& aFileInRoot,
-    const Reference<::com::sun::star::uno::XComponentContext>& xContext);
+static OUString convertToURL(const OUString& aFileInRoot,
+                             const Reference<::com::sun::star::uno::XComponentContext>& xContext);
 
 static void validateInputs(const Reference<XDialog>& xDialog);
 static Reference<XControl> getControl(const OUString& aName, const Reference<XDialog>& xDialog);
-static Reference<XNumericField> getNumericField(const OUString& aName, const Reference<XDialog>& xDialog);
+static Reference<XNumericField> getNumericField(const OUString& aName,
+                                                const Reference<XDialog>& xDialog);
 static Reference<XCheckBox> getCheckBox(const OUString& aName, const Reference<XDialog>& xDialog);
 static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog);
 static void setError(const OUString& aMsg, const Reference<XDialog>& xDialog);
 static void setMessage(const OUString& aMsg, const Reference<XDialog>& xDialog);
 static void resetError(const Reference<XDialog>& xDialog);
 static void setControlStatus(const OUString& aName, bool bEnabledStatus,
-    const Reference<XDialog>& xDialog);
+                             const Reference<XDialog>& xDialog);
 
-bool dialoghelper::onAction(
-    const OUString& actionName,
-    const Reference<XDialog>& xDialog,
-    const std::function<void(const ClusterParams&)>& rClusterCallback)
+bool dialoghelper::onAction(const OUString& actionName, const Reference<XDialog>& xDialog,
+                            const std::function<void(const ClusterParams&)>& rClusterCallback)
 {
     writeLog("onAction: actionName = %s\n", actionName.toUtf8().getStr());
     if (actionName == "onOKButtonPress")
     {
         ClusterParams aParams = getParamsFromDialog(xDialog);
-        writeLog("onOKButtonPress: aParams: mnNumClusters = %d, mnNumEpochs = %d, mnNumIterations = %d mbColorClusters = %s\n",
-            aParams.mnNumClusters, aParams.mnNumEpochs, aParams.mnNumIterations, aParams.mbColorClusters ? "true" : "false");
+        writeLog("onOKButtonPress: aParams: mnNumClusters = %d, mnNumEpochs = %d, mnNumIterations "
+                 "= %d mbColorClusters = %s\n",
+                 aParams.mnNumClusters, aParams.mnNumEpochs, aParams.mnNumIterations,
+                 aParams.mbColorClusters ? "true" : "false");
         setMessage("Computing clusters...", xDialog);
         rClusterCallback(aParams);
         xDialog->endExecute();
@@ -68,20 +67,21 @@ bool dialoghelper::onAction(
     return false;
 }
 
-Reference<XDialog> dialoghelper::createDialog(
-    const OUString& aDialogXDL,
-    const Reference<XComponentContext>& xContext,
-    const Reference<XDialogEventHandler>& xHandler,
-    const OUString& aCellRangeRepr)
+Reference<XDialog> dialoghelper::createDialog(const OUString& aDialogXDL,
+                                              const Reference<XComponentContext>& xContext,
+                                              const Reference<XDialogEventHandler>& xHandler,
+                                              const OUString& aCellRangeRepr)
 {
     Reference<XDialogProvider2> xDialogProvider(
-        xContext->getServiceManager()->
-            createInstanceWithContext("com.sun.star.awt.DialogProvider2", xContext), UNO_QUERY);
+        xContext->getServiceManager()->createInstanceWithContext("com.sun.star.awt.DialogProvider2",
+                                                                 xContext),
+        UNO_QUERY);
 
     if (!xDialogProvider.is())
         return Reference<XDialog>();
 
-    Reference<XDialog> xDialog = xDialogProvider->createDialogWithHandler(convertToURL(aDialogXDL, xContext), xHandler);
+    Reference<XDialog> xDialog
+        = xDialogProvider->createDialogWithHandler(convertToURL(aDialogXDL, xContext), xHandler);
     if (xDialog.is())
     {
         Reference<XFixedText> xLabel(getControl("LabelField_DataRange", xDialog), UNO_QUERY);
@@ -96,23 +96,25 @@ Reference<XDialog> dialoghelper::createDialog(
     return xDialog;
 }
 
-static OUString convertToURL(
-    const OUString& aFileInRoot,
-    const Reference<::com::sun::star::uno::XComponentContext>& xContext)
+static OUString convertToURL(const OUString& aFileInRoot,
+                             const Reference<::com::sun::star::uno::XComponentContext>& xContext)
 {
     Reference<XPackageInformationProvider> xInfoProvider(PackageInformationProvider::get(xContext));
-    OUString aURL = xInfoProvider->getPackageLocation("com.github.dennisfrancis.ClusterRowsImpl") + "/" + aFileInRoot;
+    OUString aURL = xInfoProvider->getPackageLocation("com.github.dennisfrancis.ClusterRowsImpl")
+                    + "/" + aFileInRoot;
     osl::File aFile(aURL);
     osl::FileBase::RC aRet = aFile.open(osl_File_OpenFlag_Read);
     if (aRet != osl::FileBase::E_None)
     {
-        writeLog("convertToURL file open FAILED: aFileInRoot = %s, aURL = %s\n", aFileInRoot.toUtf8().getStr(), aURL.toUtf8().getStr());
+        writeLog("convertToURL file open FAILED: aFileInRoot = %s, aURL = %s\n",
+                 aFileInRoot.toUtf8().getStr(), aURL.toUtf8().getStr());
         return "";
     }
     aRet = aFile.close();
     if (aRet != osl::FileBase::E_None)
     {
-        writeLog("convertToURL file close FAILED: aFileInRoot = %s, aURL = %s\n", aFileInRoot.toUtf8().getStr(), aURL.toUtf8().getStr());
+        writeLog("convertToURL file close FAILED: aFileInRoot = %s, aURL = %s\n",
+                 aFileInRoot.toUtf8().getStr(), aURL.toUtf8().getStr());
         return "";
     }
     return aURL;
@@ -168,13 +170,10 @@ static void setMessage(const OUString& aMsg, const Reference<XDialog>& xDialog)
     xLabel->setText(aMsg);
 }
 
-static void resetError(const Reference<XDialog>& xDialog)
-{
-    setError("", xDialog);
-}
+static void resetError(const Reference<XDialog>& xDialog) { setError("", xDialog); }
 
 static void setControlStatus(const OUString& aName, bool bEnabledStatus,
-    const Reference<XDialog>& xDialog)
+                             const Reference<XDialog>& xDialog)
 {
     Reference<XControl> xCtrl = getControl(aName, xDialog);
     if (!xCtrl.is())
@@ -186,7 +185,8 @@ static void setControlStatus(const OUString& aName, bool bEnabledStatus,
     Reference<XPropertySet> xCtrlProps(xCtrl->getModel(), UNO_QUERY);
     if (!xCtrlProps.is())
     {
-        writeLog("setError: FAILED: cannot get control props name = %s!\n", aName.toUtf8().getStr());
+        writeLog("setError: FAILED: cannot get control props name = %s!\n",
+                 aName.toUtf8().getStr());
         return;
     }
 
@@ -195,18 +195,21 @@ static void setControlStatus(const OUString& aName, bool bEnabledStatus,
 
 static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog)
 {
-    ClusterParams aParams{-1, -1, -1, false};
-    if (Reference<XNumericField> xField = getNumericField("NumericField_NumClusters", xDialog); xField.is())
+    ClusterParams aParams{ -1, -1, -1, false };
+    if (Reference<XNumericField> xField = getNumericField("NumericField_NumClusters", xDialog);
+        xField.is())
     {
         aParams.mnNumClusters = xField->getValue();
     }
 
-    if (Reference<XNumericField> xField = getNumericField("NumericField_NumEpochs", xDialog); xField.is())
+    if (Reference<XNumericField> xField = getNumericField("NumericField_NumEpochs", xDialog);
+        xField.is())
     {
         aParams.mnNumEpochs = xField->getValue();
     }
 
-    if (Reference<XNumericField> xField = getNumericField("NumericField_NumIter", xDialog); xField.is())
+    if (Reference<XNumericField> xField = getNumericField("NumericField_NumIter", xDialog);
+        xField.is())
     {
         aParams.mnNumIterations = xField->getValue();
     }
@@ -219,18 +222,22 @@ static ClusterParams getParamsFromDialog(const Reference<XDialog>& xDialog)
     return aParams;
 }
 
-static Reference<XNumericField> getNumericField(const OUString& aName, const Reference<XDialog>& xDialog)
+static Reference<XNumericField> getNumericField(const OUString& aName,
+                                                const Reference<XDialog>& xDialog)
 {
     Reference<XControl> xCtrl(getControl(aName, xDialog));
     if (!xCtrl.is())
     {
-        writeLog("getNumericField FAILED: getControl returned no XControl for aName = %s\n", aName.toUtf8().getStr());
+        writeLog("getNumericField FAILED: getControl returned no XControl for aName = %s\n",
+                 aName.toUtf8().getStr());
         return Reference<XNumericField>();
     }
 
     Reference<XNumericField> xNumField(xCtrl, UNO_QUERY);
     if (!xNumField.is())
-        writeLog("getNumericField FAILED: could not get XNumericField from XControl for aName = %s\n", aName.toUtf8().getStr());
+        writeLog(
+            "getNumericField FAILED: could not get XNumericField from XControl for aName = %s\n",
+            aName.toUtf8().getStr());
 
     return xNumField;
 }
@@ -240,13 +247,15 @@ static Reference<XCheckBox> getCheckBox(const OUString& aName, const Reference<X
     Reference<XControl> xCtrl(getControl(aName, xDialog));
     if (!xCtrl.is())
     {
-        writeLog("getCheckBox FAILED: getControl returned no XControl for aName = %s\n", aName.toUtf8().getStr());
+        writeLog("getCheckBox FAILED: getControl returned no XControl for aName = %s\n",
+                 aName.toUtf8().getStr());
         return Reference<XCheckBox>();
     }
 
     Reference<XCheckBox> xCheck(xCtrl, UNO_QUERY);
     if (!xCheck.is())
-        writeLog("getCheckBox FAILED: could not get XCheckBox from XControl for aName = %s\n", aName.toUtf8().getStr());
+        writeLog("getCheckBox FAILED: could not get XCheckBox from XControl for aName = %s\n",
+                 aName.toUtf8().getStr());
 
     return xCheck;
 }
