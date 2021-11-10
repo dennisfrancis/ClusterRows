@@ -310,12 +310,36 @@ bool hasHeader(const Reference<XSpreadsheet>& xSheet, CellRangeAddress& aRange)
 
 OUString getCellAddressRepr(sal_Int32 nColumn, sal_Int32 nRow)
 {
-	OUString aStr = "";
-	if (nColumn > 25)
-		aStr += OUString('A' + nColumn / 26 - 1);
-	aStr += OUString('A' + nColumn % 26);
-	aStr += OUString::number(nRow + 1);
-	return aStr;
+	// Adapted from the function lcl_ScColToAlpha() in sc/source/core/tool/address.cxx
+	// in LibreOffice/core.git
+
+	OUStringBuffer aBuf;
+	if (nColumn < 26*26)
+    {
+        if (nColumn < 26)
+            aBuf.append(static_cast<char>('A' + nColumn));
+        else
+        {
+            aBuf.append(static_cast<char>('A' + nColumn / 26 - 1));
+            aBuf.append(static_cast<char>('A' + nColumn % 26));
+        }
+    }
+    else
+    {
+        sal_Int32 nInsert = aBuf.getLength();
+        while (nColumn >= 26)
+        {
+            sal_Int32 nC = nColumn % 26;
+            aBuf.insert(nInsert, static_cast<char>('A' + nC));
+            nColumn = nColumn - nC;
+            nColumn = nColumn / 26 - 1;
+        }
+        aBuf.insert(nInsert, static_cast<char>('A' + nColumn));
+    }
+
+	aBuf.append(nRow + 1, 10);
+
+	return aBuf.makeStringAndClear();
 }
 
 OUString getCellRangeRepr(const CellRangeAddress& aRange)
