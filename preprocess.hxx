@@ -13,34 +13,26 @@
 using com::sun::star::uno::Any;
 using com::sun::star::uno::Sequence;
 
-void getColTypes(const Sequence < Sequence < Any > >& rData,
-                 std::vector< DataType >& rColType,
+void getColTypes(const Sequence<Sequence<Any>>& rData, std::vector<DataType>& rColType,
                  std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-void flagEmptyEntries(Sequence<Sequence<Any>> &rDataArray,
-                      const std::vector<DataType> &rColType,
-                      const std::vector<std::vector<sal_Int32>> &rCol2BlankRowIdx);
+void flagEmptyEntries(Sequence<Sequence<Any>>& rDataArray, const std::vector<DataType>& rColType,
+                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-void imputeAllColumns(Sequence<Sequence<Any>> &rDataArray,
-                      std::vector<DataType> &rColType,
-                      const std::vector<std::vector<sal_Int32>> &rCol2BlankRowIdx);
+void imputeAllColumns(Sequence<Sequence<Any>>& rDataArray, std::vector<DataType>& rColType,
+                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-bool imputeWithMode(Sequence<Sequence<Any>> &rDataArray,
-                    const sal_Int32 nColIdx,
-                    const DataType aType,
-                    const std::vector<sal_Int32> &rEmptyRowIndices);
+bool imputeWithMode(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
+                    const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
 
-bool imputeWithMedian(Sequence<Sequence<Any>> &rDataArray,
-                      const sal_Int32 nColIdx,
-                      const DataType aType,
-                      const std::vector<sal_Int32> &rEmptyRowIndices);
+bool imputeWithMedian(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
+                      const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
 
-void calculateFeatureScales(Sequence<Sequence<Any>> &rDataArray,
-                            const std::vector<DataType> &rColType,
-                            std::vector<std::pair<double, double>> &rFeatureScales);
+void calculateFeatureScales(Sequence<Sequence<Any>>& rDataArray,
+                            const std::vector<DataType>& rColType,
+                            std::vector<std::pair<double, double>>& rFeatureScales);
 
-void getColTypes(const Sequence < Sequence < Any > >& rData,
-                 std::vector< DataType >& rColType,
+void getColTypes(const Sequence<Sequence<Any>>& rData, std::vector<DataType>& rColType,
                  std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
 {
     sal_Int32 nNumRows = rData.getLength();
@@ -92,13 +84,13 @@ void getColTypes(const Sequence < Sequence < Any > >& rData,
         rColType[nCol] = aType;
         rCol2BlankRowIdx[nCol] = std::move(aBlankRowIdx);
 
-        writeLog("DEBUG>>> col = %d, Type = %s, isComplete = %d\n", nCol, DataType2String(aType), int(bIsComplete));
+        writeLog("DEBUG>>> col = %d, Type = %s, isComplete = %d\n", nCol, DataType2String(aType),
+                 int(bIsComplete));
     }
 }
 
-void flagEmptyEntries(Sequence<Sequence<Any>> &rDataArray,
-                      const std::vector<DataType> &rColType,
-                      const std::vector<std::vector<sal_Int32>> &rCol2BlankRowIdx)
+void flagEmptyEntries(Sequence<Sequence<Any>>& rDataArray, const std::vector<DataType>& rColType,
+                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
 {
     sal_Int32 nNumCols = rColType.size();
     for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
@@ -113,9 +105,8 @@ void flagEmptyEntries(Sequence<Sequence<Any>> &rDataArray,
     }
 }
 
-void imputeAllColumns(Sequence<Sequence<Any>> &rDataArray,
-                      std::vector<DataType> &rColType,
-                      const std::vector<std::vector<sal_Int32>> &rCol2BlankRowIdx)
+void imputeAllColumns(Sequence<Sequence<Any>>& rDataArray, std::vector<DataType>& rColType,
+                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
 {
     sal_Int32 nNumCols = rColType.size();
     for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
@@ -136,10 +127,8 @@ void imputeAllColumns(Sequence<Sequence<Any>> &rDataArray,
     }
 }
 
-bool imputeWithMode(Sequence<Sequence<Any>> &rDataArray,
-                    const sal_Int32 nColIdx,
-                    const DataType aType,
-                    const std::vector<sal_Int32> &rEmptyRowIndices)
+bool imputeWithMode(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
+                    const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices)
 {
     std::unordered_multiset<OUString, OUStringHash> aStringMultiSet;
     std::unordered_multiset<double> aDoubleMultiSet;
@@ -150,8 +139,8 @@ bool imputeWithMode(Sequence<Sequence<Any>> &rDataArray,
     for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
     {
         Any aElement = rDataArray[nRowIdx][nColIdx];
-        if ((aType == DataType::STRING && aElement == EMPTYSTRING) ||
-            (aType == DataType::DOUBLE && aElement == EMPTYDOUBLE))
+        if ((aType == DataType::STRING && aElement == EMPTYSTRING)
+            || (aType == DataType::DOUBLE && aElement == EMPTYDOUBLE))
             continue;
 
         sal_Int32 nCount = 0;
@@ -200,10 +189,8 @@ bool imputeWithMode(Sequence<Sequence<Any>> &rDataArray,
     return bGood;
 }
 
-bool imputeWithMedian(Sequence<Sequence<Any>> &rDataArray,
-                      const sal_Int32 nColIdx,
-                      const DataType aType,
-                      const std::vector<sal_Int32> &rEmptyRowIndices)
+bool imputeWithMedian(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
+                      const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices)
 {
     // We are sure that this function is not called for Any == OUString
     assert(aType != DataType::STRING && "imputeWithMedian called with type OUString !!!");
@@ -233,9 +220,9 @@ bool imputeWithMedian(Sequence<Sequence<Any>> &rDataArray,
     return true;
 }
 
-void calculateFeatureScales(Sequence<Sequence<Any>> &rDataArray,
-                            const std::vector<DataType> &rColType,
-                            std::vector<std::pair<double, double>> &rFeatureScales)
+void calculateFeatureScales(Sequence<Sequence<Any>>& rDataArray,
+                            const std::vector<DataType>& rColType,
+                            std::vector<std::pair<double, double>>& rFeatureScales)
 {
     sal_Int32 nNumRows = rDataArray.getLength();
     sal_Int32 nNumCols = rColType.size();
@@ -259,4 +246,3 @@ void calculateFeatureScales(Sequence<Sequence<Any>> &rDataArray,
         rFeatureScales[nColIdx].second = (fStd == 0.0) ? fMean : fStd;
     }
 }
-
