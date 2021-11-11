@@ -465,6 +465,15 @@ bool getDataRange(const Reference<XModel>& rxModel, CellRangeAddress& rRangeExte
     rRangeExtended.StartRow = aRange.StartRow;
     rRangeExtended.EndRow = aRange.EndRow;
 
+    constexpr sal_Int32 nMaxRowsInSelection = 8000;
+    constexpr sal_Int32 nMaxColsInSelection = 100;
+    sal_Int32 nNumRows = rRangeExtended.EndRow - rRangeExtended.StartRow + 1;
+    sal_Int32 nNumCols = rRangeExtended.EndColumn - rRangeExtended.StartColumn + 1;
+    if (nNumRows > nMaxRowsInSelection)
+        rRangeExtended.EndRow = rRangeExtended.StartRow + nMaxRowsInSelection - 1;
+    if (nNumCols > nMaxColsInSelection)
+        rRangeExtended.EndColumn = rRangeExtended.StartColumn + nMaxColsInSelection - 1;
+
     shrinkRangeToData(xSheet, rRangeExtended);
     if (rangeIsSingleCell(rRangeExtended))
     {
