@@ -19,6 +19,7 @@
 #include <com/sun/star/sheet/XSpreadsheets.hpp>
 #include <com/sun/star/sheet/XSheetCellCursor.hpp>
 #include <com/sun/star/sheet/XCellRangeData.hpp>
+#include <com/sun/star/sheet/XArrayFormulaRange.hpp>
 
 #include <com/sun/star/container/XIndexContainer.hpp>
 #include <com/sun/star/container/XIndexAccess.hpp>
@@ -248,6 +249,7 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
     Reference<XModel> xModel = getModel(aJobInfo.xFrame);
     Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
+    mxSheet = xSheet;
     maDataRange = aRange;
     mbHasHeader = false;
     if (hasHeader(xSheet, aRange))
@@ -280,7 +282,33 @@ ClusterRowsImpl::callHandlerMethod(const Reference<::com::sun::star::awt::XDialo
         maParams = aParams;
         writeLog("Range = %s, mbHasHeader = %d\n", getCellRangeRepr(maDataRange).toUtf8().getStr(),
                  mbHasHeader);
-        writeLog("Do Cluster action with given parameters!\n");
+        sal_Int32 nColStart = maDataRange.EndColumn + 1;
+        sal_Int32 nColEnd = nColStart + 1;
+        sal_Int32 nRowStart = maDataRange.StartRow;
+        sal_Int32 nRowEnd = maDataRange.EndRow;
+        Reference<XCellRange> xRange(
+            mxSheet->getCellRangeByPosition(nColStart, nRowStart, nColEnd, nRowEnd));
+        Reference<XArrayFormulaRange> xAFR(xRange, UNO_QUERY);
+        if (!xAFR.is())
+        {
+            writeLog("onAction callback: FAILED: Cannot get XArrayFormulaRange from XCellRange for "
+                     "writing the array formula!");
+            return;
+        }
+
+        xAFR->setArrayFormula("=COM.GITHUB.DENNISFRANCIS.GMMCLUSTER.GMMCLUSTER("
+                              + getCellRangeRepr(maDataRange) + ";"
+                              + OUString::number(maParams.mnNumClusters) + ";"
+                              + OUString::number(maParams.mnNumEpochs) + ";"
+                              + OUString::number(maParams.mnNumIterations) + ")");
+
+        if (mbHasHeader)
+        {
+            Reference<XCell> xCell = mxSheet->getCellByPosition(nColStart, nRowStart - 1);
+            xCell->setFormula("ClusterId");
+            xCell = mxSheet->getCellByPosition(nColStart + 1, nRowStart - 1);
+            xCell->setFormula("Confidence");
+        }
     });
 }
 

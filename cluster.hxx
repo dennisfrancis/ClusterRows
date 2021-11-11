@@ -34,6 +34,11 @@ namespace table
 struct CellRangeAddress;
 }
 
+namespace sheet
+{
+struct XSpreadsheet;
+}
+
 }
 
 class ClusterRowsImpl : public cppu::WeakImplHelper3<com::sun::star::task::XJob,
@@ -42,6 +47,7 @@ class ClusterRowsImpl : public cppu::WeakImplHelper3<com::sun::star::task::XJob,
 {
 private:
     ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> mxContext;
+    ::com::sun::star::uno::Reference<::com::sun::star::sheet::XSpreadsheet> mxSheet;
     ClusterParams maParams;
     ::com::sun::star::table::CellRangeAddress maDataRange;
     bool mbHasHeader : 1;
