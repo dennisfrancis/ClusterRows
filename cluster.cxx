@@ -245,6 +245,14 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
         return;
     }
 
+    if (aRange.EndColumn + 2 > MAXCOL)
+    {
+        // No space to write results!
+        showErrorMessage(aJobInfo.xFrame, "ClusterRows",
+                         "No columns to the right of the data table to write results!", mxContext);
+        return;
+    }
+
     sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
     Reference<XModel> xModel = getModel(aJobInfo.xFrame);
