@@ -18,6 +18,37 @@ using com::sun::star::table::CellRangeAddress;
 using com::sun::star::table::XCell;
 using com::sun::star::uno::Reference;
 
+bool isCellEmpty(const Reference<XSpreadsheet>& rxSheet, sal_Int32 nCol, sal_Int32 nRow)
+{
+    Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
+    if (!xCell.is())
+    {
+        writeLog("DEBUG>>> isCellEmpty : xCell(%d, %d) is invalid.\n", nCol, nRow);
+        return false;
+    }
+    return (xCell->getType() == CellContentType_EMPTY);
+}
+
+bool isColumnEmpty(const Reference<XSpreadsheet>& rxSheet, sal_Int32 nCol, sal_Int32 nStartRow,
+                   sal_Int32 nEndRow)
+{
+    for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
+        if (!isCellEmpty(rxSheet, nCol, nRow))
+            return false;
+
+    return true;
+}
+
+bool isRowEmpty(const Reference<XSpreadsheet>& rxSheet, sal_Int32 nRow, sal_Int32 nStartCol,
+                sal_Int32 nEndCol)
+{
+    for (sal_Int32 nCol = nStartCol; nCol <= nEndCol; ++nCol)
+        if (!isCellEmpty(rxSheet, nCol, nRow))
+            return false;
+
+    return true;
+}
+
 void shrinkRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress& rRangeExtended)
 {
     sal_Int32 nStartCol = rRangeExtended.StartColumn;
@@ -29,20 +60,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Shrink nStartCol
     for (sal_Int32 nCol = nStartCol; (nCol <= nEndCol && !bStop); ++nCol)
     {
-        bool bColEmpty = true;
-        for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bColEmpty = false;
-                break;
-            }
-        }
+        bool bColEmpty = isColumnEmpty(rxSheet, nCol, nStartRow, nEndRow);
         if (!bColEmpty)
         {
             bStop = true;
@@ -56,20 +74,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Shrink nEndCol
     for (sal_Int32 nCol = nEndCol; (nCol >= nStartCol && !bStop); --nCol)
     {
-        bool bColEmpty = true;
-        for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bColEmpty = false;
-                break;
-            }
-        }
+        bool bColEmpty = isColumnEmpty(rxSheet, nCol, nStartRow, nEndRow);
         if (!bColEmpty)
         {
             bStop = true;
@@ -85,21 +90,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Shrink nStartRow
     for (sal_Int32 nRow = nStartRow; (nRow <= nEndRow && !bStop); ++nRow)
     {
-        bool bRowEmpty = true;
-        for (sal_Int32 nCol = nStartCol; nCol <= nEndCol; ++nCol)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                //writeLog("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow );
-                bRowEmpty = false;
-                break;
-            }
-        }
+        bool bRowEmpty = isRowEmpty(rxSheet, nRow, nStartCol, nEndCol);
         if (!bRowEmpty)
         {
             bStop = true;
@@ -116,20 +107,7 @@ void shrinkRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Shrink nEndRow
     for (sal_Int32 nRow = nEndRow; (nRow >= nStartRow && !bStop); --nRow)
     {
-        bool bRowEmpty = true;
-        for (sal_Int32 nCol = nStartCol; nCol <= nEndCol; ++nCol)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bRowEmpty = false;
-                break;
-            }
-        }
+        bool bRowEmpty = isRowEmpty(rxSheet, nRow, nStartCol, nEndCol);
         if (!bRowEmpty)
         {
             bStop = true;
@@ -159,20 +137,7 @@ void expandRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Extend nStartCol
     for (sal_Int32 nCol = nStartCol - 1; (nCol >= 0 && !bStop); --nCol)
     {
-        bool bColEmpty = true;
-        for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bColEmpty = false;
-                break;
-            }
-        }
+        bool bColEmpty = isColumnEmpty(rxSheet, nCol, nStartRow, nEndRow);
         if (bColEmpty)
         {
             bStop = true;
@@ -186,20 +151,7 @@ void expandRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Extend nEndCol
     for (sal_Int32 nCol = nEndCol + 1; (nCol <= MAXCOL && !bStop); ++nCol)
     {
-        bool bColEmpty = true;
-        for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bColEmpty = false;
-                break;
-            }
-        }
+        bool bColEmpty = isColumnEmpty(rxSheet, nCol, nStartRow, nEndRow);
         if (bColEmpty)
         {
             bStop = true;
@@ -215,21 +167,7 @@ void expandRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Extend nStartRow
     for (sal_Int32 nRow = nStartRow - 1; (nRow >= 0 && !bStop); --nRow)
     {
-        bool bRowEmpty = true;
-        for (sal_Int32 nCol = nStartCol; nCol <= nEndCol; ++nCol)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                //writeLog("DEBUG>>> found cell at col = %d, row = %d non-empty\n", nCol, nRow );
-                bRowEmpty = false;
-                break;
-            }
-        }
+        bool bRowEmpty = isRowEmpty(rxSheet, nRow, nStartCol, nEndCol);
         if (bRowEmpty)
         {
             bStop = true;
@@ -246,20 +184,7 @@ void expandRangeToData(const Reference<XSpreadsheet>& rxSheet, CellRangeAddress&
     // Extend nEndRow
     for (sal_Int32 nRow = nEndRow + 1; (nRow <= MAXROW && !bStop); ++nRow)
     {
-        bool bRowEmpty = true;
-        for (sal_Int32 nCol = nStartCol; nCol <= nEndCol; ++nCol)
-        {
-            Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
-            if (!xCell.is())
-            {
-                writeLog("DEBUG>>> getDataRange : xCell(%d, %d) is invalid.\n", nCol, nRow);
-            }
-            else if (xCell->getType() != CellContentType_EMPTY)
-            {
-                bRowEmpty = false;
-                break;
-            }
-        }
+        bool bRowEmpty = isRowEmpty(rxSheet, nRow, nStartCol, nEndCol);
         if (bRowEmpty)
         {
             bStop = true;
