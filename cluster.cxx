@@ -466,7 +466,40 @@ bool getDataRange(const Reference<XModel>& rxModel, CellRangeAddress& rRangeExte
     rRangeExtended.EndRow = aRange.EndRow;
 
     shrinkRangeToData(xSheet, rRangeExtended);
+    if (rangeIsSingleCell(rRangeExtended))
+    {
+        bool bEmpty = isCellEmpty(xSheet, rRangeExtended.StartColumn, rRangeExtended.StartRow);
+        bool bEmptyAbove = true;
+        if (rRangeExtended.StartRow)
+            bEmptyAbove
+                = isCellEmpty(xSheet, rRangeExtended.StartColumn, rRangeExtended.StartRow - 1);
+        bool bEmptyBelow = true;
+        if (rRangeExtended.StartRow < MAXROW)
+            bEmptyBelow
+                = isCellEmpty(xSheet, rRangeExtended.StartColumn, rRangeExtended.StartRow + 1);
+
+        if (bEmpty)
+        {
+            if (!bEmptyBelow)
+            {
+                ++rRangeExtended.StartRow;
+                ++rRangeExtended.EndRow;
+            }
+            else if (!bEmptyAbove)
+            {
+                --rRangeExtended.StartRow;
+                --rRangeExtended.EndRow;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
+    writeLog("after shrink: range = %s\n", getCellRangeRepr(rRangeExtended).toUtf8().getStr());
     expandRangeToData(xSheet, rRangeExtended);
+    writeLog("after expand: range = %s\n", getCellRangeRepr(rRangeExtended).toUtf8().getStr());
     excludeResultColumns(xSheet, rRangeExtended);
 
     return true;

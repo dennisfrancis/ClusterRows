@@ -18,6 +18,11 @@ using com::sun::star::table::CellRangeAddress;
 using com::sun::star::table::XCell;
 using com::sun::star::uno::Reference;
 
+bool rangeIsSingleCell(const CellRangeAddress& rRange)
+{
+    return (rRange.StartColumn == rRange.EndColumn) && (rRange.StartRow == rRange.EndRow);
+}
+
 bool isCellEmpty(const Reference<XSpreadsheet>& rxSheet, sal_Int32 nCol, sal_Int32 nRow)
 {
     Reference<XCell> xCell = rxSheet->getCellByPosition(nCol, nRow);
