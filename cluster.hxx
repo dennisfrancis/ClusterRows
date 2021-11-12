@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COM_GITHUB_DENNISFRANCIS_CLUSTERROWS_HXX
-#define COM_GITHUB_DENNISFRANCIS_CLUSTERROWS_HXX
+#pragma once
 
 #include <com/sun/star/task/XJob.hpp>
 #include <com/sun/star/awt/XDialogEventHandler.hpp>
@@ -122,5 +121,3 @@ sal_Bool SAL_CALL ClusterRowsImpl_supportsService(const ::rtl::OUString& Service
 ::com::sun::star::uno::Reference<::com::sun::star::uno::XInterface>
     SAL_CALL ClusterRowsImpl_createInstance(
         const ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext>& rContext);
-
-#endif

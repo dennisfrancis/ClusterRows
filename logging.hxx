@@ -16,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COM_GITHUB_DENNISFRANCIS_LOGGING_HXX
-#define COM_GITHUB_DENNISFRANCIS_LOGGING_HXX
+#pragma once
 
 void writeLog(const char* format, ...);
-
-#endif

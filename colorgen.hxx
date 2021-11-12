@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CLUSTERROWS_COLORGEN__
-#define __CLUSTERROWS_COLORGEN__
+#pragma once
 
 #include <cppu/unotype.hxx>
 #include <vector>
@@ -96,5 +95,3 @@ void getRowColors(const std::vector<sal_Int32>& rClusterLabels,
         rRowColors[nRowIdx] = ((nColrRed << 16) | (nColrGreen << 8) | nColrBlue);
     }
 }
-
-#endif
