@@ -286,38 +286,41 @@ ClusterRowsImpl::callHandlerMethod(const Reference<::com::sun::star::awt::XDialo
                                    const Any& /*eventObject*/, const OUString& methodName)
 {
     return dialoghelper::onAction(methodName, xDialog, [this](const ClusterParams& aParams) {
-        // TODO: Compute clusters and write results.
         maParams = aParams;
         writeLog("Range = %s, mbHasHeader = %d\n", getCellRangeRepr(maDataRange).toUtf8().getStr(),
                  mbHasHeader);
-        sal_Int32 nColStart = maDataRange.EndColumn + 1;
-        sal_Int32 nColEnd = nColStart + 1;
-        sal_Int32 nRowStart = maDataRange.StartRow;
-        sal_Int32 nRowEnd = maDataRange.EndRow;
-        Reference<XCellRange> xRange(
-            mxSheet->getCellRangeByPosition(nColStart, nRowStart, nColEnd, nRowEnd));
-        Reference<XArrayFormulaRange> xAFR(xRange, UNO_QUERY);
-        if (!xAFR.is())
-        {
-            writeLog("onAction callback: FAILED: Cannot get XArrayFormulaRange from XCellRange for "
-                     "writing the array formula!");
-            return;
-        }
-
-        xAFR->setArrayFormula("=COM.GITHUB.DENNISFRANCIS.GMMCLUSTER.GMMCLUSTER("
-                              + getCellRangeRepr(maDataRange) + ";"
-                              + OUString::number(maParams.mnNumClusters) + ";"
-                              + OUString::number(maParams.mnNumEpochs) + ";"
-                              + OUString::number(maParams.mnNumIterations) + ")");
-
-        if (mbHasHeader)
-        {
-            Reference<XCell> xCell = mxSheet->getCellByPosition(nColStart, nRowStart - 1);
-            xCell->setFormula("ClusterId");
-            xCell = mxSheet->getCellByPosition(nColStart + 1, nRowStart - 1);
-            xCell->setFormula("Confidence");
-        }
+        writeResults();
     });
+}
+
+void ClusterRowsImpl::writeResults() const
+{
+    sal_Int32 nColStart = maDataRange.EndColumn + 1;
+    sal_Int32 nColEnd = nColStart + 1;
+    sal_Int32 nRowStart = maDataRange.StartRow;
+    sal_Int32 nRowEnd = maDataRange.EndRow;
+    Reference<XCellRange> xRange(
+        mxSheet->getCellRangeByPosition(nColStart, nRowStart, nColEnd, nRowEnd));
+    Reference<XArrayFormulaRange> xAFR(xRange, UNO_QUERY);
+    if (!xAFR.is())
+    {
+        writeLog("onAction callback: FAILED: Cannot get XArrayFormulaRange from XCellRange for "
+                 "writing the array formula!");
+        return;
+    }
+
+    xAFR->setArrayFormula(
+        "=COM.GITHUB.DENNISFRANCIS.GMMCLUSTER.GMMCLUSTER(" + getCellRangeRepr(maDataRange) + ";"
+        + OUString::number(maParams.mnNumClusters) + ";" + OUString::number(maParams.mnNumEpochs)
+        + ";" + OUString::number(maParams.mnNumIterations) + ")");
+
+    if (mbHasHeader)
+    {
+        Reference<XCell> xCell = mxSheet->getCellByPosition(nColStart, nRowStart - 1);
+        xCell->setFormula("ClusterId");
+        xCell = mxSheet->getCellByPosition(nColStart + 1, nRowStart - 1);
+        xCell->setFormula("Confidence");
+    }
 }
 
 Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()
