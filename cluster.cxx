@@ -353,6 +353,14 @@ void ClusterRowsImpl::writeResults() const
         return;
     }
 
+    Reference<XUndoManagerSupplier> xUndoSupplier(mxDoc, UNO_QUERY);
+    Reference<XUndoManager> xUndoMgr;
+    if (xUndoSupplier.is())
+        xUndoMgr = xUndoSupplier->getUndoManager();
+
+    if (xUndoMgr.is())
+        xUndoMgr->enterUndoContext(OUString("ClusterRowsImpl_UNDO"));
+
     xAFR->setArrayFormula(
         "=COM.GITHUB.DENNISFRANCIS.GMMCLUSTER.GMMCLUSTER(" + getCellRangeRepr(maDataRange) + ";"
         + OUString::number(maParams.mnNumClusters) + ";" + OUString::number(maParams.mnNumEpochs)
@@ -371,6 +379,9 @@ void ClusterRowsImpl::writeResults() const
         addClusterStyles();
         colorClusterData();
     }
+
+    if (xUndoMgr.is())
+        xUndoMgr->leaveUndoContext();
 }
 
 void ClusterRowsImpl::colorClusterData() const
