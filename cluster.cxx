@@ -23,6 +23,8 @@
 #include <com/sun/star/beans/NamedValue.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
 
+#include <com/sun/star/lang/XMultiServiceFactory.hpp>
+
 #include <com/sun/star/frame/DispatchResultEvent.hpp>
 #include <com/sun/star/frame/DispatchResultState.hpp>
 #include <com/sun/star/frame/XFrame.hpp>
@@ -38,9 +40,13 @@
 #include <com/sun/star/sheet/XSheetCellCursor.hpp>
 #include <com/sun/star/sheet/XCellRangeData.hpp>
 #include <com/sun/star/sheet/XArrayFormulaRange.hpp>
+#include <com/sun/star/sheet/XSheetConditionalEntries.hpp>
+#include <com/sun/star/sheet/ConditionOperator.hpp>
 
 #include <com/sun/star/container/XIndexContainer.hpp>
 #include <com/sun/star/container/XIndexAccess.hpp>
+#include <com/sun/star/container/XNameAccess.hpp>
+#include <com/sun/star/container/XNameContainer.hpp>
 
 #include <com/sun/star/table/XCellRange.hpp>
 
@@ -54,6 +60,8 @@
 #include <com/sun/star/awt/WindowAttribute.hpp>
 #include <com/sun/star/awt/XWindowPeer.hpp>
 #include <com/sun/star/awt/XMessageBox.hpp>
+
+#include <com/sun/star/style/XStyleFamiliesSupplier.hpp>
 
 #include <cppuhelper/supportsservice.hxx>
 
@@ -73,13 +81,22 @@ using namespace com::sun::star::frame;
 using namespace com::sun::star::sheet;
 using namespace com::sun::star::table;
 using namespace com::sun::star::awt;
+using namespace com::sun::star::style;
+
 using com::sun::star::beans::NamedValue;
 using com::sun::star::beans::XPropertySet;
+using com::sun::star::beans::PropertyValue;
+
 using com::sun::star::container::XIndexAccess;
+using com::sun::star::container::XNameAccess;
+using com::sun::star::container::XNameContainer;
+
 using com::sun::star::document::XUndoManager;
 using com::sun::star::document::XUndoManagerSupplier;
+
 using com::sun::star::frame::DispatchResultEvent;
 using com::sun::star::lang::IllegalArgumentException;
+using com::sun::star::lang::XMultiServiceFactory;
 using com::sun::star::util::Color;
 
 // This is the service name an Add-On has to implement
@@ -101,6 +118,7 @@ sal_Bool clusterColorRows(const Reference<XSpreadsheet>& rxSheet, const CellRang
 
 static void showErrorMessage(const Reference<XFrame>& xFrame, const OUString& aTitle,
                              const OUString& aMsgText, const Reference<XComponentContext>& xCtxt);
+static OUString getStyleName(sal_Int32 nClusterIdx);
 
 // Helper functions for the implementation of UNO component interfaces.
 OUString ClusterRowsImpl_getImplementationName() { return OUString(IMPLEMENTATION_NAME); }
@@ -274,6 +292,14 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
     sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
     Reference<XModel> xModel = getModel(aJobInfo.xFrame);
+
+    mxDoc = Reference<XSpreadsheetDocument>(xModel, UNO_QUERY);
+    if (!mxDoc.is())
+    {
+        writeLog("launchClusterDialog: Cannot get XSpreadsheetDocument from XModel!\n");
+        return;
+    }
+
     Reference<XSpreadsheet> xSheet = getSheet(xModel, aRange.Sheet);
     mxSheet = xSheet;
     maDataRange = aRange;
@@ -339,6 +365,90 @@ void ClusterRowsImpl::writeResults() const
         xCell = mxSheet->getCellByPosition(nColStart + 1, nRowStart - 1);
         xCell->setFormula("Confidence");
     }
+
+    if (maParams.mbColorClusters)
+    {
+        addClusterStyles();
+        colorClusterData();
+    }
+}
+
+void ClusterRowsImpl::colorClusterData() const
+{
+    Reference<XCellRange> xRange = mxSheet->getCellRangeByPosition(
+        maDataRange.StartColumn, maDataRange.StartRow, maDataRange.EndColumn, maDataRange.EndRow);
+
+    Reference<XPropertySet> xPropSet(xRange, UNO_QUERY);
+    Reference<XSheetConditionalEntries> xEntries;
+    Any aAny = xPropSet->getPropertyValue("ConditionalFormat");
+    if (!(aAny >>= xEntries))
+    {
+        writeLog(
+            "colorClusterData: Cannot get XSheetConditionalEntries from Any(ConditionalFormat)");
+        return;
+    }
+
+    xEntries->clear();
+
+    OUString aRefCell = OUString("$")
+                        + getCellAddressRepr(maDataRange.EndColumn + 1,
+                                             0 /* relative row w.r.t data table's top row*/);
+    writeLog("colorClusterData: aRefCell = %s\n", aRefCell.toUtf8().getStr());
+
+    for (sal_Int32 nClusterIdx = 0; nClusterIdx < maParams.mnNumClusters; ++nClusterIdx)
+    {
+        Sequence<PropertyValue> aConds(3);
+
+        aConds[0].Name = "Operator";
+        aConds[0].Value = Any(ConditionOperator_FORMULA);
+
+        aConds[1].Name = "Formula1";
+        aConds[1].Value = Any(aRefCell + " = " + OUString::number(nClusterIdx));
+
+        aConds[2].Name = "StyleName";
+        aConds[2].Value = Any(getStyleName(nClusterIdx));
+
+        xEntries->addNew(aConds);
+    }
+
+    xPropSet->setPropertyValue("ConditionalFormat", Any(xEntries));
+}
+
+void ClusterRowsImpl::addClusterStyles() const
+{
+    Reference<XStyleFamiliesSupplier> xSFSupplier(mxDoc, UNO_QUERY);
+    Reference<XNameAccess> xFamiliesNA(xSFSupplier->getStyleFamilies());
+    Reference<XNameContainer> xCellStylesNA(xFamiliesNA->getByName("CellStyles"), UNO_QUERY);
+
+    Reference<XMultiServiceFactory> xServiceManager(mxDoc, UNO_QUERY);
+    std::vector<sal_Int32> aClusterColors(maParams.mnNumClusters);
+    getClusterColors(maParams.mnNumClusters, aClusterColors);
+    writeLog("addClusterStyles: Calculated %d colors\n", aClusterColors.size());
+
+    for (sal_Int32 nClusterIdx = 0; nClusterIdx < maParams.mnNumClusters; ++nClusterIdx)
+    {
+        OUString aClusterStyle = getStyleName(nClusterIdx);
+        Reference<XInterface> xClusterStyle;
+        if (xCellStylesNA->hasByName(aClusterStyle))
+        {
+            Any aAny = xCellStylesNA->getByName(aClusterStyle);
+            aAny >>= xClusterStyle;
+        }
+        else
+        {
+            xClusterStyle = xServiceManager->createInstance("com.sun.star.style.CellStyle");
+            xCellStylesNA->insertByName(aClusterStyle, Any(xClusterStyle));
+        }
+
+        Reference<XPropertySet> xPropSet(xClusterStyle, UNO_QUERY);
+        xPropSet->setPropertyValue("CellBackColor", Any(aClusterColors[nClusterIdx]));
+        writeLog("addClusterStyles: Added Cell style : %s\n", aClusterStyle.toUtf8().getStr());
+    }
+}
+
+OUString getStyleName(sal_Int32 nClusterIdx)
+{
+    return OUString("ClusterRows_Cluster_") + OUString::number(nClusterIdx);
 }
 
 Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()

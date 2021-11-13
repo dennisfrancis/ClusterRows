@@ -53,7 +53,8 @@ struct CellRangeAddress;
 
 namespace sheet
 {
-struct XSpreadsheet;
+class XSpreadsheet;
+class XSpreadsheetDocument;
 }
 
 }
@@ -64,6 +65,7 @@ class ClusterRowsImpl : public cppu::WeakImplHelper3<com::sun::star::task::XJob,
 {
 private:
     ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> mxContext;
+    ::com::sun::star::uno::Reference<::com::sun::star::sheet::XSpreadsheetDocument> mxDoc;
     ::com::sun::star::uno::Reference<::com::sun::star::sheet::XSpreadsheet> mxSheet;
     ClusterParams maParams;
     ::com::sun::star::table::CellRangeAddress maDataRange;
@@ -109,6 +111,8 @@ private:
                        ::com::sun::star::table::CellRangeAddress& aRange) const;
     void launchClusterDialog(const ClusterRowsImplInfo& aJobInfo);
     void writeResults() const;
+    void addClusterStyles() const;
+    void colorClusterData() const;
 };
 
 ::rtl::OUString ClusterRowsImpl_getImplementationName();
