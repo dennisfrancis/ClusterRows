@@ -36,7 +36,7 @@ void getClusterColors(const sal_Int32 nNumClusters, std::vector<sal_Int32>& rClu
 {
     double fHueSlice = 360.0 / nNumClusters;
     constexpr double fL = 0.5;
-    constexpr double fS = 1;
+    constexpr double fS = 0.75;
     for (sal_Int32 nClusterIdx; nClusterIdx < nNumClusters; ++nClusterIdx)
     {
         // https://en.wikipedia.org/wiki/HSL_and_HSV
