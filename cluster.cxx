@@ -109,7 +109,8 @@ Reference<XSpreadsheet> getSheet(const Reference<XModel>& rxModel, const sal_Int
 
 static void showErrorMessage(const Reference<XFrame>& xFrame, const OUString& aTitle,
                              const OUString& aMsgText, const Reference<XComponentContext>& xCtxt);
-static OUString getStyleName(sal_Int32 nClusterIdx);
+
+static OUString getStyleName(sal_Int32 nClusterIdx, sal_Int32 nNumClusters);
 
 // Helper functions for the implementation of UNO component interfaces.
 OUString ClusterRowsImpl_getImplementationName() { return OUString(IMPLEMENTATION_NAME); }
@@ -407,7 +408,7 @@ void ClusterRowsImpl::colorClusterData() const
         aConds[1].Value = Any(aRefCell + " = " + OUString::number(nClusterIdx));
 
         aConds[2].Name = "StyleName";
-        aConds[2].Value = Any(getStyleName(nClusterIdx));
+        aConds[2].Value = Any(getStyleName(nClusterIdx, maParams.mnNumClusters));
 
         xEntries->addNew(aConds);
     }
@@ -428,7 +429,7 @@ void ClusterRowsImpl::addClusterStyles() const
 
     for (sal_Int32 nClusterIdx = 0; nClusterIdx < maParams.mnNumClusters; ++nClusterIdx)
     {
-        OUString aClusterStyle = getStyleName(nClusterIdx);
+        OUString aClusterStyle = getStyleName(nClusterIdx, maParams.mnNumClusters);
         Reference<XInterface> xClusterStyle;
         if (xCellStylesNA->hasByName(aClusterStyle))
         {
@@ -447,9 +448,10 @@ void ClusterRowsImpl::addClusterStyles() const
     }
 }
 
-OUString getStyleName(sal_Int32 nClusterIdx)
+OUString getStyleName(sal_Int32 nClusterIdx, sal_Int32 nNumClusters)
 {
-    return OUString("ClusterRows_Cluster_") + OUString::number(nClusterIdx);
+    return OUString("ClusterRows_N") + OUString::number(nNumClusters) + "_Cluster_"
+           + OUString::number(nClusterIdx);
 }
 
 Sequence<OUString> ClusterRowsImpl::getSupportedMethodNames()
