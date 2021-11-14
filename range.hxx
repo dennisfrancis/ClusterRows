@@ -296,3 +296,20 @@ OUString getCellRangeRepr(const CellRangeAddress& aRange)
     return getCellAddressRepr(aRange.StartColumn, aRange.StartRow) + ":"
            + getCellAddressRepr(aRange.EndColumn, aRange.EndRow);
 }
+
+sal_Int32 findMaxInColumn(const Reference<XSpreadsheet>& rxSheet, sal_Int32 nCol,
+                          sal_Int32 nStartRow, sal_Int32 nEndRow)
+{
+    Reference<XCell> xCell;
+    sal_Int32 nMax = -1;
+    for (sal_Int32 nRow = nStartRow; nRow <= nEndRow; ++nRow)
+    {
+        xCell = rxSheet->getCellByPosition(nCol, nRow);
+        double fVal = xCell->getValue();
+        sal_Int32 nVal = fVal;
+        if (static_cast<double>(nVal) == fVal && nVal > nMax)
+            nMax = nVal;
+    }
+
+    return nMax;
+}

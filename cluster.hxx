@@ -110,9 +110,10 @@ private:
     bool calcDataRange(const ClusterRowsImplInfo& rJobInfo,
                        ::com::sun::star::table::CellRangeAddress& aRange) const;
     void launchClusterDialog(const ClusterRowsImplInfo& aJobInfo);
-    void writeResults() const;
+    void writeResults();
     void addClusterStyles() const;
     void colorClusterData() const;
+    void updateNumClusters();
 };
 
 ::rtl::OUString ClusterRowsImpl_getImplementationName();

@@ -337,7 +337,7 @@ ClusterRowsImpl::callHandlerMethod(const Reference<::com::sun::star::awt::XDialo
     });
 }
 
-void ClusterRowsImpl::writeResults() const
+void ClusterRowsImpl::writeResults()
 {
     sal_Int32 nColStart = maDataRange.EndColumn + 1;
     sal_Int32 nColEnd = nColStart + 1;
@@ -374,6 +374,8 @@ void ClusterRowsImpl::writeResults() const
         xCell->setFormula("Confidence");
     }
 
+    updateNumClusters();
+
     if (maParams.mbColorClusters)
     {
         addClusterStyles();
@@ -382,6 +384,19 @@ void ClusterRowsImpl::writeResults() const
 
     if (xUndoMgr.is())
         xUndoMgr->leaveUndoContext();
+}
+
+/// Find number of clusters in auto mode.
+void ClusterRowsImpl::updateNumClusters()
+{
+    if (maParams.mnNumClusters != 0)
+        return;
+
+    sal_Int32 nMaxClusterIdx = findMaxInColumn(mxSheet, maDataRange.EndColumn + 1,
+                                               maDataRange.StartRow, maDataRange.EndRow);
+
+    if (nMaxClusterIdx != -1)
+        maParams.mnNumClusters = nMaxClusterIdx + 1;
 }
 
 void ClusterRowsImpl::colorClusterData() const
