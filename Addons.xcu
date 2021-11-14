@@ -38,7 +38,7 @@
 
         <node oor:name="OfficeToolbarMerging">
             <node oor:name="com.github.dennisfrancis.clusterrowsimpl" oor:op="replace">
-                <node oor:name="T1" oor:op="replace">
+                <node oor:name="com.github.dennisfrancis.clusterrowsimpl.T1" oor:op="replace">
                     <prop oor:name="MergeToolBar">
                         <value>standardbar</value>
                     </prop>
@@ -55,7 +55,7 @@
                         <value>com.sun.star.sheet.SpreadsheetDocument</value>
                     </prop>
                     <node oor:name="ToolBarItems">
-                        <node oor:name="B1" oor:op="replace">
+                        <node oor:name="com.github.dennisfrancis.clusterrowsimpl.TBI1" oor:op="replace">
                             <prop oor:name="URL">
                                 <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
                             </prop>
@@ -74,127 +74,41 @@
             </node>
         </node>
 
-        <node oor:name="OfficeMenuBar">
+        <node oor:name="OfficeMenuBarMerging">
             <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu" oor:op="replace">
-                <prop oor:name="Title" oor:type="xs:string">
-                    <value/>
-                    <value xml:lang="en-US">Clustering</value>
-                </prop>
-                <node oor:name="Submenu">
-                    <node oor:name="m2" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Auto cluster rows</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
+                <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu.1" oor:op="replace">
+                    <prop oor:name="MergePoint">
+                        <value>.uno:DataMenu\.uno:StatisticsMenu\.uno:ChiSquareTestDialog</value>
+                    </prop>
+                    <prop oor:name="MergeCommand">
+                        <value>AddAfter</value>
+                    </prop>
+                    <prop oor:name="MergeFallback">
+                        <value>AddPath</value>
+                    </prop>
+                    <prop oor:name="MergeContext">
+                        <value>com.sun.star.sheet.SpreadsheetDocument</value>
+                    </prop>
+                    <node oor:name="MenuItems">
+                        <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu.1.1" oor:op="replace">
+                            <prop oor:name="Title">
+                                <value xml:lang="en-US">Cl~ustering...</value>
+                            </prop>
+                            <prop oor:name="URL">
+                                <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
+                            </prop>
+                            <prop oor:name="Target" oor:type="xs:string">
+                                <value>_self</value>
+                            </prop>
+                            <prop oor:name="Context" oor:type="xs:string">
+                                <value>com.sun.star.sheet.SpreadsheetDocument</value>
+                            </prop>
+                        </node>
                     </node>
-                    <node oor:name="m3" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq2</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 2 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m4" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq3</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 3 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m5" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq4</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 4 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m6" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq5</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 5 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m7" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq6</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 6 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m8" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq7</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 7 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
-                    <node oor:name="m9" oor:op="replace">
-                        <prop oor:name="URL" oor:type="xs:string">
-                            <value>vnd.sun.star.job:event=onClusterRowsReq8</value>
-                        </prop>
-                        <prop oor:name="Title" oor:type="xs:string">
-                            <value xml:lang="en-US">Find 8 clusters</value>
-                        </prop>
-                        <prop oor:name="Target" oor:type="xs:string">
-                            <value>_self</value>
-                        </prop>
-                        <prop oor:name="Context" oor:type="xs:string">
-                            <value>com.sun.star.sheet.SpreadsheetDocument</value>
-                        </prop>
-                    </node>
+
                 </node>
             </node>
         </node>
+
     </node>
 </oor:component-data>

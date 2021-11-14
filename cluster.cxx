@@ -196,22 +196,6 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue>& rArgs)
     {
         launchClusterDialog(aJobInfo);
     }
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq"))
-        clusterRows(aJobInfo, 0);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq2"))
-        clusterRows(aJobInfo, 2);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq3"))
-        clusterRows(aJobInfo, 3);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq4"))
-        clusterRows(aJobInfo, 4);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq5"))
-        clusterRows(aJobInfo, 5);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq6"))
-        clusterRows(aJobInfo, 6);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq7"))
-        clusterRows(aJobInfo, 7);
-    else if (aJobInfo.aEventName.equalsAscii("onClusterRowsReq8"))
-        clusterRows(aJobInfo, 8);
 
     bool bIsDispatch = aJobInfo.aEnvType.equalsAscii("DISPATCH");
     Sequence<NamedValue> aReturn((bIsDispatch ? 1 : 0));
