@@ -106,7 +106,6 @@ private:
         const ::com::sun::star::uno::Sequence<::com::sun::star::beans::NamedValue>& rArgs,
         ClusterRowsImplInfo& rJobInfo);
 
-    void clusterRows(const ClusterRowsImplInfo& rJobInfo, const sal_Int32 nUserNumClusters);
     bool calcDataRange(const ClusterRowsImplInfo& rJobInfo,
                        ::com::sun::star::table::CellRangeAddress& aRange) const;
     void launchClusterDialog(const ClusterRowsImplInfo& aJobInfo);
