@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
-<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ClusterRows" dlg:left="235" dlg:top="114" dlg:width="207" dlg:height="192" dlg:closeable="true" dlg:moveable="true">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="ClusterRows" dlg:left="235" dlg:top="114" dlg:width="207" dlg:height="192" dlg:closeable="true" dlg:moveable="true" dlg:title="ClusterRows">
  <dlg:styles>
   <dlg:style dlg:style-id="0" dlg:font-name="Liberation Mono" dlg:font-height="11" dlg:font-stylename="Regular" dlg:font-family="modern"/>
  </dlg:styles>
