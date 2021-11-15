@@ -12,7 +12,7 @@
   <dlg:text dlg:id="LabelField_MaxIter" dlg:tab-index="10" dlg:left="18" dlg:top="100" dlg:width="103" dlg:height="16" dlg:value="Maximum iterations to perform in each epoch" dlg:valign="top" dlg:multiline="true"/>
   <dlg:checkbox dlg:id="CheckBox_ColorRows" dlg:tab-index="4" dlg:left="19" dlg:top="131" dlg:width="143" dlg:height="12" dlg:help-text="Color the data rows according to the computed clusters" dlg:value="Color the rows according to cluster assignments" dlg:checked="true"/>
   <dlg:text dlg:id="LabelText_Error" dlg:tab-index="11" dlg:left="19" dlg:top="151" dlg:width="167" dlg:height="12"/>
-  <dlg:button dlg:id="CommandButton_OK" dlg:tab-index="5" dlg:left="21" dlg:top="169" dlg:width="65" dlg:height="13" dlg:value="OK">
+  <dlg:button dlg:id="CommandButton_OK" dlg:tab-index="5" dlg:left="21" dlg:top="169" dlg:width="65" dlg:height="13" dlg:value="Compute">
    <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:onOKButtonPress" script:language="UNO"/>
   </dlg:button>
   <dlg:button dlg:id="CommandButton_Cancel" dlg:tab-index="6" dlg:left="95" dlg:top="169" dlg:width="65" dlg:height="13" dlg:value="Cancel">
