@@ -13,6 +13,7 @@ $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 1. Place the cursor on any cell inside your table with data (no need to select the whole table)
 2. Either click the toolbar item named "Cluster rows" which is next to the AutoFilter item or the *Clustering...* menu item under *Data* > *Statistics*.
 3. Now a dialog will appear where the parameters of clustering can be set. It is also possible to specify whether the data rows need to be colored according to the cluster assignments.
+   ![Dialog](img/dialog.png)
 4. After pressing the *Compute* button, two new columns [ClusterId and Confidence] are added to the right of the table. **ClusterId** specifies the cluster to which the row is assigned and **Confidence** indicates the algorithm's confidence in scale [0,1] that this cluster assignment may be correct (higher number implies higher confidence). Depending on the choice provided in the dialog, the data rows are colored according to the cluster assignments.
 
 The project uses an in-house implementation of full [Expectation Maximization](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm) algorithm to compute the clusters. In the auto mode (when number of clusters is specified as 0) it chooses the number of clusters parameter via [Bayesian information criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion).
