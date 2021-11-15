@@ -7,7 +7,7 @@
  <dlg:bulletinboard>
   <dlg:text dlg:id="LabelField_DataRangeDesc" dlg:tab-index="7" dlg:left="18" dlg:top="20" dlg:width="103" dlg:height="8" dlg:value="Detected data range" dlg:valign="top"/>
   <dlg:text dlg:style-id="0" dlg:id="LabelField_DataRange" dlg:tab-index="0" dlg:left="132" dlg:top="20" dlg:width="60" dlg:height="10" dlg:help-text="Computed cell-range where the dataset was found" dlg:value="A1:F301" dlg:valign="center"/>
-  <dlg:text dlg:id="LabelField_NumClusters" dlg:tab-index="8" dlg:left="18" dlg:top="45" dlg:width="103" dlg:height="10" dlg:value="Number of Clusters (optional)" dlg:valign="top" dlg:multiline="true"/>
+  <dlg:text dlg:id="LabelField_NumClusters" dlg:tab-index="8" dlg:left="18" dlg:top="45" dlg:width="103" dlg:height="16" dlg:value="Number of Clusters (will auto-compute when 0)" dlg:valign="top" dlg:multiline="true"/>
   <dlg:text dlg:id="LabelField_NumEpochs" dlg:tab-index="9" dlg:left="18" dlg:top="71" dlg:width="103" dlg:height="16" dlg:value="Maximum number of epochs to use" dlg:valign="top" dlg:multiline="true"/>
   <dlg:text dlg:id="LabelField_MaxIter" dlg:tab-index="10" dlg:left="18" dlg:top="100" dlg:width="103" dlg:height="16" dlg:value="Maximum iterations to perform in each epoch" dlg:valign="top" dlg:multiline="true"/>
   <dlg:checkbox dlg:id="CheckBox_ColorRows" dlg:tab-index="4" dlg:left="19" dlg:top="131" dlg:width="143" dlg:height="12" dlg:help-text="Color the data rows according to the computed clusters" dlg:value="Color the rows according to cluster assignments" dlg:checked="true"/>
