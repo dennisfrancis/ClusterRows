@@ -30,13 +30,7 @@ The document also contains visualizations of the data in the sheet `charts`. The
 ## Building the extension from source
 
 1. Setup LibreOffice SDK. See [http://api.libreoffice.org/docs/install.html](http://api.libreoffice.org/docs/install.html).
-Then do the below :
-
-```
-$ cd ClusterRows
-$ make
-```
-After this the extension file `ClusterRows.oxt` can be found in `build/extension/`. Running `make install` will install the build extension to Calc (via `unopkg install` command).
+Then run `make` in the project's root directory. After this the extension file `ClusterRows.oxt` can be found in `build/extension/`. Running `make install` will install the extension to Calc (via `unopkg install` command).
 
 If you get errors on running `make`, check if the SDK's environment variables are set properly after setting up the SDK. If the errors persist, please open an issue here.
 
