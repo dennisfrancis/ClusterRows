@@ -22,7 +22,7 @@ The dialog based clustering (described above) uses an in-house array formula `GM
 ```
 GMMCLUSTER(data, numClusters, numEpochs, numIterations)
 ```
-where **data** is the array(cell-range) holding the data, **numClusters** is the desired number of clusters (optional, default is to automatically estimate this), **numEpochs** is the maximum number of epochs to use (optional) and **numIteration** is the maximum number iterations to do in each epoch (optional). Note that `Ctrl+Shift+Enter` is needed to commit the array formula after entering the formula expression.
+where **data** is the array(cell-range) holding the data, **numClusters** is the desired number of clusters (optional, default is to automatically estimate this), **numEpochs** is the maximum number of epochs to use (optional) and **numIteration** is the maximum number of iterations to do in each epoch (optional). Note that after entering the formula expression remember to press `Ctrl+Shift+Enter` instead of just `Enter` to commit the array formula.
 
 ## Implementation
 

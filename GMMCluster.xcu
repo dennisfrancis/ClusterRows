@@ -46,7 +46,7 @@
               <value xml:lang="en">numIterations</value>
             </prop>
             <prop oor:name="Description">
-              <value xml:lang="en">Maximum number iterations to do in each epoch (optional)</value>
+              <value xml:lang="en">Maximum number of iterations to do in each epoch (optional)</value>
             </prop>
           </node>
         </node>
