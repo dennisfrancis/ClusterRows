@@ -538,7 +538,7 @@ bool ClusterRowsImpl::calcDataRange(const ClusterRowsImplInfo& rJobInfo,
     return bGotRange;
 }
 
-void logError(const char* pStr) { writeLog(pStr); }
+void logError(const char* pStr) { writeLog("ERROR: %s", pStr); }
 
 Reference<XModel> getModel(const Reference<XFrame>& rxFrame)
 {
