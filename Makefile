@@ -76,7 +76,8 @@ TYPES_DONE=$(FLAGS_DIR)/types.done
 
 COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
 
-CXXFILES = component.cxx cluster.cxx DialogHelper.cxx logging.cxx
+CXXFILES = component.cxx cluster.cxx DialogHelper.cxx logging.cxx helper.cxx range.cxx
+HXXFILES = GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx helper.hxx
 
 IDL_FILES = XGMMCluster.idl
 
@@ -129,7 +130,7 @@ $(TYPES_DONE): $(COMP_RDB)
 compileflags: $(TYPES_DONE)
 	@echo "-c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
 
-$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx
+$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) $(HXXFILES)
 	@mkdir -p $(OBJECTS_DIR)
 	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
 

@@ -19,3 +19,4 @@
 #pragma once
 
 void writeLog(const char* format, ...);
+void logError(const char* pStr);

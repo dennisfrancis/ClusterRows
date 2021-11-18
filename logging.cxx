@@ -36,3 +36,5 @@ void writeLog(const char* format, ...)
     }
 #endif
 }
+
+void logError(const char* pStr) { writeLog("ERROR: %s", pStr); }
