@@ -17,11 +17,15 @@
  */
 
 #include "range.hxx"
+#include <rtl/ustrbuf.hxx>
+
 #include <com/sun/star/sheet/XSpreadsheet.hpp>
 #include <com/sun/star/table/XCell.hpp>
 #include <com/sun/star/table/CellRangeAddress.hpp>
 #include <com/sun/star/table/CellContentType.hpp>
+
 #include <vector>
+
 #include "logging.hxx"
 #include "datatypes.hxx"
 
@@ -31,6 +35,9 @@ using com::sun::star::table::CellContentType_TEXT;
 using com::sun::star::table::CellRangeAddress;
 using com::sun::star::table::XCell;
 using com::sun::star::uno::Reference;
+
+using rtl::OUString;
+using rtl::OUStringBuffer;
 
 bool range::rangeIsSingleCell(const CellRangeAddress& rRange)
 {

@@ -16,17 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "datatypes.hxx"
 
-#include <chrono>
-
-class TimePerf
+const char* DataType2String(DataType eType)
 {
-public:
-    TimePerf(const char* sMessage);
-    void Stop();
+    switch (eType)
+    {
+        case DataType::INTEGER:
+            return "INTEGER";
+        case DataType::DOUBLE:
+            return "DOUBLE";
+        case DataType::STRING:
+            return "STRING";
+    }
 
-private:
-    std::chrono::high_resolution_clock::time_point nStart, nEnd;
-    const char* pStr;
-};
+    return "UNKNOWN";
+}

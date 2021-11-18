@@ -16,17 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "perf.hxx"
+#include "logging.hxx"
 
-#include <chrono>
-
-class TimePerf
+TimePerf::TimePerf(const char* sMessage)
 {
-public:
-    TimePerf(const char* sMessage);
-    void Stop();
+    nStart = std::chrono::high_resolution_clock::now();
+    pStr = sMessage;
+}
 
-private:
-    std::chrono::high_resolution_clock::time_point nStart, nEnd;
-    const char* pStr;
-};
+void TimePerf::Stop()
+{
+    nEnd = std::chrono::high_resolution_clock::now();
+    float fSec = float(std::chrono::duration_cast<std::chrono::milliseconds>(nEnd - nStart).count())
+                 / 1000.0;
+    writeLog("DEBUG>>> Finished %s in %.4f seconds.\n", pStr, fSec);
+}

@@ -20,247 +20,42 @@
 
 #include "datatypes.hxx"
 
-#include <cppu/unotype.hxx>
-#include <unordered_set>
+#include <sal/types.h>
+#include <rtl/ustring.hxx>
+#include <com/sun/star/uno/Any.hxx>
+#include <com/sun/star/uno/Sequence.hxx>
 #include <vector>
-#include <math.h>
 
-#define EMPTYSTRING OUString("__NA__")
-#define EMPTYDOUBLE -9999999.0
+namespace preprocess
+{
+void getColTypes(
+    const com::sun::star::uno::Sequence<com::sun::star::uno::Sequence<com::sun::star::uno::Any>>&
+        rData,
+    std::vector<DataType>& rColType, std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-using com::sun::star::uno::Any;
-using com::sun::star::uno::Sequence;
-
-void getColTypes(const Sequence<Sequence<Any>>& rData, std::vector<DataType>& rColType,
-                 std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
-
-void flagEmptyEntries(Sequence<Sequence<Any>>& rDataArray, const std::vector<DataType>& rColType,
+void flagEmptyEntries(com::sun::star::uno::Sequence<
+                          com::sun::star::uno::Sequence<com::sun::star::uno::Any>>& rDataArray,
+                      const std::vector<DataType>& rColType,
                       const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-void imputeAllColumns(Sequence<Sequence<Any>>& rDataArray, std::vector<DataType>& rColType,
-                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
+void imputeAllColumns(
+    com::sun::star::uno::Sequence<com::sun::star::uno::Sequence<com::sun::star::uno::Any>>&
+        rDataArray,
+    std::vector<DataType>& rColType, const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx);
 
-bool imputeWithMode(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
-                    const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
+bool imputeWithMode(
+    com::sun::star::uno::Sequence<com::sun::star::uno::Sequence<com::sun::star::uno::Any>>&
+        rDataArray,
+    const sal_Int32 nColIdx, const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
 
-bool imputeWithMedian(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
-                      const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
+bool imputeWithMedian(
+    com::sun::star::uno::Sequence<com::sun::star::uno::Sequence<com::sun::star::uno::Any>>&
+        rDataArray,
+    const sal_Int32 nColIdx, const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices);
 
-void calculateFeatureScales(Sequence<Sequence<Any>>& rDataArray,
-                            const std::vector<DataType>& rColType,
-                            std::vector<std::pair<double, double>>& rFeatureScales);
+void calculateFeatureScales(
+    com::sun::star::uno::Sequence<com::sun::star::uno::Sequence<com::sun::star::uno::Any>>&
+        rDataArray,
+    const std::vector<DataType>& rColType, std::vector<std::pair<double, double>>& rFeatureScales);
 
-void getColTypes(const Sequence<Sequence<Any>>& rData, std::vector<DataType>& rColType,
-                 std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
-{
-    sal_Int32 nNumRows = rData.getLength();
-    assert(nNumRows && "nNumRows cannot be 0!");
-
-    sal_Int32 nNumCols = rData[0].getLength();
-
-    for (sal_Int32 nCol = 0; nCol < nNumCols; ++nCol)
-    {
-        DataType aType = DataType::INTEGER;
-        bool bIsComplete = true;
-        std::vector<sal_Int32> aBlankRowIdx;
-        double fMin = 1.0E10, fMax = -1.0E10;
-
-        for (sal_Int32 nRow = 0; nRow < nNumRows; ++nRow)
-        {
-            Any aVal = rData[nRow][nCol];
-            OUString aTest;
-            double fVal;
-            if (!aVal.hasValue())
-            {
-                bIsComplete = false;
-                aBlankRowIdx.push_back(nRow);
-                continue;
-            }
-
-            if (aType != DataType::STRING && (aVal >>= aTest))
-            {
-                aType = DataType::STRING;
-                if (!bIsComplete)
-                    break;
-            }
-
-            else if (aType != DataType::STRING && (aVal >>= fVal))
-            {
-                if (fVal != static_cast<double>(static_cast<sal_Int64>(fVal)))
-                    aType = DataType::DOUBLE;
-                if (aType == DataType::INTEGER)
-                {
-                    fMin = (fMin > fVal) ? fVal : fMin;
-                    fMax = (fMax < fVal) ? fVal : fMax;
-                }
-            }
-        }
-
-        if (aType == DataType::INTEGER && (fMax - fMin) > 100.0)
-            aType = DataType::DOUBLE;
-
-        rColType[nCol] = aType;
-        rCol2BlankRowIdx[nCol] = std::move(aBlankRowIdx);
-
-        writeLog("DEBUG>>> col = %d, Type = %s, isComplete = %d\n", nCol, DataType2String(aType),
-                 int(bIsComplete));
-    }
-}
-
-void flagEmptyEntries(Sequence<Sequence<Any>>& rDataArray, const std::vector<DataType>& rColType,
-                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
-{
-    sal_Int32 nNumCols = rColType.size();
-    for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
-    {
-        for (sal_Int32 nRowIdx : rCol2BlankRowIdx[nColIdx])
-        {
-            if (rColType[nColIdx] == DataType::STRING)
-                rDataArray[nRowIdx][nColIdx] <<= EMPTYSTRING;
-            else
-                rDataArray[nRowIdx][nColIdx] <<= EMPTYDOUBLE;
-        }
-    }
-}
-
-void imputeAllColumns(Sequence<Sequence<Any>>& rDataArray, std::vector<DataType>& rColType,
-                      const std::vector<std::vector<sal_Int32>>& rCol2BlankRowIdx)
-{
-    sal_Int32 nNumCols = rColType.size();
-    for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
-    {
-        if (rColType[nColIdx] == DataType::STRING)
-            imputeWithMode(rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx]);
-        else if (rColType[nColIdx] == DataType::DOUBLE)
-            imputeWithMedian(rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx]);
-        else if (rColType[nColIdx] == DataType::INTEGER)
-        {
-            if (!imputeWithMode(rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx]))
-            {
-                // Better to treat the numbers as continuous rather than discrete classes.
-                //rColType[nColIdx] = DataType::DOUBLE;
-                imputeWithMedian(rDataArray, nColIdx, rColType[nColIdx], rCol2BlankRowIdx[nColIdx]);
-            }
-        }
-    }
-}
-
-bool imputeWithMode(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
-                    const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices)
-{
-    std::unordered_multiset<OUString, OUStringHash> aStringMultiSet;
-    std::unordered_multiset<double> aDoubleMultiSet;
-    OUString aImputeString;
-    double fImputeDouble;
-    sal_Int32 nMaxCount = 0;
-    sal_Int32 nNumRows = rDataArray.getLength();
-    for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
-    {
-        Any aElement = rDataArray[nRowIdx][nColIdx];
-        if ((aType == DataType::STRING && aElement == EMPTYSTRING)
-            || (aType == DataType::DOUBLE && aElement == EMPTYDOUBLE))
-            continue;
-
-        sal_Int32 nCount = 0;
-        if (aType == DataType::STRING)
-        {
-            OUString aStr;
-            aElement >>= aStr;
-            aStringMultiSet.insert(aStr);
-            nCount = aStringMultiSet.count(aStr);
-        }
-        else
-        {
-            double fVal;
-            aElement >>= fVal;
-            aDoubleMultiSet.insert(fVal);
-            nCount = aDoubleMultiSet.count(fVal);
-        }
-        if (nCount > nMaxCount)
-        {
-            if (aType == DataType::STRING)
-                aElement >>= aImputeString;
-            else
-                aElement >>= fImputeDouble;
-
-            nMaxCount = nCount;
-        }
-    }
-
-    bool bGood = true;
-    if (aType == DataType::INTEGER)
-    {
-        if (nMaxCount < 3) // Ensure at least 3 samples of top class
-            bGood = false;
-    }
-
-    if (bGood)
-    {
-        if (aType == DataType::STRING)
-            for (sal_Int32 nMissingIdx : rEmptyRowIndices)
-                rDataArray[nMissingIdx][nColIdx] <<= aImputeString;
-        else
-            for (sal_Int32 nMissingIdx : rEmptyRowIndices)
-                rDataArray[nMissingIdx][nColIdx] <<= fImputeDouble;
-    }
-
-    return bGood;
-}
-
-bool imputeWithMedian(Sequence<Sequence<Any>>& rDataArray, const sal_Int32 nColIdx,
-                      const DataType aType, const std::vector<sal_Int32>& rEmptyRowIndices)
-{
-    // We are sure that this function is not called for Any == OUString
-    assert(aType != DataType::STRING && "imputeWithMedian called with type OUString !!!");
-
-    sal_Int32 nNumRows = rDataArray.getLength();
-    sal_Int32 nNumEmptyElements = rEmptyRowIndices.size();
-    std::vector<double> aCopy(nNumRows);
-    for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
-        rDataArray[nRowIdx][nColIdx] >>= aCopy[nRowIdx];
-
-    std::sort(aCopy.begin(), aCopy.end());
-    size_t nElements = nNumRows - nNumEmptyElements;
-    double fMedian;
-
-    if ((nElements % 2) == 0)
-    {
-        double fMed1 = aCopy[nNumEmptyElements + (nElements / 2)];
-        double fMed2 = aCopy[nNumEmptyElements + (nElements / 2) - 1];
-        fMedian = 0.5 * (fMed1 + fMed2);
-    }
-    else
-        fMedian = aCopy[nNumEmptyElements + (nElements / 2)];
-
-    for (sal_Int32 nMissingIdx : rEmptyRowIndices)
-        rDataArray[nMissingIdx][nColIdx] <<= fMedian;
-
-    return true;
-}
-
-void calculateFeatureScales(Sequence<Sequence<Any>>& rDataArray,
-                            const std::vector<DataType>& rColType,
-                            std::vector<std::pair<double, double>>& rFeatureScales)
-{
-    sal_Int32 nNumRows = rDataArray.getLength();
-    sal_Int32 nNumCols = rColType.size();
-
-    for (sal_Int32 nColIdx = 0; nColIdx < nNumCols; ++nColIdx)
-    {
-        if (rColType[nColIdx] == DataType::STRING)
-            continue;
-        double fSum = 0.0, fSum2 = 0.0;
-        for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
-        {
-            double fVal;
-            rDataArray[nRowIdx][nColIdx] >>= fVal;
-            fSum += fVal;
-            fSum2 += (fVal * fVal);
-        }
-        double fMean = fSum / static_cast<double>(nNumRows);
-        double fStd = sqrt((fSum2 / static_cast<double>(nNumRows)) - (fMean * fMean));
-        rFeatureScales[nColIdx].first = fMean;
-        // Avoid 0 standard deviation condition.
-        rFeatureScales[nColIdx].second = (fStd == 0.0) ? fMean : fStd;
-    }
 }
