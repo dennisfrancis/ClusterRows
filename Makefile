@@ -51,6 +51,7 @@ COMP_IDENTIFIER=com.github.dennisfrancis.ClusterRowsImpl
 
 BUILD_DIR=./build
 INCLUDES_DIR=$(BUILD_DIR)/include
+LOCAL_INCLUDES_DIR=./inc
 OBJECTS_DIR=$(BUILD_DIR)/objects
 FLAGS_DIR=$(BUILD_DIR)/flags
 URD_DIR=$(BUILD_DIR)/urd
@@ -59,10 +60,10 @@ RDB_DIR=$(BUILD_DIR)/rdb
 META_DIR=$(BUILD_DIR)/meta
 MANIFEST_DIR=$(META_DIR)/META-INF
 MANIFEST_FILE=$(MANIFEST_DIR)/manifest.xml
-MANIFEST_TEMPLATE_FILE=manifest.xml.tmpl
+MANIFEST_TEMPLATE_FILE=tmpl/manifest.xml.tmpl
 
 COMPONENTS_FILE=$(META_DIR)/$(COMP_NAME).components
-COMPONENTS_TEMPLATE_FILE=ClusterRows.components.tmpl
+COMPONENTS_TEMPLATE_FILE=tmpl/ClusterRows.components.tmpl
 
 COMP_RDB_NAME = GMMCluster.uno.rdb
 COMP_RDB = $(RDB_DIR)/$(COMP_RDB_NAME)
@@ -76,14 +77,14 @@ TYPES_DONE=$(FLAGS_DIR)/types.done
 
 COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
 
-CXXFILES = component.cxx cluster.cxx DialogHelper.cxx logging.cxx helper.cxx range.cxx perf.cxx datatypes.cxx preprocess.cxx em.cxx GMMCluster.cxx
-HXXFILES = GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx helper.hxx
+CXXFILES = $(addprefix src/,component.cxx cluster.cxx DialogHelper.cxx logging.cxx helper.cxx range.cxx perf.cxx datatypes.cxx preprocess.cxx em.cxx GMMCluster.cxx)
+HXXFILES = $(addprefix inc/,GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx helper.hxx)
 
-IDL_FILES = XGMMCluster.idl
+IDL_FILES = $(addprefix idl/,XGMMCluster.idl)
 
-XCUFILES = Addons.xcu Jobs.xcu GMMCluster.xcu
+XCUFILES = $(addprefix xcu/,Addons.xcu Jobs.xcu GMMCluster.xcu)
 
-XDLFILES = ClusterRows.xdl
+XDLFILES = $(addprefix xdl/,ClusterRows.xdl)
 
 DESCRIPTIONFILES = description.xml description-en-US.txt
 
@@ -91,9 +92,9 @@ IMG_DIR = img
 
 IMG_FILES = img/icon.png img/icon_hc.png
 
-OBJECT_FILES = $(patsubst %.cxx,$(OBJECTS_DIR)/%.$(OBJ_EXT),$(CXXFILES))
+OBJECT_FILES = $(patsubst %.cxx,$(OBJECTS_DIR)/%.$(OBJ_EXT),$(notdir $(CXXFILES)))
 
-URD_FILES = $(patsubst %.idl,$(URD_DIR)/%.urd,$(IDL_FILES))
+URD_FILES = $(patsubst %.idl,$(URD_DIR)/%.urd,$(notdir $(IDL_FILES)))
 
 TYPESLIST = -Tcom.github.dennisfrancis.XGMMCluster -Tcom.github.dennisfrancis.GMMCluster
 
@@ -111,7 +112,7 @@ ALL : $(EXT_FILE)
 
 include $(SETTINGS)/stdtarget.mk
 
-$(URD_DIR)/%.urd : %.idl
+$(URD_DIR)/%.urd : $(IDL_FILES)
 	@mkdir -p $(URD_DIR)
 	$(IDLC) -I. -I$(IDL_DIR) -O$(URD_DIR) $<
 
@@ -128,11 +129,11 @@ $(TYPES_DONE): $(COMP_RDB)
 	touch $@
 
 compileflags: $(TYPES_DONE)
-	@echo "-c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
+	@echo "-c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) -I$(LOCAL_INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES)" | tr ' ' '\n' > $(COMPILE_FLAGS)
 
-$(OBJECTS_DIR)/%.$(OBJ_EXT): %.cxx $(TYPES_DONE) $(HXXFILES)
+$(OBJECTS_DIR)/%.$(OBJ_EXT): src/%.cxx $(TYPES_DONE) $(HXXFILES)
 	@mkdir -p $(OBJECTS_DIR)
-	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
+	$(CC) -c -fpic -fvisibility=hidden -O2 -std=c++17 $(CC_INCLUDES) -I$(INCLUDES_DIR) -I$(LOCAL_INCLUDES_DIR) $(CC_DEFINES) $(CLUSTER_DEFINES) -o $@ $<
 
 $(OBJECTS_DIR)/$(COMP_IMPL_NAME): $(OBJECT_FILES)
 	$(LINK) $(COMP_LINK_FLAGS) $(LINK_LIBS) -o $@ $(OBJECT_FILES) \
