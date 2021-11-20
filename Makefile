@@ -77,7 +77,7 @@ TYPES_DONE=$(FLAGS_DIR)/types.done
 
 COMP_IMPL_NAME=$(COMP_NAME).uno.$(SHAREDLIB_EXT)
 
-CXXFILES = $(addprefix src/,component.cxx cluster.cxx DialogHelper.cxx logging.cxx helper.cxx range.cxx perf.cxx datatypes.cxx preprocess.cxx em.cxx GMMCluster.cxx)
+CXXFILES = $(addprefix src/,component.cxx cluster.cxx DialogHelper.cxx logging.cxx helper.cxx range.cxx perf.cxx datatypes.cxx preprocess.cxx em.cxx GMMCluster.cxx colorgen.cxx)
 HXXFILES = $(addprefix inc/,GMMCluster.hxx cluster.hxx perf.hxx range.hxx datatypes.hxx em.hxx preprocess.hxx colorgen.hxx DialogHelper.hxx helper.hxx)
 
 IDL_FILES = $(addprefix idl/,XGMMCluster.idl)

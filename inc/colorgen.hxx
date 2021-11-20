@@ -18,77 +18,7 @@
 
 #pragma once
 
-#include <cppu/unotype.hxx>
+#include <sal/types.h>
 #include <vector>
-#include <cmath>
-
-#include "logging.hxx"
-#include "datatypes.hxx"
 
 void getClusterColors(const sal_Int32 nNumClusters, std::vector<sal_Int32>& rClusterColors);
-
-void getClusterColors(const sal_Int32 nNumClusters, std::vector<sal_Int32>& rClusterColors)
-{
-    double fHueSlice = 360.0 / nNumClusters;
-    constexpr double fL = 0.5;
-    constexpr double fS = 0.75;
-    for (sal_Int32 nClusterIdx; nClusterIdx < nNumClusters; ++nClusterIdx)
-    {
-        // https://en.wikipedia.org/wiki/HSL_and_HSV
-        // HSL to RGB conversion formula.
-
-        const double fH = fHueSlice * nClusterIdx; // Cluster hue.
-        const double fC = (1 - std::abs(2 * fL - 1)) * fS; // Cluster chroma.
-        const double fHP = fH / 60.0;
-        const double fX = fC * (1 - std::abs(std::fmod(fHP, 2) - 1));
-        const int nHP = fHP;
-        double fR, fG, fB;
-
-        switch (nHP)
-        {
-            case 0:
-                fR = fC;
-                fG = fX;
-                fB = 0;
-                break;
-            case 1:
-                fR = fX;
-                fG = fC;
-                fB = 0;
-                break;
-            case 2:
-                fR = 0;
-                fG = fC;
-                fB = fX;
-                break;
-            case 3:
-                fR = 0;
-                fG = fX;
-                fB = fC;
-                break;
-            case 4:
-                fR = fX;
-                fG = 0;
-                fB = fC;
-                break;
-            case 5:
-                fR = fC;
-                fG = 0;
-                fB = fX;
-                break;
-            default:
-                fR = 0;
-                fG = 0;
-                fB = 0;
-        }
-
-        double fM = fL - fC / 2;
-        fR += fM;
-        fG += fM;
-        fB += fM;
-
-        rClusterColors[nClusterIdx] = (static_cast<sal_Int32>(255 * fR) << 16)
-                                      | (static_cast<sal_Int32>(255 * fG) << 8)
-                                      | static_cast<sal_Int32>(255 * fB);
-    }
-}
