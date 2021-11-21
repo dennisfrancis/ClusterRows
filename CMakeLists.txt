@@ -55,7 +55,7 @@ add_custom_command(
     COMMAND rm -rf ${MY_URD_DIR}
     COMMAND mkdir -p ${MY_URD_DIR}
     COMMAND ${LO_IDLC} -I${LO_IDL_DIR} -O${MY_URD_DIR} ${MY_IDL_FILES}
-    COMMAND touch ${MY_BUILD_DIR}/urd.done
+    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/urd.done
     COMMENT "Generating URD files from IDL files"
     DEPENDS ${MY_IDL_FILES}
     )
@@ -66,7 +66,7 @@ add_custom_command(
     COMMAND rm -rf ${MY_REG_DIR}
     COMMAND mkdir -p ${MY_REG_DIR}
     COMMAND ${LO_REGMERGE} ${MY_REG_FILE} /UCR ${MY_URD_DIR}/*.urd
-    COMMAND touch ${MY_BUILD_DIR}/rdb.done
+    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/rdb.done
     COMMENT "Generating RDB file from URD files"
     DEPENDS ${MY_BUILD_DIR}/urd.done
     )
@@ -78,7 +78,7 @@ add_custom_command(
     COMMAND mkdir -p ${MY_INC_DIR}
     COMMAND ${LO_CPPUMAKER} -Gc -O${MY_INC_DIR} ${URE_TYPES} ${OFFICE_TYPES}
     COMMAND ${LO_CPPUMAKER} -Gc -O${MY_INC_DIR} ${MY_TYPES} ${MY_REG_FILE} -X${URE_TYPES} -X${OFFICE_TYPES}
-    COMMAND touch ${MY_BUILD_DIR}/headers.done
+    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/headers.done
     COMMENT "Generating headers for all types"
     DEPENDS ${MY_BUILD_DIR}/rdb.done
     )
@@ -88,7 +88,7 @@ add_custom_command(
     COMMAND COMP_NAME=ClusterRows UNOPKG_PLATFORM=Linux_x86_64 COMP_RDB_NAME=GMMCluster.uno.rdb envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/manifest.xml
     COMMAND UNOPKG_PLATFORM=Linux_x86_64 COMP_IMPL_NAME=libClusterRows.so envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
     COMMAND CLUSTERROWS_VERSION=${CMAKE_PROJECT_VERSION} envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/description.xml
-    COMMAND touch ${MY_BUILD_DIR}/tmpl.done
+    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/tmpl.done
     DEPENDS ${MY_TMPL_FILES}
     )
 
