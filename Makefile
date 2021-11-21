@@ -45,6 +45,8 @@ SETTINGS=$(PRJ)/settings
 include $(SETTINGS)/settings.mk
 include $(SETTINGS)/std.mk
 
+CLUSTERROWS_VERSION = 1.0.3
+
 # Define non-platform/compiler specific settings
 COMP_NAME=ClusterRows
 COMP_IDENTIFIER=com.github.dennisfrancis.ClusterRowsImpl
@@ -86,7 +88,9 @@ XCUFILES = $(addprefix xcu/,Addons.xcu Jobs.xcu GMMCluster.xcu)
 
 XDLFILES = $(addprefix xdl/,ClusterRows.xdl)
 
-DESCRIPTIONFILES = description.xml description-en-US.txt
+DESCRIPTION_LANG_FILES = description-en-US.txt
+DESCRIPTION_XML_TMPL = tmpl/description.xml.tmpl
+DESCRIPTION_XML = $(META_DIR)/description.xml
 
 IMG_DIR = img
 
@@ -148,8 +152,12 @@ $(COMPONENTS_FILE): $(COMPONENTS_TEMPLATE_FILE)
 	@mkdir -p $(META_DIR)
 	UNOPKG_PLATFORM=$(UNOPKG_PLATFORM) COMP_IMPL_NAME=$(COMP_IMPL_NAME) envsubst < $< > $@
 
+$(DESCRIPTION_XML): $(DESCRIPTION_XML_TMPL)
+	@mkdir -p $(META_DIR)
+	CLUSTERROWS_VERSION=$(CLUSTERROWS_VERSION) envsubst < $< > $@
+
 # rule for component package file
-$(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST_FILE) $(COMPONENTS_FILE) $(DESCRIPTIONFILES) $(XDLFILES) $(IMG_FILES)
+$(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST_FILE) $(COMPONENTS_FILE) $(DESCRIPTION_XML) $(DESCRIPTION_LANG_FILES) $(XDLFILES) $(IMG_FILES)
 	@mkdir -p $(EXT_DIR) $(PACKAGE_DIR)
 	@mkdir -p $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)
 	@mkdir -p $(PACKAGE_DIR)/$(IMG_DIR)
@@ -158,7 +166,8 @@ $(EXT_FILE): $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST
 	@cp $(OBJECTS_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/$(UNOPKG_PLATFORM)/
 	@cp $(XCUFILES) $(PACKAGE_DIR)/
 	@cp $(XDLFILES) $(PACKAGE_DIR)/
-	@cp $(DESCRIPTIONFILES) $(PACKAGE_DIR)/
+	@cp $(DESCRIPTION_LANG_FILES) $(PACKAGE_DIR)/
+	@cp $(DESCRIPTION_XML) $(PACKAGE_DIR)/
 	@cp $(IMG_FILES) $(PACKAGE_DIR)/$(IMG_DIR)/
 	@cp -r $(MANIFEST_DIR) $(PACKAGE_DIR)/
 	@cd $(PACKAGE_DIR) && zip -r ../../$@ *
