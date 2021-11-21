@@ -18,6 +18,8 @@ set(LO_CPPUMAKER "${LO_SDK_PATH}/bin/cppumaker")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_INC_DIR "${LO_SDK_PATH}/include")
 
+file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
+add_library(ClusterRows ${COMP_SOURCE_FILES})
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 if (WIN32 OR CYGWIN)
@@ -25,6 +27,11 @@ if (WIN32 OR CYGWIN)
     set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
     set(UNOPKG_PLATFORM "Windows")
     set(COMP_IMPL_NAME "${COMP_NAME}.dll")
+    # FIXME
+    #set(CMAKE_CXX_FLAGS "/MD /Zm500 /Zc:wchar_t- /wd4251 /wd4275 /wd4290 /wd4675 /wd4786 /wd4800 /GR /EHa")
+    #target_link_options(ClusterRows PUBLIC /DEBUGTYPE:cv /DEF:${LO_SDK_PATH}/settings/component.uno.def)
+    #target_compile_definitions
+    #target_link_libraries
 endif()
 
 if (APPLE)
@@ -32,6 +39,11 @@ if (APPLE)
     set(OFFICE_TYPES "${LO_PATH}/Contents/Resources/types/offapi.rdb")
     set(UNOPKG_PLATFORM "MacOSX_x86_64")
     set(COMP_IMPL_NAME "lib${COMP_NAME}.dylib")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-common -fvisibility=hidden")
+    # FIXME
+    #target_link_options(ClusterRows PUBLIC -single_module -Wl,-multiply_defined,suppress)
+    #target_compile_definitions
+    #target_link_libraries
 endif()
 
 if (UNIX AND NOT APPLE)
@@ -39,6 +51,11 @@ if (UNIX AND NOT APPLE)
     set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
     set(UNOPKG_PLATFORM "Linux_x86_64")
     set(COMP_IMPL_NAME "lib${COMP_NAME}.so")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+    target_link_options(ClusterRows PUBLIC LINKER:-z,origin LINKER:-rpath,$ORIGIN)
+    target_link_libraries(ClusterRows -L"${LO_SDK_PATH}/lib" -L"${LO_PATH}/program")
+    target_compile_definitions(ClusterRows PUBLIC UNX GCC LINUX CPPU_ENV=gcc3 LOGGING_ENABLED)
+    target_link_libraries(ClusterRows -luno_cppuhelpergcc3 -luno_cppu -luno_sal -lm)
 endif()
 
 set(COMP_RDB_NAME "GMMCluster.uno.rdb")
@@ -110,19 +127,7 @@ add_custom_target(
         ${COMP_META_DIR}/description.xml
     )
 
-file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-
-add_library(ClusterRows ${COMP_SOURCE_FILES})
-
-target_link_options(ClusterRows PUBLIC LINKER:-z,origin LINKER:-rpath,$ORIGIN)
-target_link_libraries(ClusterRows -L"${LO_SDK_PATH}/lib" -L"${LO_PATH}/program")
-# FIXME: make this conditional on OS.
-target_compile_definitions(ClusterRows PUBLIC UNX GCC LINUX CPPU_ENV=gcc3 LOGGING_ENABLED)
 target_include_directories(ClusterRows PUBLIC ${CMAKE_SOURCE_DIR}/inc ${COMP_INC_DIR} ${LO_INC_DIR})
-
-target_link_libraries(ClusterRows -luno_cppuhelpergcc3 -luno_cppu -luno_sal -lm)
 
 add_dependencies(ClusterRows allHeaders)
 
