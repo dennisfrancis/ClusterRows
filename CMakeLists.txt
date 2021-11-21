@@ -17,8 +17,20 @@ set(LO_REGMERGE "${LO_PATH}/program/regmerge")
 set(LO_CPPUMAKER "${LO_SDK_PATH}/bin/cppumaker")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_INC_DIR "${LO_SDK_PATH}/include")
-set(URE_TYPES "${LO_PATH}/program/types.rdb")
-set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
+
+if(APPLE)
+    set(URE_MISC ${LO_PATH}/Contents/Resources/ure/share/misc)
+else()
+    set(URE_MISC ${LO_PATH}/program)
+endif()
+
+set(URE_TYPES "${URE_MISC}/types.rdb")
+
+if(APPLE)
+    set(OFFICE_TYPES "${LO_PATH}/Contents/Resources/types/offapi.rdb")
+else()
+    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
+endif()
 
 file(GLOB MY_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
