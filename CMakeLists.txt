@@ -32,18 +32,18 @@ else()
     set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
 endif()
 
-file(GLOB MY_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
+file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
-set(MY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/build")
+set(COMP_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/build")
 
-set(MY_URD_DIR "${MY_BUILD_DIR}/urd")
-set(MY_REG_DIR "${MY_BUILD_DIR}/rdb")
-set(MY_INC_DIR "${MY_BUILD_DIR}/inc")
-set(MY_META_DIR "${MY_BUILD_DIR}/meta")
-set(MY_REG_FILE "${MY_REG_DIR}/GMMCluster.uno.rdb")
-list(APPEND MY_TYPES "-Tcom.github.dennisfrancis.XGMMCluster" "-Tcom.github.dennisfrancis.GMMCluster")
+set(COMP_URD_DIR "${COMP_BUILD_DIR}/urd")
+set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
+set(COMP_INC_DIR "${COMP_BUILD_DIR}/inc")
+set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
+set(COMP_REG_FILE "${COMP_REG_DIR}/GMMCluster.uno.rdb")
+list(APPEND COMP_TYPES "-Tcom.github.dennisfrancis.XGMMCluster" "-Tcom.github.dennisfrancis.GMMCluster")
 
-list(APPEND MY_TMPL_FILES
+list(APPEND COMP_TMPL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl
@@ -51,82 +51,82 @@ list(APPEND MY_TMPL_FILES
 
 # IDL -> URD
 add_custom_command(
-    OUTPUT ${MY_BUILD_DIR}/urd.done
-    COMMAND rm -rf ${MY_URD_DIR}
-    COMMAND mkdir -p ${MY_URD_DIR}
-    COMMAND ${LO_IDLC} -I${LO_IDL_DIR} -O${MY_URD_DIR} ${MY_IDL_FILES}
-    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/urd.done
+    OUTPUT ${COMP_BUILD_DIR}/urd.done
+    COMMAND rm -rf ${COMP_URD_DIR}
+    COMMAND mkdir -p ${COMP_URD_DIR}
+    COMMAND ${LO_IDLC} -I${LO_IDL_DIR} -O${COMP_URD_DIR} ${COMP_IDL_FILES}
+    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/urd.done
     COMMENT "Generating URD files from IDL files"
-    DEPENDS ${MY_IDL_FILES}
+    DEPENDS ${COMP_IDL_FILES}
     )
 
 # URD -> single RDB
 add_custom_command(
-    OUTPUT ${MY_BUILD_DIR}/rdb.done
-    COMMAND rm -rf ${MY_REG_DIR}
-    COMMAND mkdir -p ${MY_REG_DIR}
-    COMMAND ${LO_REGMERGE} ${MY_REG_FILE} /UCR ${MY_URD_DIR}/*.urd
-    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/rdb.done
+    OUTPUT ${COMP_BUILD_DIR}/rdb.done
+    COMMAND rm -rf ${COMP_REG_DIR}
+    COMMAND mkdir -p ${COMP_REG_DIR}
+    COMMAND ${LO_REGMERGE} ${COMP_REG_FILE} /UCR ${COMP_URD_DIR}/*.urd
+    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/rdb.done
     COMMENT "Generating RDB file from URD files"
-    DEPENDS ${MY_BUILD_DIR}/urd.done
+    DEPENDS ${COMP_BUILD_DIR}/urd.done
     )
 
 # header file generation
 add_custom_command(
-    OUTPUT ${MY_BUILD_DIR}/headers.done
-    COMMAND rm -rf ${MY_INC_DIR}
-    COMMAND mkdir -p ${MY_INC_DIR}
-    COMMAND ${LO_CPPUMAKER} -Gc -O${MY_INC_DIR} ${URE_TYPES} ${OFFICE_TYPES}
-    COMMAND ${LO_CPPUMAKER} -Gc -O${MY_INC_DIR} ${MY_TYPES} ${MY_REG_FILE} -X${URE_TYPES} -X${OFFICE_TYPES}
-    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/headers.done
+    OUTPUT ${COMP_BUILD_DIR}/headers.done
+    COMMAND rm -rf ${COMP_INC_DIR}
+    COMMAND mkdir -p ${COMP_INC_DIR}
+    COMMAND ${LO_CPPUMAKER} -Gc -O${COMP_INC_DIR} ${URE_TYPES} ${OFFICE_TYPES}
+    COMMAND ${LO_CPPUMAKER} -Gc -O${COMP_INC_DIR} ${COMP_TYPES} ${COMP_REG_FILE} -X${URE_TYPES} -X${OFFICE_TYPES}
+    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/headers.done
     COMMENT "Generating headers for all types"
-    DEPENDS ${MY_BUILD_DIR}/rdb.done
+    DEPENDS ${COMP_BUILD_DIR}/rdb.done
     )
 
 add_custom_command(
-    OUTPUT ${MY_BUILD_DIR}/tmpl.done
+    OUTPUT ${COMP_BUILD_DIR}/tmpl.done
     COMMAND COMP_NAME=ClusterRows UNOPKG_PLATFORM=Linux_x86_64 COMP_RDB_NAME=GMMCluster.uno.rdb envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/manifest.xml
     COMMAND UNOPKG_PLATFORM=Linux_x86_64 COMP_IMPL_NAME=libClusterRows.so envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
     COMMAND CLUSTERROWS_VERSION=${CMAKE_PROJECT_VERSION} envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/description.xml
-    COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/tmpl.done
+    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/tmpl.done
     COMMENT "Generating manifest, components and description files from templates"
-    DEPENDS ${MY_TMPL_FILES}
+    DEPENDS ${COMP_TMPL_FILES}
     )
 
 add_custom_target(
     allHeaders
     ALL
-    DEPENDS ${MY_BUILD_DIR}/headers.done ${MY_BUILD_DIR}/tmpl.done
+    DEPENDS ${COMP_BUILD_DIR}/headers.done ${COMP_BUILD_DIR}/tmpl.done
     )
 
-file(GLOB MY_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
+file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -std=c++17")
 
-add_library(ClusterRows ${MY_SOURCE_FILES})
+add_library(ClusterRows ${COMP_SOURCE_FILES})
 
 target_link_options(ClusterRows PUBLIC LINKER:-z,origin LINKER:-rpath,$ORIGIN)
 target_link_libraries(ClusterRows -L"${LO_SDK_PATH}/lib" -L"${LO_PATH}/program")
 # FIXME: make this conditional on OS.
 target_compile_definitions(ClusterRows PUBLIC UNX GCC LINUX CPPU_ENV=gcc3 LOGGING_ENABLED)
-target_include_directories(ClusterRows PUBLIC ${CMAKE_SOURCE_DIR}/inc ${MY_INC_DIR} ${LO_INC_DIR})
+target_include_directories(ClusterRows PUBLIC ${CMAKE_SOURCE_DIR}/inc ${COMP_INC_DIR} ${LO_INC_DIR})
 
 target_link_libraries(ClusterRows -luno_cppuhelpergcc3 -luno_cppu -luno_sal -lm)
 
 add_dependencies(ClusterRows allHeaders)
 
-file(GLOB MY_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
-file(GLOB MY_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
-file(GLOB MY_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
-file(GLOB MY_IMG_FILES "${CMAKE_SOURCE_DIR}/img/*.png")
+file(GLOB COMP_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
+file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
+file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
+file(GLOB COMP_IMG_FILES "${CMAKE_SOURCE_DIR}/img/*.png")
 
 install(TARGETS ClusterRows DESTINATION Linux_x86_64/)
 install(
     FILES
-    ${MY_XCU_FILES}
-    ${MY_XDL_FILES}
+    $ COMP_XCU_FILES}
+    ${COMP_XDL_FILES}
     ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
-    ${MY_REG_FILE}
+    ${COMP_REG_FILE}
     ${CMAKE_CURRENT_SOURCE_DIR}/description-en-US.txt
     ${CMAKE_CURRENT_BINARY_DIR}/description.xml
     DESTINATION
@@ -142,7 +142,7 @@ install(
 
 install(
     FILES
-    ${MY_IMG_FILES}
+    ${COMP_IMG_FILES}
     DESTINATION
     img
     )
