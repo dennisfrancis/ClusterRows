@@ -112,7 +112,7 @@ add_custom_target(
 
 file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 
 add_library(ClusterRows ${COMP_SOURCE_FILES})
 
