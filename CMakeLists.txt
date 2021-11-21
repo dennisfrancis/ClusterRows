@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name and version
-project(ClusterRows VERSION 1.0)
+project(ClusterRows VERSION 1.0.3)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -34,6 +34,7 @@ list(APPEND MY_TYPES "-Tcom.github.dennisfrancis.XGMMCluster" "-Tcom.github.denn
 list(APPEND MY_TMPL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl
+    ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl
     )
 
 # IDL -> URD
@@ -74,6 +75,7 @@ add_custom_command(
     OUTPUT ${MY_BUILD_DIR}/tmpl.done
     COMMAND COMP_NAME=ClusterRows UNOPKG_PLATFORM=Linux_x86_64 COMP_RDB_NAME=GMMCluster.uno.rdb envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/manifest.xml
     COMMAND UNOPKG_PLATFORM=Linux_x86_64 COMP_IMPL_NAME=libClusterRows.so envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
+    COMMAND CLUSTERROWS_VERSION=${CMAKE_PROJECT_VERSION} envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/description.xml
     COMMAND touch ${MY_BUILD_DIR}/tmpl.done
     DEPENDS ${MY_TMPL_FILES}
     )
@@ -113,7 +115,7 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
     ${MY_REG_FILE}
     ${CMAKE_CURRENT_SOURCE_DIR}/description-en-US.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/description.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/description.xml
     DESTINATION
     .
     )
