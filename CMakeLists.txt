@@ -18,19 +18,32 @@ set(LO_CPPUMAKER "${LO_SDK_PATH}/bin/cppumaker")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_INC_DIR "${LO_SDK_PATH}/include")
 
-if(APPLE)
-    set(URE_MISC ${LO_PATH}/Contents/Resources/ure/share/misc)
-else()
+
+set(COMP_NAME ${CMAKE_PROJECT_NAME})
+if (WIN32 OR CYGWIN)
     set(URE_MISC ${LO_PATH}/program)
+    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
+    set(UNOPKG_PLATFORM "Windows")
+    set(COMP_IMPL_NAME "${COMP_NAME}.dll")
 endif()
+
+if (APPLE)
+    set(URE_MISC ${LO_PATH}/Contents/Resources/ure/share/misc)
+    set(OFFICE_TYPES "${LO_PATH}/Contents/Resources/types/offapi.rdb")
+    set(UNOPKG_PLATFORM "MacOSX_x86_64")
+    set(COMP_IMPL_NAME "lib${COMP_NAME}.dylib")
+endif()
+
+if (UNIX AND NOT APPLE)
+    set(URE_MISC ${LO_PATH}/program)
+    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
+    set(UNOPKG_PLATFORM "Linux_x86_64")
+    set(COMP_IMPL_NAME "lib${COMP_NAME}.so")
+endif()
+
+set(COMP_RDB_NAME "GMMCluster.uno.rdb")
 
 set(URE_TYPES "${URE_MISC}/types.rdb")
-
-if(APPLE)
-    set(OFFICE_TYPES "${LO_PATH}/Contents/Resources/types/offapi.rdb")
-else()
-    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
-endif()
 
 file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
@@ -40,7 +53,7 @@ set(COMP_URD_DIR "${COMP_BUILD_DIR}/urd")
 set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
 set(COMP_INC_DIR "${COMP_BUILD_DIR}/inc")
 set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
-set(COMP_REG_FILE "${COMP_REG_DIR}/GMMCluster.uno.rdb")
+set(COMP_REG_FILE "${COMP_REG_DIR}/${COMP_RDB_NAME}")
 list(APPEND COMP_TYPES "-Tcom.github.dennisfrancis.XGMMCluster" "-Tcom.github.dennisfrancis.GMMCluster")
 
 list(APPEND COMP_TMPL_FILES
@@ -83,20 +96,18 @@ add_custom_command(
     DEPENDS ${COMP_BUILD_DIR}/rdb.done
     )
 
-add_custom_command(
-    OUTPUT ${COMP_BUILD_DIR}/tmpl.done
-    COMMAND COMP_NAME=ClusterRows UNOPKG_PLATFORM=Linux_x86_64 COMP_RDB_NAME=GMMCluster.uno.rdb envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/manifest.xml
-    COMMAND UNOPKG_PLATFORM=Linux_x86_64 COMP_IMPL_NAME=libClusterRows.so envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
-    COMMAND CLUSTERROWS_VERSION=${CMAKE_PROJECT_VERSION} envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/description.xml
-    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/tmpl.done
-    COMMENT "Generating manifest, components and description files from templates"
-    DEPENDS ${COMP_TMPL_FILES}
-    )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.in ${COMP_META_DIR}/manifest.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.in ${COMP_META_DIR}/ClusterRows.components)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.in ${COMP_META_DIR}/description.xml)
 
 add_custom_target(
     allHeaders
     ALL
-    DEPENDS ${COMP_BUILD_DIR}/headers.done ${COMP_BUILD_DIR}/tmpl.done
+    DEPENDS
+        ${COMP_BUILD_DIR}/headers.done
+        ${COMP_META_DIR}/manifest.xml
+        ${COMP_META_DIR}/ClusterRows.components
+        ${COMP_META_DIR}/description.xml
     )
 
 file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
@@ -123,19 +134,19 @@ file(GLOB COMP_IMG_FILES "${CMAKE_SOURCE_DIR}/img/*.png")
 install(TARGETS ClusterRows DESTINATION Linux_x86_64/)
 install(
     FILES
-    $ COMP_XCU_FILES}
+    ${COMP_XCU_FILES}
     ${COMP_XDL_FILES}
-    ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
+    ${COMP_META_DIR}/ClusterRows.components
     ${COMP_REG_FILE}
     ${CMAKE_CURRENT_SOURCE_DIR}/description-en-US.txt
-    ${CMAKE_CURRENT_BINARY_DIR}/description.xml
+    ${COMP_META_DIR}/description.xml
     DESTINATION
     .
     )
 
 install(
     FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/manifest.xml
+    ${COMP_META_DIR}/manifest.xml
     DESTINATION
     META-INF
     )
