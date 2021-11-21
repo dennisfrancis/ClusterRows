@@ -89,6 +89,7 @@ add_custom_command(
     COMMAND UNOPKG_PLATFORM=Linux_x86_64 COMP_IMPL_NAME=libClusterRows.so envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/ClusterRows.components
     COMMAND CLUSTERROWS_VERSION=${CMAKE_PROJECT_VERSION} envsubst < ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl > ${CMAKE_CURRENT_BINARY_DIR}/description.xml
     COMMAND ${CMAKE_COMMAND} -E touch ${MY_BUILD_DIR}/tmpl.done
+    COMMENT "Generating manifest, components and description files from templates"
     DEPENDS ${MY_TMPL_FILES}
     )
 
