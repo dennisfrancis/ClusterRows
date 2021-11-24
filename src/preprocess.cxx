@@ -202,6 +202,7 @@ bool preprocess::imputeWithMedian(Sequence<Sequence<Any>>& rDataArray, const sal
                                   const DataType aType,
                                   const std::vector<sal_Int32>& rEmptyRowIndices)
 {
+    (void)(aType);
     // We are sure that this function is not called for Any == OUString
     assert(aType != DataType::STRING && "imputeWithMedian called with type OUString !!!");
 
