@@ -215,7 +215,6 @@ void ClusterRowsImpl::launchClusterDialog(const ClusterRowsImplInfo& aJobInfo)
         return;
     }
 
-    sal_Int32 nNumCols = aRange.EndColumn - aRange.StartColumn + 1;
     sal_Int32 nNumRows = aRange.EndRow - aRange.StartRow + 1;
     Reference<XModel> xModel = getModel(aJobInfo.xFrame);
 
