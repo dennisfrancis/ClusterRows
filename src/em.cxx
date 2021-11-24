@@ -382,9 +382,9 @@ void em::GMMModel::GetClusterLabels(std::vector<sal_Int32>& rClusterLabels,
 
 // ----------------------------------------------------------------------------------------------------------
 
-void em::performNoOpClustering(const Sequence<Sequence<Any>>& rDataArray,
-                               const std::vector<DataType>& rColType,
-                               const std::vector<std::pair<double, double>>& rFeatureScales,
+void em::performNoOpClustering(const Sequence<Sequence<Any>>& /*rDataArray*/,
+                               const std::vector<DataType>& /*rColType*/,
+                               const std::vector<std::pair<double, double>>& /*rFeatureScales*/,
                                std::vector<sal_Int32>& rClusterLabels,
                                std::vector<double>& rLabelConfidence, sal_Int32& rNumClusters)
 {
