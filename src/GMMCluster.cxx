@@ -50,7 +50,7 @@ Sequence<OUString> SAL_CALL GMMClusterImpl_getSupportedServiceNames()
 }
 
 Reference<XInterface>
-    SAL_CALL GMMClusterImpl_createInstance(const Reference<XComponentContext>& rContext)
+    SAL_CALL GMMClusterImpl_createInstance(const Reference<XComponentContext>& /*rContext*/)
 {
     return (cppu::OWeakObject*)new GMMClusterImpl();
 }
@@ -227,12 +227,12 @@ OUString GMMClusterImpl::getArgumentDescription(const OUString& aProgrammaticFun
                : aArgumentDescriptions[nFIdx][nArgument];
 }
 
-OUString GMMClusterImpl::getProgrammaticCategoryName(const OUString& aProgrammaticFunctionName)
+OUString GMMClusterImpl::getProgrammaticCategoryName(const OUString& /*aProgrammaticFunctionName*/)
 {
     return "Add-In";
 }
 
-OUString GMMClusterImpl::getDisplayCategoryName(const OUString& aProgrammaticFunctionName)
+OUString GMMClusterImpl::getDisplayCategoryName(const OUString& /*aProgrammaticFunctionName*/)
 {
     return "Add-In";
 }
