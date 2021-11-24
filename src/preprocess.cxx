@@ -245,7 +245,7 @@ void preprocess::calculateFeatureScales(Sequence<Sequence<Any>>& rDataArray,
         double fSum = 0.0, fSum2 = 0.0;
         for (sal_Int32 nRowIdx = 0; nRowIdx < nNumRows; ++nRowIdx)
         {
-            double fVal;
+            double fVal = 0;
             rDataArray[nRowIdx][nColIdx] >>= fVal;
             fSum += fVal;
             fSum2 += (fVal * fVal);
