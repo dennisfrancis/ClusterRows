@@ -52,7 +52,7 @@ Sequence<OUString> SAL_CALL GMMClusterImpl_getSupportedServiceNames()
 Reference<XInterface>
     SAL_CALL GMMClusterImpl_createInstance(const Reference<XComponentContext>& /*rContext*/)
 {
-    return (cppu::OWeakObject*)new GMMClusterImpl();
+    return (::cppu::OWeakObject*)new GMMClusterImpl();
 }
 
 OUString GMMClusterImpl::getServiceName() { return ADDIN_SERVICE_NAME; }

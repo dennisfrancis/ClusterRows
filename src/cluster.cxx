@@ -117,7 +117,7 @@ Sequence<OUString> SAL_CALL ClusterRowsImpl_getSupportedServiceNames()
 Reference<XInterface>
     SAL_CALL ClusterRowsImpl_createInstance(const Reference<XComponentContext>& rContext)
 {
-    return (cppu::OWeakObject*)new ClusterRowsImpl(rContext);
+    return (::cppu::OWeakObject*)new ClusterRowsImpl(rContext);
 }
 
 ClusterRowsImpl::ClusterRowsImpl(const Reference<XComponentContext>& rxContext)
@@ -147,7 +147,7 @@ OUString SAL_CALL ClusterRowsImpl::getImplementationName()
 
 sal_Bool SAL_CALL ClusterRowsImpl::supportsService(const OUString& rServiceName)
 {
-    return cppu::supportsService(this, rServiceName);
+    return ::cppu::supportsService(this, rServiceName);
 }
 
 Sequence<OUString> SAL_CALL ClusterRowsImpl::getSupportedServiceNames()
@@ -187,7 +187,7 @@ Any SAL_CALL ClusterRowsImpl::execute(const Sequence<NamedValue>& rArgs)
     {
         aReturn[0].Name = "SendDispatchResult";
         DispatchResultEvent aResultEvent;
-        aResultEvent.Source = (cppu::OWeakObject*)this;
+        aResultEvent.Source = (::cppu::OWeakObject*)this;
         aResultEvent.State = DispatchResultState::SUCCESS;
         aResultEvent.Result <<= true;
         aReturn[0].Value <<= aResultEvent;

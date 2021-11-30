@@ -59,9 +59,9 @@ class XSpreadsheetDocument;
 
 }
 
-class ClusterRowsImpl : public cppu::WeakImplHelper3<com::sun::star::task::XJob,
-                                                     com::sun::star::awt::XDialogEventHandler,
-                                                     com::sun::star::lang::XServiceInfo>
+class ClusterRowsImpl : public ::cppu::WeakImplHelper3<com::sun::star::task::XJob,
+                                                       com::sun::star::awt::XDialogEventHandler,
+                                                       com::sun::star::lang::XServiceInfo>
 {
 private:
     ::com::sun::star::uno::Reference<::com::sun::star::uno::XComponentContext> mxContext;
@@ -82,10 +82,11 @@ public:
         const ::com::sun::star::uno::Sequence<::com::sun::star::beans::NamedValue>& rArgs) override;
 
     // XDialogEventHandler methods
-    virtual sal_Bool callHandlerMethod(
+    virtual sal_Bool SAL_CALL callHandlerMethod(
         const ::com::sun::star::uno::Reference<::com::sun::star::awt::XDialog>& xDialog,
         const ::com::sun::star::uno::Any& eventObject, const ::rtl::OUString& methodName) override;
-    virtual ::com::sun::star::uno::Sequence<::rtl::OUString> getSupportedMethodNames() override;
+    virtual ::com::sun::star::uno::Sequence<::rtl::OUString>
+        SAL_CALL getSupportedMethodNames() override;
 
     // XServiceInfo methods
     virtual ::rtl::OUString SAL_CALL getImplementationName();

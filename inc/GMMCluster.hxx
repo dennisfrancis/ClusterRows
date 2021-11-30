@@ -30,7 +30,7 @@
 #define NUMFUNCTIONS 1
 #define NUMARGS 4
 
-class GMMClusterImpl : public cppu::WeakImplHelper4<
+class GMMClusterImpl : public ::cppu::WeakImplHelper4<
                            com::github::dennisfrancis::XGMMCluster, com::sun::star::sheet::XAddIn,
                            com::sun::star::lang::XServiceName, com::sun::star::lang::XServiceInfo>
 {
@@ -56,26 +56,27 @@ public:
                             const ::com::sun::star::uno::Any& numIterations);
 
     // XAddIn
-    rtl::OUString getProgrammaticFuntionName(const rtl::OUString& aDisplayName);
-    rtl::OUString getDisplayFunctionName(const rtl::OUString& aProgrammaticName);
-    rtl::OUString getFunctionDescription(const rtl::OUString& aProgrammaticName);
-    rtl::OUString getDisplayArgumentName(const rtl::OUString& aProgrammaticFunctionName,
-                                         sal_Int32 nArgument);
-    rtl::OUString getArgumentDescription(const rtl::OUString& aProgrammaticFunctionName,
-                                         sal_Int32 nArgument);
-    rtl::OUString getProgrammaticCategoryName(const rtl::OUString& aProgrammaticFunctionName);
-    rtl::OUString getDisplayCategoryName(const rtl::OUString& aProgrammaticFunctionName);
+    rtl::OUString SAL_CALL getProgrammaticFuntionName(const rtl::OUString& aDisplayName);
+    rtl::OUString SAL_CALL getDisplayFunctionName(const rtl::OUString& aProgrammaticName);
+    rtl::OUString SAL_CALL getFunctionDescription(const rtl::OUString& aProgrammaticName);
+    rtl::OUString SAL_CALL getDisplayArgumentName(const rtl::OUString& aProgrammaticFunctionName,
+                                                  sal_Int32 nArgument);
+    rtl::OUString SAL_CALL getArgumentDescription(const rtl::OUString& aProgrammaticFunctionName,
+                                                  sal_Int32 nArgument);
+    rtl::OUString SAL_CALL
+    getProgrammaticCategoryName(const rtl::OUString& aProgrammaticFunctionName);
+    rtl::OUString SAL_CALL getDisplayCategoryName(const rtl::OUString& aProgrammaticFunctionName);
 
     //  XLocalizable
-    void setLocale(const com::sun::star::lang::Locale& aLocale) { aFuncLocale = aLocale; }
-    com::sun::star::lang::Locale getLocale() { return aFuncLocale; }
+    void SAL_CALL setLocale(const com::sun::star::lang::Locale& aLocale) { aFuncLocale = aLocale; }
+    com::sun::star::lang::Locale SAL_CALL getLocale() { return aFuncLocale; }
 
     // XServiceInfo methods
     virtual ::rtl::OUString SAL_CALL getImplementationName();
     virtual sal_Bool SAL_CALL supportsService(const ::rtl::OUString& aServiceName);
     virtual ::com::sun::star::uno::Sequence<::rtl::OUString> SAL_CALL getSupportedServiceNames();
 
-    ::rtl::OUString getServiceName();
+    ::rtl::OUString SAL_CALL getServiceName();
 
 private:
     sal_Int32 getFunctionID(const ::rtl::OUString aProgrammaticFunctionName) const;
