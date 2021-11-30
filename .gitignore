@@ -1,5 +1,7 @@
 *~
 .vscode
 build
+cbuild
+cross
 compile_flags.txt
 
