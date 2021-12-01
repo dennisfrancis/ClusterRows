@@ -2,29 +2,16 @@
 #define __com_github_dennisfrancis_xgmmcluster_idl__
 
 #include <com/sun/star/uno/XInterface.idl>
-#include <com/sun/star/lang/XInitialization.idl>
-#include <com/sun/star/lang/XServiceName.idl>
-#include <com/sun/star/lang/XLocalizable.idl>
-#include <com/sun/star/sheet/XAddIn.idl>
 
 module com { module github { module dennisfrancis {
 
     interface XGMMCluster : com::sun::star::uno::XInterface
     {
         sequence< sequence< double > > gmmCluster(
-            [in] sequence < sequence < any > > data,
+            [in] sequence < sequence < double > > data,
             [in] any numClusters,
             [in] any numEpochs,
             [in] any numIterations);
-    };
-
-    service GMMCluster
-    {
-        interface XGMMCluster;
-        interface com::sun::star::lang::XInitialization;
-        interface com::sun::star::lang::XServiceName;
-        interface com::sun::star::lang::XLocalizable;
-        interface com::sun::star::sheet::XAddIn;
     };
 
 }; }; };
