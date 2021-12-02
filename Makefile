@@ -49,6 +49,9 @@ XCUFILES = $(addprefix xcu/,GMMCluster.xcu)
 
 #XDLFILES = $(addprefix xdl/,ClusterRows.xdl)
 
+CXXFILES = $(addprefix src/cxx/,logging.cxx em.cxx)
+HXXFILES = $(addprefix src/inc/,logging.hxx em.hxx em.h)
+
 DESCRIPTION_LANG_FILES = description-en-US.txt
 DESCRIPTION_XML_TMPL = tmpl/description.xml.tmpl
 DESCRIPTION_XML = $(META_DIR)/description.xml
@@ -59,7 +62,13 @@ IMG_FILES = img/icon.png img/icon_hc.png
 
 URD_FILES = $(patsubst %.idl,$(URD_DIR)/%.urd,$(notdir $(IDL_FILES)))
 
-TYPESLIST = -Tcom.github.dennisfrancis.XGMMCluster
+OBJECT_FILES = $(patsubst %.cxx,$(OBJECTS_DIR)/%.$(OBJ_EXT),$(notdir $(CXXFILES)))
+
+DLL_FILE = $(OBJECTS_DIR)/libgmm.so
+
+ifeq "$(ENABLE_LOGGING)" "1"
+CLUSTER_DEFINES = -DLOGGING_ENABLED
+endif
 
 # Targets
 .PHONY: ALL
@@ -85,12 +94,20 @@ $(DESCRIPTION_XML): $(DESCRIPTION_XML_TMPL)
 	@mkdir -p $(META_DIR)
 	CLUSTERROWS_VERSION=$(CLUSTERROWS_VERSION) envsubst < $< > $@
 
+$(OBJECTS_DIR)/%.$(OBJ_EXT): src/cxx/%.cxx $(HXXFILES)
+	@mkdir -p $(OBJECTS_DIR)
+	$(CXX) -c -Wall -Wextra -fpic -fvisibility=hidden -O2 -g -std=c++17 $(CLUSTER_DEFINES) -o $@ $<
+
+$(DLL_FILE): $(OBJECT_FILES)
+	$(CXX) -shared -o $@ $^
+
 # rule for component package file
-$(EXT_FILE): $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(XCUFILES) $(MANIFEST_FILE) $(DESCRIPTION_XML) $(DESCRIPTION_LANG_FILES) $(IMG_FILES)
+$(EXT_FILE): $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(DLL_FILE) $(XCUFILES) $(MANIFEST_FILE) $(DESCRIPTION_XML) $(DESCRIPTION_LANG_FILES) $(IMG_FILES)
 	@mkdir -p $(EXT_DIR) $(PACKAGE_DIR)
 	@mkdir -p $(PACKAGE_DIR)/$(IMG_DIR)
 	@cp $(COMP_RDB) $(PACKAGE_DIR)/
 	@cp $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/
+	@cp $(DLL_FILE) $(PACKAGE_DIR)/
 	@cp $(XCUFILES) $(PACKAGE_DIR)/
 	@cp $(DESCRIPTION_LANG_FILES) $(PACKAGE_DIR)/
 	@cp $(DESCRIPTION_XML) $(PACKAGE_DIR)/
