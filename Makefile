@@ -52,6 +52,8 @@ XCUFILES = $(addprefix xcu/,GMMCluster.xcu)
 CXXFILES = $(addprefix src/cxx/,logging.cxx em.cxx)
 HXXFILES = $(addprefix src/inc/,logging.hxx em.hxx em.h)
 
+PY_LIBS = $(addprefix src/py/, perf.py)
+
 DESCRIPTION_LANG_FILES = description-en-US.txt
 DESCRIPTION_XML_TMPL = tmpl/description.xml.tmpl
 DESCRIPTION_XML = $(META_DIR)/description.xml
@@ -102,11 +104,12 @@ $(DLL_FILE): $(OBJECT_FILES)
 	$(CXX) -shared -o $@ $^
 
 # rule for component package file
-$(EXT_FILE): $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(DLL_FILE) $(XCUFILES) $(MANIFEST_FILE) $(DESCRIPTION_XML) $(DESCRIPTION_LANG_FILES) $(IMG_FILES)
+$(EXT_FILE): $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(COMP_RDB) $(PY_LIBS) $(DLL_FILE) $(XCUFILES) $(MANIFEST_FILE) $(DESCRIPTION_XML) $(DESCRIPTION_LANG_FILES) $(IMG_FILES)
 	@mkdir -p $(EXT_DIR) $(PACKAGE_DIR)
 	@mkdir -p $(PACKAGE_DIR)/$(IMG_DIR)
 	@cp $(COMP_RDB) $(PACKAGE_DIR)/
 	@cp $(PY_SRC_DIR)/$(COMP_IMPL_NAME) $(PACKAGE_DIR)/
+	@cp $(PY_LIBS) $(PACKAGE_DIR)/
 	@cp $(DLL_FILE) $(PACKAGE_DIR)/
 	@cp $(XCUFILES) $(PACKAGE_DIR)/
 	@cp $(DESCRIPTION_LANG_FILES) $(PACKAGE_DIR)/

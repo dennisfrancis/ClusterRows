@@ -1,4 +1,3 @@
-
 # ClusterRows
 # Copyright (c) 2021 Dennis Francis <dennisfrancis.in@gmail.com>
 #
@@ -18,7 +17,19 @@
 import ctypes
 from itertools import chain
 from typing import Tuple
-import time
+import sys
+import inspect
+import os
+
+cmd_folder = os.path.realpath(
+    os.path.abspath(
+        os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+
+if cmd_folder not in sys.path:
+    sys.path.insert(0, cmd_folder)
+
+from perf import PerfTimer
+
 import unohelper
 
 from com.github.dennisfrancis import XGMMCluster
@@ -32,10 +43,20 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
     def _isNumeric(param: object) -> bool:
         return (type(param) == int) or (type(param) == float)
 
+    @staticmethod
+    def _getGMMLibName() -> str:
+        if sys.platform == "linux" or sys.platform == "linux2":
+            return "libgmm.so"
+        elif sys.platform == "darwin":
+            return "libgmm.dylib"
+        elif sys.platform == "win32" or sys.platform == "cygwin":
+            return "gmm.dll"
+        return 'libgmm.so'
+
     def gmmCluster(self, data: Tuple[Tuple[float]], numClusters, numEpochs, numIterations):
         """Compute clusters for each row of input data matrix with
         the given parameters"""
-        start = time.time()
+        mainPerf = PerfTimer("gmmCluster", showStart=True)
         if numClusters is None: numClusters = 0
         if numEpochs is None: numEpochs = 10
         if numIterations is None: numIterations = 100
@@ -49,12 +70,12 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
                             return ((-1, 0),)
         nrows = len(data)
         ncols = len(data[0])
-        startArr = time.time()
+        tupleToArrayPerf = PerfTimer("tupleToArray", level=1)
         arr = (ctypes.c_double * (ncols * nrows))(*chain.from_iterable(data))
-        print(f'arr gen time: {time.time() - startArr}')
+        tupleToArrayPerf.show()
         labels = (ctypes.c_int * nrows)()
         confidences = (ctypes.c_double * nrows)()
-        gmmModule = ctypes.CDLL('libgmm.so')
+        gmmModule = ctypes.CDLL(GMMClusterImpl._getGMMLibName())
         gmm = gmmModule.gmm
         gmm.argtypes = [
             ctypes.POINTER(ctypes.c_double), # data
@@ -67,14 +88,14 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
             ctypes.POINTER(ctypes.c_double), # labelConfidence
         ]
         gmm.restype = ctypes.c_int
-        startGmm = time.time()
+        gmmPerf = PerfTimer("gmm", level=1)
         _ = gmm(arr, nrows, ncols, int(numClusters), int(numEpochs), int(numIterations), labels, confidences)
-        print(f'gmm time: {time.time() - startGmm}')
+        gmmPerf.show()
         #print('gmm status = {}'.format(status))
-        startRes = time.time()
+        resultsToTuplePerf = PerfTimer("resultsToTuple", level=1)
         res = tuple(zip(labels, confidences))
-        print(f'res gen time: {time.time() - startRes}')
-        print(f'Total time: {time.time() - start}')
+        resultsToTuplePerf.show()
+        mainPerf.show()
         return res
 
 def createInstance(ctx):
