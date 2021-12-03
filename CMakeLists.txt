@@ -15,80 +15,46 @@ option(LOGGING_ENABLED "Enable logging" OFF)
 
 set(LO_IDLC "${LO_SDK_PATH}/bin/idlc")
 set(LO_REGMERGE "${LO_PATH}/program/regmerge")
-set(LO_CPPUMAKER "${LO_SDK_PATH}/bin/cppumaker")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
-set(LO_INC_DIR "${LO_SDK_PATH}/include")
+set(LO_UNOPKG "${LO_PATH}/program/unopkg")
 
-file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cxx")
-add_library(ClusterRows ${COMP_SOURCE_FILES})
+file(GLOB COMP_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/cxx/*.cxx")
+add_library(gmm ${COMP_SOURCE_FILES})
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
-if (WIN32 OR CYGWIN)
-    set(URE_MISC ${LO_PATH}/program)
-    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
-    set(UNOPKG_PLATFORM "Windows")
-    set(COMP_IMPL_NAME "${COMP_NAME}.dll")
-    # FIXME
-    #set(CMAKE_CXX_FLAGS "/MD /Zm500 /Zc:wchar_t- /wd4251 /wd4275 /wd4290 /wd4675 /wd4786 /wd4800 /GR /EHa")
-    #target_link_options(ClusterRows PUBLIC /DEBUGTYPE:cv /DEF:${LO_SDK_PATH}/settings/component.uno.def)
-    #target_compile_definitions
-    #target_link_libraries
-endif()
+set(COMP_IMPL_NAME ${COMP_NAME}.py)
+set(COMP_IDENTIFIER com.github.dennisfrancis.ClusterRowsImpl)
+set(COMP_PYDIR ${CMAKE_SOURCE_DIR}/src/py)
+file(GLOB COMP_PYFILES "${COMP_PYDIR}/*.py")
 
-if (APPLE)
-    set(URE_MISC ${LO_PATH}/Contents/Resources/ure/share/misc)
-    set(OFFICE_TYPES "${LO_PATH}/Contents/Resources/types/offapi.rdb")
-    set(UNOPKG_PLATFORM "MacOSX_x86_64")
-    set(COMP_IMPL_NAME "lib${COMP_NAME}.dylib")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-common -fvisibility=hidden")
-    # FIXME
-    #target_link_options(ClusterRows PUBLIC -single_module -Wl,-multiply_defined,suppress)
-    #target_compile_definitions
-    #target_link_libraries
+set(ClusterRowsDefinitions "")
+if (LOGGING_ENABLED)
+    list(APPEND ClusterRowsDefinitions LOGGING_ENABLED)
 endif()
+target_compile_definitions(gmm PUBLIC ${ClusterRowsDefinitions})
 
-if (UNIX AND NOT APPLE)
-    set(URE_MISC ${LO_PATH}/program)
-    set(OFFICE_TYPES "${LO_PATH}/program/types/offapi.rdb")
-    set(UNOPKG_PLATFORM "Linux_x86_64")
-    set(COMP_IMPL_NAME "lib${COMP_NAME}.so")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wall -Wextra")
-    list(APPEND ClusterRowsDefinitions UNX GCC LINUX CPPU_ENV=gcc3)
-    if (LOGGING_ENABLED)
-        list(APPEND ClusterRowsDefinitions LOGGING_ENABLED)
-    endif()
-    target_link_options(ClusterRows PUBLIC LINKER:-z,origin LINKER:-rpath,$ORIGIN)
-    target_link_libraries(ClusterRows -L"${LO_SDK_PATH}/lib" -L"${LO_PATH}/program")
-    target_compile_definitions(ClusterRows PUBLIC ${ClusterRowsDefinitions})
-    target_link_libraries(ClusterRows -luno_cppuhelpergcc3 -luno_cppu -luno_sal -lm)
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wall -Wextra")
 
 set(COMP_RDB_NAME "GMMCluster.uno.rdb")
-
-set(URE_TYPES "${URE_MISC}/types.rdb")
 
 file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
 set(COMP_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/build")
-
 set(COMP_URD_DIR "${COMP_BUILD_DIR}/urd")
 set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
-set(COMP_INC_DIR "${COMP_BUILD_DIR}/inc")
 set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
 set(COMP_REG_FILE "${COMP_REG_DIR}/${COMP_RDB_NAME}")
-list(APPEND COMP_TYPES "-Tcom.github.dennisfrancis.XGMMCluster" "-Tcom.github.dennisfrancis.GMMCluster")
 
 list(APPEND COMP_TMPL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl
-    ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.tmpl
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl
     )
 
 # IDL -> URD
 add_custom_command(
     OUTPUT ${COMP_BUILD_DIR}/urd.done
-    COMMAND rm -rf ${COMP_URD_DIR}
-    COMMAND mkdir -p ${COMP_URD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${COMP_URD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${COMP_URD_DIR}
     COMMAND ${LO_IDLC} -I${LO_IDL_DIR} -O${COMP_URD_DIR} ${COMP_IDL_FILES}
     COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/urd.done
     COMMENT "Generating URD files from IDL files"
@@ -98,55 +64,41 @@ add_custom_command(
 # URD -> single RDB
 add_custom_command(
     OUTPUT ${COMP_BUILD_DIR}/rdb.done
-    COMMAND rm -rf ${COMP_REG_DIR}
-    COMMAND mkdir -p ${COMP_REG_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${COMP_REG_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${COMP_REG_DIR}
     COMMAND ${LO_REGMERGE} ${COMP_REG_FILE} /UCR ${COMP_URD_DIR}/*.urd
     COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/rdb.done
     COMMENT "Generating RDB file from URD files"
     DEPENDS ${COMP_BUILD_DIR}/urd.done
     )
 
-# header file generation
-add_custom_command(
-    OUTPUT ${COMP_BUILD_DIR}/headers.done
-    COMMAND rm -rf ${COMP_INC_DIR}
-    COMMAND mkdir -p ${COMP_INC_DIR}
-    COMMAND ${LO_CPPUMAKER} -Gc -O${COMP_INC_DIR} ${URE_TYPES} ${OFFICE_TYPES}
-    COMMAND ${LO_CPPUMAKER} -Gc -O${COMP_INC_DIR} ${COMP_TYPES} ${COMP_REG_FILE} -X${URE_TYPES} -X${OFFICE_TYPES}
-    COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/headers.done
-    COMMENT "Generating headers for all types"
-    DEPENDS ${COMP_BUILD_DIR}/rdb.done
-    )
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.in ${COMP_META_DIR}/manifest.xml)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/ClusterRows.components.in ${COMP_META_DIR}/ClusterRows.components)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.in ${COMP_META_DIR}/description.xml)
 
 add_custom_target(
-    allHeaders
+    loext
     ALL
+    COMMENT "Setting up extension files"
     DEPENDS
-        ${COMP_BUILD_DIR}/headers.done
+        ${COMP_BUILD_DIR}/rdb.done
         ${COMP_META_DIR}/manifest.xml
-        ${COMP_META_DIR}/ClusterRows.components
         ${COMP_META_DIR}/description.xml
     )
 
-target_include_directories(ClusterRows PUBLIC ${CMAKE_SOURCE_DIR}/inc ${COMP_INC_DIR} ${LO_INC_DIR})
+target_include_directories(gmm PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
 
-add_dependencies(ClusterRows allHeaders)
+set(COMP_XCU_FILES ${CMAKE_SOURCE_DIR}/xcu/GMMCluster.xcu)
+#file(GLOB COMP_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
+#file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
+set(COMP_IMG_DIR ${CMAKE_SOURCE_DIR}/img)
+set(COMP_IMG_FILES ${COMP_IMG_DIR}/icon_hc.png ${COMP_IMG_DIR}/icon.png)
 
-file(GLOB COMP_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
-file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
-file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
-file(GLOB COMP_IMG_FILES "${CMAKE_SOURCE_DIR}/img/*.png")
-
-install(TARGETS ClusterRows DESTINATION Linux_x86_64/)
+install(TARGETS gmm DESTINATION .)
 install(
     FILES
+    ${COMP_PYFILES}
     ${COMP_XCU_FILES}
-    ${COMP_XDL_FILES}
-    ${COMP_META_DIR}/ClusterRows.components
+    #${COMP_XDL_FILES}
     ${COMP_REG_FILE}
     ${CMAKE_CURRENT_SOURCE_DIR}/description-en-US.txt
     ${COMP_META_DIR}/description.xml
@@ -170,13 +122,21 @@ install(
 
 include(CPack)
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-
 get_filename_component(CPACK_COMMAND ${CMAKE_COMMAND} PATH)
 set(CPACK_COMMAND ${CPACK_COMMAND}/cpack)
+set(COMP_PACKAGE_NAME ${COMP_NAME}-${CMAKE_SYSTEM_NAME})
 
-add_custom_target(genext
-    COMMAND ${CPACK_COMMAND} -G ZIP -D CPACK_PACKAGE_FILE_NAME=ClusterRows -D CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF
-    COMMAND mv ClusterRows.zip ClusterRows.oxt
+add_custom_target(ClusterRows
+    COMMAND ${CPACK_COMMAND} -G ZIP -D CPACK_PACKAGE_FILE_NAME=${COMP_PACKAGE_NAME} -D CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF
+    COMMAND mv ${COMP_PACKAGE_NAME}.zip ${COMP_PACKAGE_NAME}.oxt
     WORKING_DIRECTORY ${CMAKE_BUILD_DIR}
+    COMMENT "Building extension package"
+    DEPENDS gmm loext
+    )
+
+add_custom_target(deploy
+    COMMAND ${LO_UNOPKG} remove ${COMP_IDENTIFIER} > /dev/null 2>&1 || (exit 0)
+    COMMAND ${LO_UNOPKG} add ${CMAKE_BINARY_DIR}/${COMP_PACKAGE_NAME}.oxt
+    COMMENT "Deploying extension package to system LibreOffice"
     DEPENDS ClusterRows
     )
