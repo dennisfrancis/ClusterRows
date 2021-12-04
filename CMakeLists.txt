@@ -44,6 +44,7 @@ set(COMP_URD_DIR "${COMP_BUILD_DIR}/urd")
 set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
 set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
 set(COMP_REG_FILE "${COMP_REG_DIR}/${COMP_RDB_NAME}")
+set(EXTENSION_DIR ${CMAKE_SOURCE_DIR}/extension)
 
 list(APPEND COMP_TMPL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl
@@ -128,7 +129,8 @@ set(COMP_PACKAGE_NAME ${COMP_NAME}-${CMAKE_SYSTEM_NAME})
 
 add_custom_target(ClusterRows
     COMMAND ${CPACK_COMMAND} -G ZIP -D CPACK_PACKAGE_FILE_NAME=${COMP_PACKAGE_NAME} -D CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF
-    COMMAND mv ${COMP_PACKAGE_NAME}.zip ${COMP_PACKAGE_NAME}.oxt
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${EXTENSION_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${COMP_PACKAGE_NAME}.zip ${EXTENSION_DIR}/${COMP_PACKAGE_NAME}.oxt
     WORKING_DIRECTORY ${CMAKE_BUILD_DIR}
     COMMENT "Building extension package"
     DEPENDS gmm loext
@@ -136,7 +138,7 @@ add_custom_target(ClusterRows
 
 add_custom_target(deploy
     COMMAND ${LO_UNOPKG} remove ${COMP_IDENTIFIER} > /dev/null 2>&1 || (exit 0)
-    COMMAND ${LO_UNOPKG} add ${CMAKE_BINARY_DIR}/${COMP_PACKAGE_NAME}.oxt
+    COMMAND ${LO_UNOPKG} add ${EXTENSION_DIR}/${COMP_PACKAGE_NAME}.oxt
     COMMENT "Deploying extension package to system LibreOffice"
     DEPENDS ClusterRows
     )
