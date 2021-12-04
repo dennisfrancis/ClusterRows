@@ -35,6 +35,10 @@ target_compile_definitions(gmm PUBLIC ${ClusterRowsDefinitions})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wall -Wextra")
 
+if (WIN32 OR CYGWIN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -Wl,-Bstatic -lstdc++")
+endif()
+
 set(COMP_RDB_NAME "GMMCluster.uno.rdb")
 
 file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
