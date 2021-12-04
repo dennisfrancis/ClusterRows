@@ -36,22 +36,32 @@ from com.github.dennisfrancis import XGMMCluster
 
 class GMMClusterImpl(unohelper.Base, XGMMCluster):
     """Implementation of GMMCluster addin"""
-    def __init__(self):
-        return
+    def __init__(self, ctx, testMode=False):
+        self.ctx = ctx
+        self.testMode = testMode
 
     @staticmethod
     def _isNumeric(param: object) -> bool:
         return (type(param) == int) or (type(param) == float)
 
-    @staticmethod
-    def _getGMMLibName() -> str:
+    def _getGMMLibPath(self) -> str:
+        fname = self._getGMMLibName()
+        if self.testMode:
+            return os.path.normpath(os.path.join('build', 'linux', fname))
+
+        piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
+        extension_uri = piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRowsImpl')
+        extension_path = unohelper.fileUrlToSystemPath(extension_uri)
+        return os.path.normpath(os.path.join(extension_path, fname))
+
+    def _getGMMLibName(self) -> str:
         if sys.platform == "linux" or sys.platform == "linux2":
             return "libgmm.so"
-        elif sys.platform == "darwin":
+        if sys.platform == "darwin":
             return "libgmm.dylib"
-        elif sys.platform == "win32" or sys.platform == "cygwin":
-            return "gmm.dll"
-        return 'libgmm.so'
+        if sys.platform == "win32" or sys.platform == "cygwin":
+            return "libgmm.dll"
+        return "libgmm.so"
 
     def gmmCluster(self, data: Tuple[Tuple[float]], numClusters, numEpochs, numIterations):
         """Compute clusters for each row of input data matrix with
@@ -75,7 +85,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
         tupleToArrayPerf.show()
         labels = (ctypes.c_int * nrows)()
         confidences = (ctypes.c_double * nrows)()
-        gmmModule = ctypes.CDLL(GMMClusterImpl._getGMMLibName())
+        gmmModule = ctypes.CDLL(self._getGMMLibPath())
         gmm = gmmModule.gmm
         gmm.argtypes = [
             ctypes.POINTER(ctypes.c_double), # data
@@ -99,7 +109,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
         return res
 
 def createInstance(ctx):
-    return GMMClusterImpl()
+    return GMMClusterImpl(ctx)
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation( \
