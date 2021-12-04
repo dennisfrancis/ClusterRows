@@ -16,7 +16,7 @@ if cmd_folder not in sys.path:
 import ClusterRows
 
 def main():
-    gmmImpl = ClusterRows.GMMClusterImpl()
+    gmmImpl = ClusterRows.GMMClusterImpl({}, testMode=True)
     data = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
     ret = gmmImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
     print(ret)
