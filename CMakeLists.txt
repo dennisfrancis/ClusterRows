@@ -25,7 +25,11 @@ set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
 set(COMP_IDENTIFIER com.github.dennisfrancis.ClusterRowsImpl)
 set(COMP_PYDIR ${CMAKE_SOURCE_DIR}/src/py)
-file(GLOB COMP_PYFILES "${COMP_PYDIR}/*.py")
+set(COMP_PYFILES
+    ${COMP_PYDIR}/ClusterRows.py
+    ${COMP_PYDIR}/crlogger.py
+    ${COMP_PYDIR}/crplatform.py
+    ${COMP_PYDIR}/perf.py)
 
 set(ClusterRowsDefinitions "")
 if (LOGGING_ENABLED)

@@ -29,6 +29,8 @@ if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
 from perf import PerfTimer
+import crlogger
+import crplatform
 
 import unohelper
 
@@ -39,39 +41,41 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
     def __init__(self, ctx, testMode=False):
         self.ctx = ctx
         self.testMode = testMode
+        self.platvars = crplatform.CRPlatForm()
+        self.logger = crlogger.setupLogger(self._getLogPath())
+        self.logger.debug("INIT")
+        self.logger.debug(self.platvars)
+        if not self.testMode:
+            self.logger.debug(f'extension path = {self._getExtensionPath()}')
 
     @staticmethod
     def _isNumeric(param: object) -> bool:
         return (type(param) == int) or (type(param) == float)
 
-    def _getGMMLibPath(self) -> str:
-        fname = self._getGMMLibName()
-        if self.testMode:
-            return os.path.normpath(os.path.join('build', 'linux', fname))
-
+    def _getExtensionPath(self) -> str:
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
         extension_uri = piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRowsImpl')
-        extension_path = unohelper.fileUrlToSystemPath(extension_uri)
-        return os.path.normpath(os.path.join(extension_path, fname))
+        return unohelper.fileUrlToSystemPath(extension_uri)
 
-    def _getGMMLibName(self) -> str:
-        if sys.platform == "linux" or sys.platform == "linux2":
-            return "libgmm.so"
-        if sys.platform == "darwin":
-            return "libgmm.dylib"
-        if sys.platform == "win32" or sys.platform == "cygwin":
-            return "libgmm.dll"
-        return "libgmm.so"
+    def _getLogPath(self) -> str:
+        return os.path.join('build', self.platvars.osName) if self.testMode else self._getExtensionPath()
+
+    def _getGMMLibPath(self) -> str:
+        fname = self.platvars.dllName
+        if self.testMode:
+            return os.path.normpath(os.path.join('build', self.platvars.osName, fname))
+
+        extension_path = self._getExtensionPath()
+        return os.path.normpath(os.path.join(extension_path, fname))
 
     def gmmCluster(self, data: Tuple[Tuple[float]], numClusters, numEpochs, numIterations):
         """Compute clusters for each row of input data matrix with
         the given parameters"""
-        mainPerf = PerfTimer("gmmCluster", showStart=True)
+        mainPerf = PerfTimer("gmmCluster", showStart=True, logger=self.logger)
         if numClusters is None: numClusters = 0
         if numEpochs is None: numEpochs = 10
         if numIterations is None: numIterations = 100
-        #print('data = {}\nnumClusters = {}\nnumEpochs = {}\nnumIterations = {}'
-        #    .format(data, numClusters, numEpochs, numIterations))
+        self.logger.debug(f'Params: numClusters = {numClusters} numEpochs = {numEpochs} numIterations = {numIterations}')
         if (not GMMClusterImpl._isNumeric(numClusters)) \
             or (not GMMClusterImpl._isNumeric(numEpochs)) \
                 or (not GMMClusterImpl._isNumeric(numIterations)) \
@@ -80,7 +84,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
                             return ((-1, 0),)
         nrows = len(data)
         ncols = len(data[0])
-        tupleToArrayPerf = PerfTimer("tupleToArray", level=1)
+        tupleToArrayPerf = PerfTimer("tupleToArray", level=1, logger=self.logger)
         arr = (ctypes.c_double * (ncols * nrows))(*chain.from_iterable(data))
         tupleToArrayPerf.show()
         labels = (ctypes.c_int * nrows)()
@@ -98,11 +102,11 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
             ctypes.POINTER(ctypes.c_double), # labelConfidence
         ]
         gmm.restype = ctypes.c_int
-        gmmPerf = PerfTimer("gmm", level=1)
-        _ = gmm(arr, nrows, ncols, int(numClusters), int(numEpochs), int(numIterations), labels, confidences)
+        gmmPerf = PerfTimer("gmm", level=1, logger=self.logger)
+        status = gmm(arr, nrows, ncols, int(numClusters), int(numEpochs), int(numIterations), labels, confidences)
         gmmPerf.show()
-        #print('gmm status = {}'.format(status))
-        resultsToTuplePerf = PerfTimer("resultsToTuple", level=1)
+        self.logger.debug("gmm status = {}".format(status))
+        resultsToTuplePerf = PerfTimer("resultsToTuple", level=1, logger=self.logger)
         res = tuple(zip(labels, confidences))
         resultsToTuplePerf.show()
         mainPerf.show()
