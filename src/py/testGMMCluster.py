@@ -8,15 +8,15 @@ sys.path.append('/usr/lib/libreoffice/program')
 
 cmd_folder = os.path.realpath(
     os.path.abspath(
-        os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+        os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
-import ClusterRows
+import GMMCluster
 
 def main():
-    gmmImpl = ClusterRows.GMMClusterImpl({}, testMode=True)
+    gmmImpl = GMMCluster.GMMClusterImpl({}, testMode=True)
     data = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
     ret = gmmImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
     print(ret)

@@ -27,6 +27,7 @@ set(COMP_IDENTIFIER com.github.dennisfrancis.ClusterRowsImpl)
 set(COMP_PYDIR ${CMAKE_SOURCE_DIR}/src/py)
 set(COMP_PYFILES
     ${COMP_PYDIR}/ClusterRows.py
+    ${COMP_PYDIR}/GMMCluster.py
     ${COMP_PYDIR}/crlogger.py
     ${COMP_PYDIR}/crplatform.py
     ${COMP_PYDIR}/perf.py)
