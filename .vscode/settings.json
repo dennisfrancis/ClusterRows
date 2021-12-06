@@ -10,6 +10,7 @@
         "editor.formatOnSave": true
     },
     "python.analysis.extraPaths": [
-        "./src/py/faketypes"
+        "./src/py/faketypes",
+        "./src/py"
     ],
 }
