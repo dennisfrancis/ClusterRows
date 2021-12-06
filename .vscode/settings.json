@@ -1,0 +1,15 @@
+{
+    "spellright.language": [
+        "en_US"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex"
+    ],
+    "[cpp]": {
+        "editor.formatOnSave": true
+    },
+    "python.analysis.extraPaths": [
+        "./src/py/faketypes"
+    ],
+}
