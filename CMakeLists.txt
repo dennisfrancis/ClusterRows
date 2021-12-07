@@ -7,6 +7,12 @@ project(ClusterRows VERSION 1.0.3)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# No cross-compile toolchain in use
+if (NOT DEFINED EXTENSION_PLATFORM)
+    # Native build is currently linux only.
+    set(EXTENSION_PLATFORM "linux_x86_64")
+endif()
+
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 set(LO_PATH "/usr/lib/libreoffice" CACHE FILEPATH "LibreOffice install directory")
@@ -54,11 +60,6 @@ set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
 set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
 set(COMP_REG_FILE "${COMP_REG_DIR}/${COMP_RDB_NAME}")
 set(EXTENSION_DIR ${CMAKE_SOURCE_DIR}/extension)
-
-list(APPEND COMP_TMPL_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.tmpl
-    ${CMAKE_CURRENT_SOURCE_DIR}/tmpl/description.xml.tmpl
-    )
 
 # IDL -> URD
 add_custom_command(
