@@ -26,9 +26,15 @@ if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
 from GMMCluster import GMMClusterImpl
+from CRJob import CRJobImpl
+
 import unohelper
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation( \
     GMMClusterImpl.createInstance, GMMClusterImpl.getImplementationName(),
         GMMClusterImpl.getServiceNames(),)
+
+g_ImplementationHelper.addImplementation( \
+    CRJobImpl.createInstance, CRJobImpl.getImplementationName(),
+        CRJobImpl.getServiceNames(),)
