@@ -1,5 +1,4 @@
 *~
-cross
 compile_flags.txt
 
 __pycache__
@@ -8,3 +7,4 @@ __pycache__
 /build/linux/*
 /build/windows/*
 /build/darwin/*
+/cross/*
