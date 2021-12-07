@@ -34,6 +34,7 @@ set(COMP_PYDIR ${CMAKE_SOURCE_DIR}/src/py)
 set(COMP_PYFILES
     ${COMP_PYDIR}/ClusterRows.py
     ${COMP_PYDIR}/GMMCluster.py
+    ${COMP_PYDIR}/CRJob.py
     ${COMP_PYDIR}/crlogger.py
     ${COMP_PYDIR}/crplatform.py
     ${COMP_PYDIR}/perf.py)
@@ -98,7 +99,10 @@ add_custom_target(
 
 target_include_directories(gmm PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
 
-set(COMP_XCU_FILES ${CMAKE_SOURCE_DIR}/xcu/GMMCluster.xcu)
+set(COMP_XCU_FILES
+    ${CMAKE_SOURCE_DIR}/xcu/GMMCluster.xcu
+    ${CMAKE_SOURCE_DIR}/xcu/Jobs.xcu
+    ${CMAKE_SOURCE_DIR}/xcu/Addons.xcu)
 #file(GLOB COMP_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
 #file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
 set(COMP_IMG_DIR ${CMAKE_SOURCE_DIR}/img)

@@ -4,6 +4,10 @@
 	<manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-typelibrary;type=RDB"
 		manifest:full-path="@COMP_RDB_NAME@"/>
 	<manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data"
+		manifest:full-path="Addons.xcu"/>
+	<manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data"
+		manifest:full-path="Jobs.xcu"/>
+	<manifest:file-entry manifest:media-type="application/vnd.sun.star.configuration-data"
 		manifest:full-path="GMMCluster.xcu"/>
 	<manifest:file-entry manifest:media-type="application/vnd.sun.star.uno-component;type=Python"
 		manifest:full-path="@COMP_IMPL_NAME@"/>
