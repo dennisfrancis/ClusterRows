@@ -32,12 +32,13 @@ import crplatform
 
 import unohelper
 import uno
+
 from com.sun.star.task import XJob
 from com.sun.star.awt import XDialogEventHandler
+from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
-from com.sun.star.sheet.CellFlags import VALUE, DATETIME
 
-class CRJobImpl(unohelper.Base, XJob, XDialogEventHandler):
+class CRJobImpl(unohelper.Base, XJob):
     def __init__(self, ctx, testMode=False):
         self.ctx = ctx
         self.testMode = testMode
@@ -108,30 +109,7 @@ class CRJobImpl(unohelper.Base, XJob, XDialogEventHandler):
         if userSelection is None:
             return False
         # Initial cell range of the data
-        self.dataRange = userSelection.getRangeAddress()
-        return True
-
-    def _getControl(self, name):
-        if not self.dialog:
-            return None
-        return self.dialog.getControl(name)
-
-    # XDialogEventHandler
-    def getSupportedMethodNames(self):
-        return (
-            "onOKButtonPress",
-            "onCancelButtonPress",
-            "onInputChange",
-            "onInputFocusLost")
-
-    def callHandlerMethod(self, dialog, eventObject, methodName):
-        if methodName == "onOKButtonPress":
-            print("onOKButtonPress")
-        elif methodName == "onCancelButtonPress":
-            print("onCancelButtonPress")
-            self.dialog.endExecute()
-        elif methodName == "onInputFocusLost":
-            print("onInputFocusLost")
+        self.userRange = userSelection.getRangeAddress()
         return True
 
     def _createDialogAndExecute(self):
@@ -142,17 +120,12 @@ class CRJobImpl(unohelper.Base, XJob, XDialogEventHandler):
             return False
 
         xdlFile = self._getExtensionURL() + "/ClusterRows.xdl"
-        self.dialog = dialogProvider.createDialogWithHandler(xdlFile, self)
-        if self.dialog is None:
+        dialog = dialogProvider.createDialogWithHandler(xdlFile, CRDialogHandler(self.ctx, self.logger, self.userRange))
+        if dialog is None:
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialog!")
             return False
 
-        label = self._getControl("LabelField_DataRange")
-        if label is None:
-            self.logger.error("CRJobImpl._createDialogAndExecute: cannot get DataRange label from dialog")
-            return False
-
-        self.dialog.execute()
+        dialog.setVisible(True)
 
         return True
 
@@ -163,12 +136,10 @@ class CRJobImpl(unohelper.Base, XJob, XDialogEventHandler):
         self._createDialogAndExecute()
 
     def execute(self, args):
-        ret = ()
         try:
-            ret = self._execute(args)
+            self._execute(args)
         except Exception as e:
             self.logger.exception("CRJobImpl._execute() crashed.")
-        return ret
 
     def _execute(self, args):
         self.logger.debug("CRJobImpl.execute: START")
@@ -178,7 +149,104 @@ class CRJobImpl(unohelper.Base, XJob, XDialogEventHandler):
 
         self.logger.debug("CRJobImpl.execute: _parseArgs succeeded")
         self.logger.debug(f'CRJobImpl.execute: envType = {self.envType}, eventName = {self.eventName}, \n\tframe = {self.frame}\n\tmodel = {self.model}')
+
         if self.eventName == "onClusterRowsReqDialog":
             self._launchClusterDialog()
 
         return self._getSuccessReturn()
+
+
+class CRDialogHandler(unohelper.Base, XDialogEventHandler):
+    def __init__(self, ctx, logger, userRange):
+        self.ctx = ctx
+        self.logger = logger
+        self.userRange = userRange
+        self.desktop = self.ctx.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
+        self.logger.debug("INIT CRDialogHandler")
+
+    def getSupportedMethodNames(self):
+        return (
+            "onOKButtonPress",
+            "onCancelButtonPress",
+            "onInputChange",
+            "onInputFocusLost",
+            "onRangeSelButtonPress")
+
+    def callHandlerMethod(self, dialog, eventObject, methodName):
+        self.logger.debug("CRDialogHandler.callHandlerMethod : methodName = " + methodName)
+        try:
+            if methodName == "onOKButtonPress":
+                print("onOKButtonPress")
+            elif methodName == "onCancelButtonPress":
+                print("onCancelButtonPress")
+                #dialog.endExecute()
+                dialog.setVisible(False)
+            elif methodName == "onInputFocusLost":
+                print("onInputFocusLost")
+            elif methodName == "onRangeSelButtonPress":
+                self._onRangeSelButtonPress(dialog)
+        except Exception as e:
+            self.logger.exception("CRDialogHandler.callHandlerMethod() crashed.")
+
+        return True
+
+    def showDialog(self):
+        if self.dialog is None:
+            return
+        if not self.rangeListener.failed:
+            self.userRange = self.rangeListener.cellRange
+            self._setDialogRange(self.userRange, self.dialog)
+        self.controller.removeRangeSelectionListener(self.rangeListener)
+        self.dialog.setVisible(True)
+
+    def _onRangeSelButtonPress(self, dialog):
+        print(self.userRange)
+        self.dialog = dialog
+        self.dialog.setVisible(False)
+        self.model = self.desktop.getCurrentComponent()
+        self.controller = self.model.CurrentController
+
+        self.rangeListener = CRRangeSelectionListener(self)
+
+        self.controller.addRangeSelectionListener(self.rangeListener)
+        initialValue = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+        title = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+        closeOnMouseRelease = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+        initialValue.Name = "InitialValue"
+        initialValue.Value = self.userRange
+        title.Name = "Title"
+        title.Value = "Select the cell range where the data is"
+        closeOnMouseRelease.Name = "CloseOnMouseRelease"
+        closeOnMouseRelease.Value = True
+
+        self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease))
+        return
+
+    def _setDialogRange(self, cellRange, dialog):
+        if not isinstance(cellRange, str):
+            cellRange = "NONE"
+        label = dialog.getControl("TextField_DataRange")
+        if label is None:
+            self.logger.error("CRJobImpl._setDialogRange: cannot get DataRange label control from dialog")
+            return False
+        label.setText(cellRange)
+        return True
+
+class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
+    def __init__(self, dlgHandler):
+        self.dlgHandler = dlgHandler
+        self.failed = False
+        self.cellRange = ""
+        return
+
+    def done(self, event):
+        self.cellRange = event.RangeDescriptor
+        self.failed = False
+        self.dlgHandler.showDialog()
+
+    def aborted(self, event):
+        self.failed = True
+        self.dlgHandler.showDialog()
+
+    def disposing(self, event):
+        return
