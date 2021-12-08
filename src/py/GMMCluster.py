@@ -43,7 +43,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
         self.testMode = testMode
         self.platvars = crplatform.CRPlatForm()
         self.logger = crlogger.setupLogger(self._getLogPath())
-        self.logger.debug("INIT")
+        self.logger.debug("INIT GMMClusterImpl")
         self.logger.debug(self.platvars)
         if not self.testMode:
             self.logger.debug(f'extension path = {self._getExtensionPath()}')
