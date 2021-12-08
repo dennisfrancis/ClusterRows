@@ -13,4 +13,9 @@
         "./src/py/faketypes",
         "./src/py"
     ],
+    "files.watcherExclude": {
+        "**/cross/**": true,
+        "**/build/**": true,
+        "**/__pycache__/**": true
+    }
 }
