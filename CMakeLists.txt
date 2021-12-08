@@ -103,8 +103,9 @@ set(COMP_XCU_FILES
     ${CMAKE_SOURCE_DIR}/xcu/GMMCluster.xcu
     ${CMAKE_SOURCE_DIR}/xcu/Jobs.xcu
     ${CMAKE_SOURCE_DIR}/xcu/Addons.xcu)
-#file(GLOB COMP_XCU_FILES "${CMAKE_SOURCE_DIR}/xcu/*.xcu")
-#file(GLOB COMP_XDL_FILES "${CMAKE_SOURCE_DIR}/xdl/*.xdl")
+
+set(COMP_XDL_FILES ${CMAKE_SOURCE_DIR}/xdl/ClusterRows.xdl)
+
 set(COMP_IMG_DIR ${CMAKE_SOURCE_DIR}/img)
 set(COMP_IMG_FILES ${COMP_IMG_DIR}/icon_hc.png ${COMP_IMG_DIR}/icon.png)
 
@@ -113,7 +114,7 @@ install(
     FILES
     ${COMP_PYFILES}
     ${COMP_XCU_FILES}
-    #${COMP_XDL_FILES}
+    ${COMP_XDL_FILES}
     ${COMP_REG_FILE}
     ${CMAKE_CURRENT_SOURCE_DIR}/description-en-US.txt
     ${COMP_META_DIR}/description.xml
