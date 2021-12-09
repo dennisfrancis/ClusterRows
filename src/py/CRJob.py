@@ -46,6 +46,7 @@ class CRJobImpl(unohelper.Base, XJob):
         self.logger = crlogger.setupLogger(self._getLogPath())
         self.logger.debug("INIT CRJobImpl")
         self.logger.debug(self.platvars)
+        self.dialog = None
         if not self.testMode:
             self.logger.debug(f'extension path = {self._getExtensionPath()}')
 
@@ -113,6 +114,10 @@ class CRJobImpl(unohelper.Base, XJob):
         return True
 
     def _createDialogAndExecute(self):
+        if not self.dialog is None:
+            self.dialog.setVisible(True)
+            return True
+
         dialogProvider = self.ctx.getServiceManager() \
             .createInstanceWithContext("com.sun.star.awt.DialogProvider2", self.ctx)
         if dialogProvider is None:
@@ -120,12 +125,12 @@ class CRJobImpl(unohelper.Base, XJob):
             return False
 
         xdlFile = self._getExtensionURL() + "/ClusterRows.xdl"
-        dialog = dialogProvider.createDialogWithHandler(xdlFile, CRDialogHandler(self.ctx, self.logger, self.userRange))
-        if dialog is None:
+        self.dialog = dialogProvider.createDialogWithHandler(xdlFile, CRDialogHandler(self.ctx, self.logger, self.userRange))
+        if self.dialog is None:
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialog!")
             return False
 
-        dialog.setVisible(True)
+        self.dialog.setVisible(True)
 
         return True
 
