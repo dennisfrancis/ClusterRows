@@ -202,6 +202,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         if not self.rangeListener.failed:
             self.userRange = self.rangeListener.cellRange
             setDialogRange(self.userRange, self.dialog, self.logger)
+            selectRange(self.userRange, self.model, self.logger)
+
         self.controller.removeRangeSelectionListener(self.rangeListener)
         self.dialog.setVisible(True)
 
@@ -236,6 +238,13 @@ def setDialogRange(cellRange, dialog, logger):
         return False
     label.setText(cellRange)
     return True
+
+def selectRange(rangeStr, document, logger):
+    rangeObj = crrange.stringToRangeObj(rangeStr, document)
+    if rangeObj is None:
+        logger.error('global.selectRange: crrange.stringToRangeObj returned None!')
+        return
+    document.getCurrentController().select(rangeObj)
 
 class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
     def __init__(self, dlgHandler):

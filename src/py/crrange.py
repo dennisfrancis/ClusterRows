@@ -53,3 +53,23 @@ def cellRangeToString(cellRange, document) -> str:
         cellAddressToString(cellRange.EndColumn, cellRange.EndRow),
     ]
     return ''.join(parts)
+
+def stringToRangeObj(rangeStr: str, document):
+    dotPos = rangeStr.find('.')
+    sheet = None
+    rangeStrSheet = rangeStr
+    if dotPos != -1:
+        sheetName = rangeStr[:dotPos].strip("$'")
+        sheet = document.Sheets.getByName(sheetName)
+        rangeStrSheet = rangeStr[dotPos + 1:]
+    else:
+        sheet = document.getCurrentController().getActiveSheet()
+
+    if sheet is None:
+        return None
+
+    return sheet.getCellRangeByName(rangeStrSheet)
+
+def stringToCellRange(rangeStr: str, document):
+    rangeObj = stringToRangeObj(rangeStr, document)
+    return None if rangeObj is None else rangeObj.getRangeAddress()
