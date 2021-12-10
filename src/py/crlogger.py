@@ -35,6 +35,7 @@ def setupLogger(logPath: str) -> logging.Logger:
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
     _logger.addHandler(fh)
+    _logger.debug("LOGGING INIT")
     return _logger
 
 def getLogger() -> logging.Logger:
