@@ -35,7 +35,7 @@ import unohelper
 import uno
 
 from com.sun.star.task import XJob
-from com.sun.star.awt import XDialogEventHandler
+from com.sun.star.awt import XDialogEventHandler, XTextListener
 from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
 
@@ -126,11 +126,14 @@ class CRJobImpl(unohelper.Base, XJob):
             return False
 
         xdlFile = self._getExtensionURL() + "/ClusterRows.xdl"
-        self.dialog = dialogProvider.createDialogWithHandler(xdlFile, CRDialogHandler(self.ctx, self.logger, self.userRange))
+        dlgHandler = CRDialogHandler(self.ctx, self.logger, self.userRange)
+        self.dialog = dialogProvider.createDialogWithHandler(xdlFile, dlgHandler)
         if self.dialog is None:
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialog!")
             return False
 
+        dlgHandler.setDialog(self.dialog)
+        dlgHandler.setupControlHandlers()
         setDialogRange(self.userRange, self.dialog, self.logger)
         self.dialog.setVisible(True)
 
@@ -162,19 +165,27 @@ class CRJobImpl(unohelper.Base, XJob):
 
         return self._getSuccessReturn()
 
+
 class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def __init__(self, ctx, logger, userRange):
         self.ctx = ctx
         self.logger = logger
         self.userRange = userRange
+        self.dialog = None
         self.desktop = self.ctx.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
+        self.model = self.desktop.getCurrentComponent()
+        self.controller = self.model.CurrentController
+        self.rangeValid = True
+        self.paramsValid = True
         self.logger.debug("INIT CRDialogHandler")
+
+    def setDialog(self, dialog):
+        self.dialog = dialog
 
     def getSupportedMethodNames(self):
         return (
             "onOKButtonPress",
             "onCancelButtonPress",
-            "onInputChange",
             "onInputFocusLost",
             "onRangeSelButtonPress")
 
@@ -185,12 +196,13 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
                 print("onOKButtonPress")
             elif methodName == "onCancelButtonPress":
                 print("onCancelButtonPress")
-                #dialog.endExecute()
                 dialog.setVisible(False)
             elif methodName == "onInputFocusLost":
                 print("onInputFocusLost")
+                self._validateInputs(dialog)
             elif methodName == "onRangeSelButtonPress":
                 self._onRangeSelButtonPress(dialog)
+
         except Exception as e:
             self.logger.exception("CRDialogHandler.callHandlerMethod() crashed.")
 
@@ -210,9 +222,6 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def _onRangeSelButtonPress(self, dialog):
         self.dialog = dialog
         self.dialog.setVisible(False)
-        self.model = self.desktop.getCurrentComponent()
-        self.controller = self.model.CurrentController
-
         self.rangeListener = CRRangeSelectionListener(self)
 
         self.controller.addRangeSelectionListener(self.rangeListener)
@@ -227,7 +236,45 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         closeOnMouseRelease.Value = True
 
         self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease))
-        return
+
+    def _validateInputs(self, dialog):
+        self.dialog = dialog
+        if not self.rangeValid:
+            self._setStatus("Invalid data range!")
+            return
+
+        self._setStatus()
+        self.paramsValid = True
+
+    def validateRange(self):
+        rangeStr = self.dialog.getControl("TextField_DataRange").getText()
+        if crrange.isStringRangeValid(rangeStr, self.controller.getModel()):
+            if self.paramsValid:
+                self._setStatus()
+            self.rangeValid = True
+            self.userRange = rangeStr
+            selectRange(self.userRange, self.model, self.logger)
+            return
+
+        if self.paramsValid:
+            self._setStatus("Invalid data range!")
+        self.rangeValid = False
+
+    def _setStatus(self, errMsg: str = ""):
+        computeButton = self.dialog.getControl("CommandButton_OK")
+        errorLabel = self.dialog.getControl("LabelText_Error")
+        computeButton.getModel().setPropertyValue("Enabled", not bool(errMsg))
+        errorLabel.setText(errMsg)
+
+    def setupControlHandlers(self):
+        self.dataRangeTextListener = CRDataRangeTextListener(self)
+        self.dialog.getControl("TextField_DataRange").addTextListener(self.dataRangeTextListener)
+
+    def clearDialogControlHandlers(self):
+        self.dialog.getControl("TextField_DataRange").removeTextListener(self.dataRangeTextListener)
+
+
+# global functions
 
 def setDialogRange(cellRange, dialog, logger):
     if not isinstance(cellRange, str):
@@ -246,6 +293,7 @@ def selectRange(rangeStr, document, logger):
         return
     document.getCurrentController().select(rangeObj)
 
+
 class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
     def __init__(self, dlgHandler):
         self.dlgHandler = dlgHandler
@@ -263,4 +311,15 @@ class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
         self.dlgHandler.showDialog()
 
     def disposing(self, event):
+        return
+
+
+class CRDataRangeTextListener(unohelper.Base, XTextListener):
+    def __init__(self, dlgHandler):
+        self.dlgHandler = dlgHandler
+
+    def textChanged(self, e):
+        self.dlgHandler.validateRange()
+
+    def disposing(self, e):
         return
