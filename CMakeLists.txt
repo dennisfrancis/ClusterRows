@@ -158,3 +158,14 @@ add_custom_target(deploy
     COMMENT "Deploying extension package to system LibreOffice"
     DEPENDS ClusterRows
     )
+
+add_custom_target(deployrun
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/testdocs/no-results.ods ${CMAKE_BINARY_DIR}/
+    COMMAND soffice --calc ${CMAKE_BINARY_DIR}/no-results.ods
+    COMMENT "Running system soffice with the built extension"
+    DEPENDS deploy
+    )
+
+add_custom_target(showlogs
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/src/py/showlogs.py
+    )
