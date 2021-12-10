@@ -45,9 +45,9 @@ def sheetName(sheetNum, document):
 def cellRangeToString(cellRange, document) -> str:
     sName = sheetName(cellRange.Sheet, document)
     parts = [
-        "$",
+        "$'",
         sName,
-        ".",
+        "'.",
         cellAddressToString(cellRange.StartColumn, cellRange.StartRow),
         ":",
         cellAddressToString(cellRange.EndColumn, cellRange.EndRow),
