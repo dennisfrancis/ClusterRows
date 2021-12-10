@@ -60,7 +60,10 @@ def stringToRangeObj(rangeStr: str, document):
     rangeStrSheet = rangeStr
     if dotPos != -1:
         sheetName = rangeStr[:dotPos].strip("$'")
-        sheet = document.Sheets.getByName(sheetName)
+        try:
+            sheet = document.Sheets.getByName(sheetName)
+        except Exception as e:
+            sheet = None
         rangeStrSheet = rangeStr[dotPos + 1:]
     else:
         sheet = document.getCurrentController().getActiveSheet()
@@ -68,8 +71,16 @@ def stringToRangeObj(rangeStr: str, document):
     if sheet is None:
         return None
 
-    return sheet.getCellRangeByName(rangeStrSheet)
+    try:
+        rangeObj = sheet.getCellRangeByName(rangeStrSheet)
+    except Exception as e:
+        rangeObj = None
+    return rangeObj
 
 def stringToCellRange(rangeStr: str, document):
     rangeObj = stringToRangeObj(rangeStr, document)
     return None if rangeObj is None else rangeObj.getRangeAddress()
+
+def isStringRangeValid(rangeStr: str, document):
+    rangeObj = stringToRangeObj(rangeStr, document)
+    return False if rangeObj is None else True
