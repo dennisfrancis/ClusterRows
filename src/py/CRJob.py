@@ -29,6 +29,7 @@ if cmd_folder not in sys.path:
 
 import crlogger
 import crplatform
+import crrange
 
 import unohelper
 import uno
@@ -110,7 +111,7 @@ class CRJobImpl(unohelper.Base, XJob):
         if userSelection is None:
             return False
         # Initial cell range of the data
-        self.userRange = userSelection.getRangeAddress()
+        self.userRange = crrange.cellRangeToString(userSelection.getRangeAddress(), self.model)
         return True
 
     def _createDialogAndExecute(self):
@@ -130,6 +131,7 @@ class CRJobImpl(unohelper.Base, XJob):
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialog!")
             return False
 
+        setDialogRange(self.userRange, self.dialog, self.logger)
         self.dialog.setVisible(True)
 
         return True
@@ -159,7 +161,6 @@ class CRJobImpl(unohelper.Base, XJob):
             self._launchClusterDialog()
 
         return self._getSuccessReturn()
-
 
 class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def __init__(self, ctx, logger, userRange):
@@ -200,12 +201,11 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             return
         if not self.rangeListener.failed:
             self.userRange = self.rangeListener.cellRange
-            self._setDialogRange(self.userRange, self.dialog)
+            setDialogRange(self.userRange, self.dialog, self.logger)
         self.controller.removeRangeSelectionListener(self.rangeListener)
         self.dialog.setVisible(True)
 
     def _onRangeSelButtonPress(self, dialog):
-        print(self.userRange)
         self.dialog = dialog
         self.dialog.setVisible(False)
         self.model = self.desktop.getCurrentComponent()
@@ -227,15 +227,15 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease))
         return
 
-    def _setDialogRange(self, cellRange, dialog):
-        if not isinstance(cellRange, str):
-            cellRange = "NONE"
-        label = dialog.getControl("TextField_DataRange")
-        if label is None:
-            self.logger.error("CRJobImpl._setDialogRange: cannot get DataRange label control from dialog")
-            return False
-        label.setText(cellRange)
-        return True
+def setDialogRange(cellRange, dialog, logger):
+    if not isinstance(cellRange, str):
+        cellRange = "NONE"
+    label = dialog.getControl("TextField_DataRange")
+    if label is None:
+        logger.error("global.setDialogRange: cannot get DataRange label control from dialog")
+        return False
+    label.setText(cellRange)
+    return True
 
 class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
     def __init__(self, dlgHandler):
