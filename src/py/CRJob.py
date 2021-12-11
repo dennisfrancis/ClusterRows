@@ -30,6 +30,7 @@ if cmd_folder not in sys.path:
 import crlogger
 import crplatform
 import crrange
+import crcolors
 
 import unohelper
 import uno
@@ -38,6 +39,8 @@ from com.sun.star.task import XJob
 from com.sun.star.awt import XDialogEventHandler, XTextListener, XItemListener
 from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
+from com.sun.star.sheet.GeneralFunction import MAX as GeneralFunction_MAX
+from com.sun.star.sheet.ConditionOperator import FORMULA as ConditionOperator_FORMULA
 
 MAXROW = 1048575
 MAXCOL = 1023
@@ -269,9 +272,110 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.gmmArgs.colorRows = bool(self.dialog.getControl("CheckBox_ColorRows").getState())
 
     def writeResults(self):
-        # Implement me.
+        self.readDialogInputs()
+        dataRange = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
+        dataRange.Sheet = self.gmmArgs.rangeAddr.Sheet
+        dataRange.StartColumn = self.gmmArgs.rangeAddr.StartColumn
+        dataRange.EndColumn = self.gmmArgs.rangeAddr.EndColumn
+        dataRange.StartRow = self.gmmArgs.rangeAddr.StartRow + (1 if self.gmmArgs.hasHeader else 0)
+        dataRange.EndRow = self.gmmArgs.rangeAddr.EndRow
+
+        resultsRange = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
+        resultsRange.Sheet = dataRange.Sheet
+        resultsRange.StartColumn = dataRange.EndColumn + 1
+        resultsRange.EndColumn = resultsRange.StartColumn + 1
+        resultsRange.StartRow = dataRange.StartRow
+        resultsRange.EndRow = dataRange.EndRow
+
+        undoMgr = self.model.getUndoManager()
+        if not undoMgr is None:
+            undoMgr.enterUndoContext("ClusterRowsImpl_UNDO")
+
+        resRangeObj = crrange.rangeAddressToObject(resultsRange, self.model)
+        formulaName = "COM.GITHUB.DENNISFRANCIS.PYTHON.GMMCLUSTERIMPL.GMMCLUSTER"
+        rangeArg = crrange.cellRangeToString(dataRange, self.model)
+        args = self.gmmArgs
+        resRangeObj.setArrayFormula(
+            f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations})")
+
+        if args.hasHeader:
+            sheet = self.model.Sheets[dataRange.Sheet]
+            cell = sheet.getCellByPosition(resultsRange.StartColumn, resultsRange.StartRow - 1)
+            cell.setFormula("ClusterId")
+            cell = sheet.getCellByPosition(resultsRange.StartColumn + 1, resultsRange.StartRow - 1)
+            cell.setFormula("Confidence")
+
+        # Find actual number of clusters if in auto mode
+        self._updateNumClusters(resRangeObj)
+
+        if self.gmmArgs.colorRows:
+            self._addClusterStyles()
+            self._colorClusterData(dataRange)
+
+        if not undoMgr is None:
+            undoMgr.leaveUndoContext()
+
         self.dialog.setVisible(False)
         return
+
+    def _updateNumClusters(self, resRangeObj):
+        if self.gmmArgs.numClusters > 0:
+            return
+
+        maxClusterId = resRangeObj.computeFunction(GeneralFunction_MAX)
+        if maxClusterId != -1:
+            self.gmmArgs.numClusters = int(maxClusterId + 1)
+
+    def _addClusterStyles(self):
+        numClusters = self.gmmArgs.numClusters
+        styleFamilies = self.model.getStyleFamilies()
+        cellStyles = styleFamilies.getByName("CellStyles")
+        colors = crcolors.getClusterColors(numClusters)
+        for idx in range(numClusters):
+            color = colors[idx]
+            styleName = self._getStyleName(idx, numClusters)
+            clusterStyle = None
+            if cellStyles.hasByName(styleName):
+                clusterStyle = cellStyles.getByName(styleName)
+            else:
+                clusterStyle = self.model.createInstance("com.sun.star.style.CellStyle")
+                cellStyles.insertByName(styleName, clusterStyle)
+
+            clusterStyle.setPropertyValue("CellBackColor", color)
+            self.logger.debug(f"CRDialogHandler._addClusterStyles: added cell style : {styleName} with backcolor = {hex(color)}")
+
+    def _colorClusterData(self, dataRange):
+        rangeObj = crrange.rangeAddressToObject(dataRange, self.model)
+        cfEntries = rangeObj.getPropertyValue("ConditionalFormat")
+        if cfEntries is None:
+            self.logger.error("CRDialogHandler._colorClusterData: cannot get XSheetConditionalEntries from data range")
+            return
+        cfEntries.clear()
+
+        # row is 0 which is relative w.r.t data table's top row
+        refCell = "$" + crrange.cellAddressToString(dataRange.EndColumn + 1, 0, absolute=False)
+        self.logger.debug(f"CRDialogHandler._colorClusterData: refCell = {refCell}")
+
+        numClusters = self.gmmArgs.numClusters
+        for idx in range(numClusters):
+            operator = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            operator.Name = "Operator"
+            operator.Value = ConditionOperator_FORMULA
+
+            formula1 = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            formula1.Name = "Formula1"
+            formula1.Value = f"{refCell}={idx}"
+
+            styleName = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+            styleName.Name = "StyleName"
+            styleName.Value = self._getStyleName(idx, numClusters)
+
+            cfEntries.addNew((operator, formula1, styleName))
+
+        rangeObj.setPropertyValue("ConditionalFormat", cfEntries)
+
+    def _getStyleName(self, clusterIndex, numClusters):
+        return f"ClusterRows_N{numClusters}_Cluster_{clusterIndex}"
 
     def _markFieldError(self, controlName, hasError = True, defColor = None):
         model = self.dialog.getControl(controlName).getModel()

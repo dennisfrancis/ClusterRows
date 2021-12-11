@@ -38,6 +38,7 @@ set(COMP_PYFILES
     ${COMP_PYDIR}/crlogger.py
     ${COMP_PYDIR}/crplatform.py
     ${COMP_PYDIR}/crrange.py
+    ${COMP_PYDIR}/crcolors.py
     ${COMP_PYDIR}/perf.py)
 
 set(ClusterRowsDefinitions "")
