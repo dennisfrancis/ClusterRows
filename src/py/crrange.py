@@ -43,6 +43,8 @@ def sheetName(sheetNum, document):
     return document.Sheets[sheetNum].Name
 
 def cellRangeToString(cellRange, document) -> str:
+    if cellRange is None:
+        return ''
     sName = sheetName(cellRange.Sheet, document)
     parts = [
         "$'",
@@ -73,6 +75,17 @@ def stringToRangeObj(rangeStr: str, document):
 
     try:
         rangeObj = sheet.getCellRangeByName(rangeStrSheet)
+    except Exception as e:
+        rangeObj = None
+    return rangeObj
+
+def rangeAddressToObject(rangeAddr, document):
+    if rangeAddr is None:
+        return None
+
+    sheet = document.Sheets[rangeAddr.Sheet]
+    try:
+        rangeObj = sheet.getCellRangeByPosition(rangeAddr.StartColumn, rangeAddr.StartRow, rangeAddr.EndColumn, rangeAddr.EndRow)
     except Exception as e:
         rangeObj = None
     return rangeObj
