@@ -315,10 +315,11 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self._setStatus()
 
     def _setStatus(self, errMsg: str = ""):
+        hasError = bool(errMsg)
         computeButton = self.dialog.getControl("CommandButton_OK")
         errorLabel = self.dialog.getControl("LabelText_Error")
-        computeButton.getModel().setPropertyValue("Enabled", not bool(errMsg))
-        errorLabel.setText(errMsg)
+        computeButton.getModel().setPropertyValue("Enabled", not hasError)
+        errorLabel.setText(("Error: " + errMsg) if hasError else errMsg)
 
     def setupControlHandlers(self):
         self.dataRangeTextListener = CRDataRangeTextListener(self)
