@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def cellAddressToString(col, row) -> str:
+def cellAddressToString(col, row, absolute = True) -> str:
     buf = bytearray('', encoding="utf-8")
     aVal = ord('A')
     dollarVal = ord('$')
     if col < 26 * 26:
-        buf.append(dollarVal)
+        if absolute:
+            buf.append(dollarVal)
         if col < 26:
             buf.append(aVal + col)
         else:
@@ -32,10 +33,12 @@ def cellAddressToString(col, row) -> str:
             col = col - rem
             col = (col // 26) - 1
         buf.append(aVal + col)
-        buf.append(dollarVal)
+        if absolute:
+            buf.append(dollarVal)
         buf.reverse()
 
-    buf.append(dollarVal)
+    if absolute:
+        buf.append(dollarVal)
     buf.extend(b'%d' % (row + 1))
     return buf.decode()
 
