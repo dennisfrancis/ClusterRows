@@ -273,6 +273,10 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog.setVisible(False)
         return
 
+    def _markFieldError(self, controlName, hasError = True, defColor = None):
+        model = self.dialog.getControl(controlName).getModel()
+        model.setPropertyValue("TextColor", 0xff0000 if hasError else None)
+
     def validate(self):
         try:
             self._validate()
@@ -284,32 +288,48 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
         if self.gmmArgs.rangeAddr is None:
             self._setStatus("Invalid data range!")
+            self._markFieldError("TextField_DataRange")
             return
 
         # Not enough rows
         if self.gmmArgs.drows() < 10:
             self._setStatus("There must be at least 10 samples")
+            self._markFieldError("TextField_DataRange")
             return
 
         # No space to write results
         if self.gmmArgs.rangeAddr.EndColumn > MAXCOL - 2:
             self._setStatus("Not enough space to write the results (2 columns)")
+            self._markFieldError("TextField_DataRange")
             return
 
+        self._markFieldError("TextField_DataRange", hasError=False)
         # Range is valid, preserve it by creating a selection.
         selectRange(self.gmmArgs.rangeAddr, self.model, self.logger)
 
+        # numCluster checks
         if self.gmmArgs.numClusters < 0 or self.gmmArgs.numClusters > 15:
             self._setStatus("Number of clusters must be in the range [0, 15]")
+            self._markFieldError("NumericField_NumClusters")
             return
 
+        self._markFieldError("NumericField_NumClusters", hasError=False)
+
+        # numEpoch checks
         if self.gmmArgs.numEpochs < 3 or self.gmmArgs.numEpochs > 100:
             self._setStatus("Number of epochs expected to be in the range [3, 100]")
+            self._markFieldError("NumericField_NumEpochs")
             return
 
+        self._markFieldError("NumericField_NumEpochs", hasError=False)
+
+        # numIterations checks
         if self.gmmArgs.numIterations < 5 or self.gmmArgs.numIterations > 10000:
             self._setStatus("Number of iterations expected to be in the range [5, 10000]")
+            self._markFieldError("NumericField_NumIter")
             return
+
+        self._markFieldError("NumericField_NumIter", hasError=False)
 
         # All OK.
         self._setStatus()
