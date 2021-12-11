@@ -35,9 +35,12 @@ import unohelper
 import uno
 
 from com.sun.star.task import XJob
-from com.sun.star.awt import XDialogEventHandler, XTextListener
+from com.sun.star.awt import XDialogEventHandler, XTextListener, XItemListener
 from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
+
+MAXROW = 1048575
+MAXCOL = 1023
 
 class CRJobImpl(unohelper.Base, XJob):
     def __init__(self, ctx, testMode=False):
@@ -165,19 +168,36 @@ class CRJobImpl(unohelper.Base, XJob):
 
         return self._getSuccessReturn()
 
+class GMMArgs(object):
+    def __init__(self, numClusters = 0, numEpochs = 10, numIterations = 100, colorRows = True, hasHeader = False):
+        self.rangeAddr = None
+        self.numClusters = numClusters
+        self.numEpochs = numEpochs
+        self.numIterations = numIterations
+        self.colorRows = colorRows
+        self.hasHeader = hasHeader
+
+    def drows(self):
+        """Returns the number of data rows"""
+        rowCount = self.rangeAddr.EndRow - self.rangeAddr.StartRow + 1
+        return rowCount - 1 if self.hasHeader else rowCount
+
+    def dcols(self):
+        """Returns the number of data columns"""
+        return self.rangeAddr.EndColumn - self.rangeAddr.StartColumn + 1
+
 
 class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def __init__(self, ctx, logger, userRange):
         self.ctx = ctx
         self.logger = logger
-        self.userRange = userRange
+        self.logger.debug("INIT CRDialogHandler")
         self.dialog = None
         self.desktop = self.ctx.ServiceManager.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
         self.model = self.desktop.getCurrentComponent()
         self.controller = self.model.CurrentController
-        self.rangeValid = True
-        self.paramsValid = True
-        self.logger.debug("INIT CRDialogHandler")
+        self.gmmArgs = GMMArgs()
+        self.gmmArgs.rangeAddr = crrange.stringToCellRange(userRange, self.model)
 
     def setDialog(self, dialog):
         self.dialog = dialog
@@ -193,13 +213,11 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.logger.debug("CRDialogHandler.callHandlerMethod : methodName = " + methodName)
         try:
             if methodName == "onOKButtonPress":
-                print("onOKButtonPress")
+                self.writeResults()
             elif methodName == "onCancelButtonPress":
-                print("onCancelButtonPress")
                 dialog.setVisible(False)
             elif methodName == "onInputFocusLost":
-                print("onInputFocusLost")
-                self._validateInputs(dialog)
+                self.validate()
             elif methodName == "onRangeSelButtonPress":
                 self._onRangeSelButtonPress(dialog)
 
@@ -211,13 +229,17 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def showDialog(self):
         if self.dialog is None:
             return
-        if not self.rangeListener.failed:
-            self.userRange = self.rangeListener.cellRange
-            setDialogRange(self.userRange, self.dialog, self.logger)
-            selectRange(self.userRange, self.model, self.logger)
 
-        self.controller.removeRangeSelectionListener(self.rangeListener)
-        self.dialog.setVisible(True)
+        try:
+            if not self.rangeListener.failed:
+                self.gmmArgs.rangeAddr = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
+                setDialogRange(self.rangeListener.rangeStr, self.dialog, self.logger)
+                self.validate()
+
+            self.controller.removeRangeSelectionListener(self.rangeListener)
+            self.dialog.setVisible(True)
+        except Exception as e:
+            self.logger.exception("CRDialogHandler.showDialog() crashed")
 
     def _onRangeSelButtonPress(self, dialog):
         self.dialog = dialog
@@ -229,7 +251,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         title = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
         closeOnMouseRelease = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
         initialValue.Name = "InitialValue"
-        initialValue.Value = self.userRange
+        initialValue.Value = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
         title.Name = "Title"
         title.Value = "Select the cell range where the data is"
         closeOnMouseRelease.Name = "CloseOnMouseRelease"
@@ -237,28 +259,60 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
         self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease))
 
-    def _validateInputs(self, dialog):
-        self.dialog = dialog
-        if not self.rangeValid:
-            self._setStatus("Invalid data range!")
-            return
-
-        self._setStatus()
-        self.paramsValid = True
-
-    def validateRange(self):
+    def readDialogInputs(self):
         rangeStr = self.dialog.getControl("TextField_DataRange").getText()
-        if crrange.isStringRangeValid(rangeStr, self.controller.getModel()):
-            if self.paramsValid:
-                self._setStatus()
-            self.rangeValid = True
-            self.userRange = rangeStr
-            selectRange(self.userRange, self.model, self.logger)
+        self.gmmArgs.rangeAddr = crrange.stringToCellRange(rangeStr, self.model)
+        self.gmmArgs.hasHeader = bool(self.dialog.getControl("CheckBox_HasHeader").getState())
+        self.gmmArgs.numClusters = int(self.dialog.getControl("NumericField_NumClusters").getValue())
+        self.gmmArgs.numEpochs = int(self.dialog.getControl("NumericField_NumEpochs").getValue())
+        self.gmmArgs.numIterations = int(self.dialog.getControl("NumericField_NumIter").getValue())
+        self.gmmArgs.colorRows = bool(self.dialog.getControl("CheckBox_ColorRows").getState())
+
+    def writeResults(self):
+        # Implement me.
+        self.dialog.setVisible(False)
+        return
+
+    def validate(self):
+        try:
+            self._validate()
+        except Exception as e:
+            self.logger.exception("CRDialogHandler.validate() crashed.")
+
+    def _validate(self):
+        self.readDialogInputs()
+
+        if self.gmmArgs.rangeAddr is None:
+            self._setStatus("Invalid data range!")
             return
 
-        if self.paramsValid:
-            self._setStatus("Invalid data range!")
-        self.rangeValid = False
+        # Not enough rows
+        if self.gmmArgs.drows() < 10:
+            self._setStatus("There must be at least 10 samples")
+            return
+
+        # No space to write results
+        if self.gmmArgs.rangeAddr.EndColumn > MAXCOL - 2:
+            self._setStatus("Not enough space to write the results (2 columns)")
+            return
+
+        # Range is valid, preserve it by creating a selection.
+        selectRange(self.gmmArgs.rangeAddr, self.model, self.logger)
+
+        if self.gmmArgs.numClusters < 0 or self.gmmArgs.numClusters > 15:
+            self._setStatus("Number of clusters must be in the range [0, 15]")
+            return
+
+        if self.gmmArgs.numEpochs < 3 or self.gmmArgs.numEpochs > 100:
+            self._setStatus("Number of epochs expected to be in the range [3, 100]")
+            return
+
+        if self.gmmArgs.numIterations < 5 or self.gmmArgs.numIterations > 10000:
+            self._setStatus("Number of iterations expected to be in the range [5, 10000]")
+            return
+
+        # All OK.
+        self._setStatus()
 
     def _setStatus(self, errMsg: str = ""):
         computeButton = self.dialog.getControl("CommandButton_OK")
@@ -269,25 +323,27 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def setupControlHandlers(self):
         self.dataRangeTextListener = CRDataRangeTextListener(self)
         self.dialog.getControl("TextField_DataRange").addTextListener(self.dataRangeTextListener)
+        self.headerCheckBoxListener = CRHeaderCheckBoxListener(self)
+        self.dialog.getControl("CheckBox_HasHeader").addItemListener(self.headerCheckBoxListener)
 
     def clearDialogControlHandlers(self):
         self.dialog.getControl("TextField_DataRange").removeTextListener(self.dataRangeTextListener)
-
+        self.dialog.getControl("CheckBox_HasHeader").removeItemListener(self.headerCheckBoxListener)
 
 # global functions
 
-def setDialogRange(cellRange, dialog, logger):
-    if not isinstance(cellRange, str):
-        cellRange = "NONE"
+def setDialogRange(rangeStr, dialog, logger):
+    if not isinstance(rangeStr, str):
+        rangeStr = "NONE"
     label = dialog.getControl("TextField_DataRange")
     if label is None:
         logger.error("global.setDialogRange: cannot get DataRange label control from dialog")
         return False
-    label.setText(cellRange)
+    label.setText(rangeStr)
     return True
 
-def selectRange(rangeStr, document, logger):
-    rangeObj = crrange.stringToRangeObj(rangeStr, document)
+def selectRange(rangeAddress, document, logger):
+    rangeObj = crrange.rangeAddressToObject(rangeAddress, document)
     if rangeObj is None:
         logger.error('global.selectRange: crrange.stringToRangeObj returned None!')
         return
@@ -298,11 +354,11 @@ class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
     def __init__(self, dlgHandler):
         self.dlgHandler = dlgHandler
         self.failed = False
-        self.cellRange = ""
+        self.rangeStr = ""
         return
 
     def done(self, event):
-        self.cellRange = event.RangeDescriptor
+        self.rangeStr = event.RangeDescriptor
         self.failed = False
         self.dlgHandler.showDialog()
 
@@ -319,7 +375,18 @@ class CRDataRangeTextListener(unohelper.Base, XTextListener):
         self.dlgHandler = dlgHandler
 
     def textChanged(self, e):
-        self.dlgHandler.validateRange()
+        self.dlgHandler.validate()
+
+    def disposing(self, e):
+        return
+
+
+class CRHeaderCheckBoxListener(unohelper.Base, XItemListener):
+    def __init__(self, dlgHandler):
+        self.dlgHandler = dlgHandler
+
+    def itemStateChanged(self, e):
+        self.dlgHandler.validate()
 
     def disposing(self, e):
         return
