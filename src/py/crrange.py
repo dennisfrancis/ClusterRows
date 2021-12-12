@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def cellAddressToString(col, row, absolute = True) -> str:
+def cellAddressToString(col, row, absolute = True, sheet = None) -> str:
     buf = bytearray('', encoding="utf-8")
     aVal = ord('A')
     dollarVal = ord('$')
@@ -40,7 +40,10 @@ def cellAddressToString(col, row, absolute = True) -> str:
     if absolute:
         buf.append(dollarVal)
     buf.extend(b'%d' % (row + 1))
-    return buf.decode()
+    if sheet is None:
+        return buf.decode()
+    else:
+        return f"${sheet}.{buf.decode()}"
 
 def sheetName(sheetNum, document):
     return document.Sheets[sheetNum].Name
