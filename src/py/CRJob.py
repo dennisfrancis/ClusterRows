@@ -253,6 +253,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog = dialog
         self.setDialogRanges()
         self._markFieldError("LabelText_Error", hasError=True)
+        self.validate()
 
     def setDialogRanges(self):
         self.settingControlValue = True
