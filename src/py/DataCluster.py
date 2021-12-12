@@ -34,23 +34,23 @@ import crplatform
 
 import unohelper
 
-from com.github.dennisfrancis import XGMMCluster
+from com.github.dennisfrancis import XDataCluster
 
-class GMMClusterImpl(unohelper.Base, XGMMCluster):
+class DataClusterImpl(unohelper.Base, XDataCluster):
     """Implementation of GMMCluster addin"""
     def __init__(self, ctx, testMode=False):
         self.ctx = ctx
         self.testMode = testMode
         self.platvars = crplatform.CRPlatForm()
         self.logger = crlogger.setupLogger(self._getLogPath())
-        self.logger.debug("INIT GMMClusterImpl")
+        self.logger.debug("INIT DataClusterImpl")
         self.logger.debug(self.platvars)
         if not self.testMode:
             self.logger.debug(f'extension path = {self._getExtensionPath()}')
 
     @staticmethod
     def createInstance(ctx):
-        return GMMClusterImpl(ctx)
+        return DataClusterImpl(ctx)
 
     @staticmethod
     def _isNumeric(param: object) -> bool:
@@ -58,7 +58,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
 
     @staticmethod
     def getImplementationName() -> str:
-        return "com.github.dennisfrancis.python.GMMClusterImpl"
+        return "com.github.dennisfrancis.DataCluster"
 
     @staticmethod
     def getServiceNames() -> Tuple[str]:
@@ -66,7 +66,7 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
 
     def _getExtensionPath(self) -> str:
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-        extension_uri = piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRowsImpl')
+        extension_uri = piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRows')
         return unohelper.fileUrlToSystemPath(extension_uri)
 
     def _getLogPath(self) -> str:
@@ -96,9 +96,9 @@ class GMMClusterImpl(unohelper.Base, XGMMCluster):
         if numEpochs is None: numEpochs = 10
         if numIterations is None: numIterations = 100
         self.logger.debug(f'Params: numClusters = {numClusters} numEpochs = {numEpochs} numIterations = {numIterations}')
-        if (not GMMClusterImpl._isNumeric(numClusters)) \
-            or (not GMMClusterImpl._isNumeric(numEpochs)) \
-                or (not GMMClusterImpl._isNumeric(numIterations)) \
+        if (not DataClusterImpl._isNumeric(numClusters)) \
+            or (not DataClusterImpl._isNumeric(numEpochs)) \
+                or (not DataClusterImpl._isNumeric(numIterations)) \
                     or (not isinstance(data, tuple)) or len(data) == 0 \
                         or (not isinstance(data[0], tuple)):
                             return ((-1, 0),)

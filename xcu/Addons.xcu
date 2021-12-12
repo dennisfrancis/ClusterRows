@@ -21,24 +21,24 @@
     <node oor:name="AddonUI">
 
         <node oor:name="Images">
-            <node oor:name="com.github.dennisfrancis.clusterrowsimpl.imageActionOne" oor:op="replace">
+            <node oor:name="com.github.dennisfrancis.clusterrows.imageActionOne" oor:op="replace">
                 <prop oor:name="URL" oor:type="xs:string">
                     <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
                 </prop>
                 <node oor:name="UserDefinedImages">
                     <prop oor:name="ImageSmallURL">
-                        <value>vnd.sun.star.extension://com.github.dennisfrancis.ClusterRowsImpl/img/icon.png</value>
+                        <value>vnd.sun.star.extension://com.github.dennisfrancis.ClusterRows/img/icon.png</value>
                     </prop>
                     <prop oor:name="ImageSmallHCURL">
-                        <value>vnd.sun.star.extension://com.github.dennisfrancis.ClusterRowsImpl/img/icon_hc.png</value>
+                        <value>vnd.sun.star.extension://com.github.dennisfrancis.ClusterRows/img/icon_hc.png</value>
                     </prop>
                 </node>
             </node>
         </node>
 
         <node oor:name="OfficeToolbarMerging">
-            <node oor:name="com.github.dennisfrancis.clusterrowsimpl" oor:op="replace">
-                <node oor:name="com.github.dennisfrancis.clusterrowsimpl.T1" oor:op="replace">
+            <node oor:name="com.github.dennisfrancis.clusterrows" oor:op="replace">
+                <node oor:name="com.github.dennisfrancis.clusterrows.T1" oor:op="replace">
                     <prop oor:name="MergeToolBar">
                         <value>standardbar</value>
                     </prop>
@@ -55,7 +55,7 @@
                         <value>com.sun.star.sheet.SpreadsheetDocument</value>
                     </prop>
                     <node oor:name="ToolBarItems">
-                        <node oor:name="com.github.dennisfrancis.clusterrowsimpl.TBI1" oor:op="replace">
+                        <node oor:name="com.github.dennisfrancis.clusterrows.TBI1" oor:op="replace">
                             <prop oor:name="URL">
                                 <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
                             </prop>
@@ -75,8 +75,8 @@
         </node>
 
         <node oor:name="OfficeMenuBarMerging">
-            <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu" oor:op="replace">
-                <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu.1" oor:op="replace">
+            <node oor:name="com.github.dennisfrancis.clusterrows.menu" oor:op="replace">
+                <node oor:name="com.github.dennisfrancis.clusterrows.menu.1" oor:op="replace">
                     <prop oor:name="MergePoint">
                         <value>.uno:DataMenu\.uno:StatisticsMenu\.uno:ChiSquareTestDialog</value>
                     </prop>
@@ -90,7 +90,7 @@
                         <value>com.sun.star.sheet.SpreadsheetDocument</value>
                     </prop>
                     <node oor:name="MenuItems">
-                        <node oor:name="com.github.dennisfrancis.clusterrowsimpl.menu.1.1" oor:op="replace">
+                        <node oor:name="com.github.dennisfrancis.clusterrows.menu.1.1" oor:op="replace">
                             <prop oor:name="Title">
                                 <value xml:lang="en-US">Cl~ustering...</value>
                             </prop>

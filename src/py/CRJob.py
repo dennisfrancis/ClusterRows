@@ -63,7 +63,7 @@ class CRJobImpl(unohelper.Base, XJob):
 
     @staticmethod
     def getImplementationName() -> str:
-        return "com.github.dennisfrancis.python.CRJobImpl"
+        return "com.github.dennisfrancis.CRJob"
 
     @staticmethod
     def getServiceNames() -> Tuple[str]:
@@ -71,7 +71,7 @@ class CRJobImpl(unohelper.Base, XJob):
 
     def _getExtensionURL(self):
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-        return piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRowsImpl')
+        return piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRows')
 
     def _getExtensionPath(self) -> str:
         extension_uri = self._getExtensionURL()
@@ -411,7 +411,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             undoMgr.enterUndoContext("ClusterRowsImpl_UNDO")
 
         resRangeObj = crrange.rangeAddressToObject(resultsRange, self.model)
-        formulaName = "COM.GITHUB.DENNISFRANCIS.PYTHON.GMMCLUSTERIMPL.GMMCLUSTER"
+        formulaName = "COM.GITHUB.DENNISFRANCIS.DATACLUSTER.GMMCLUSTER"
         rangeArg = crrange.cellRangeToString(dataRange, self.model)
         args = self.gmmArgs
         resRangeObj.setArrayFormula(

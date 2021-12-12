@@ -4,17 +4,17 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <node oor:name="Jobs">
-        <!--            vvvvvvvvvvv    CRJobImpl is the alias -->
-        <node oor:name="CRJobImpl" oor:op="replace">
+        <!--            vvvvv    CRJob is the alias -->
+        <node oor:name="CRJob" oor:op="replace">
             <prop oor:name="Service" oor:type="xs:string">
-                <value>com.github.dennisfrancis.python.CRJobImpl</value>
+                <value>com.github.dennisfrancis.CRJob</value>
             </prop>
         </node>
     </node>
     <node oor:name="Events">
         <node oor:name="onClusterRowsReqDialog" oor:op="replace">
             <node oor:name="JobList">
-                <node oor:name="CRJobImpl" oor:op="replace"/>
+                <node oor:name="CRJob" oor:op="replace"/>
             </node>
         </node>
     </node>

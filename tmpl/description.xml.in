@@ -3,11 +3,11 @@
     xmlns="http://openoffice.org/extensions/description/2006"
     xmlns:d="http://openoffice.org/extensions/description/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-    <identifier value="com.github.dennisfrancis.ClusterRowsImpl"/>
+    <identifier value="com.github.dennisfrancis.ClusterRows"/>
     <version value="@CMAKE_PROJECT_VERSION@"/>
     <platform value="@EXTENSION_PLATFORM@" />
     <display-name>
-        <name lang="en">Cluster Rows Calc Extension</name>
+        <name lang="en">ClusterRows Calc Extension</name>
     </display-name>
     <publisher>
         <name xlink:href="https://github.com/dennisfrancis/ClusterRows" lang="en">Dennis Francis</name>
