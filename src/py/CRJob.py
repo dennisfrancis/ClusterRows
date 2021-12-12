@@ -140,7 +140,6 @@ class CRJobImpl(unohelper.Base, XJob):
 
         dlgHandler.setDialog(self.dialog)
         dlgHandler.setupControlHandlers()
-        setDialogRange(self.userRange, self.dialog, self.logger)
         self.dialog.setVisible(True)
 
         return True
@@ -171,24 +170,69 @@ class CRJobImpl(unohelper.Base, XJob):
 
         return self._getSuccessReturn()
 
+class CellAddress(object):
+    def __init__(self, row = -1, col = -1, sheet = -1):
+        self.row = row
+        self.col = col
+        self.sheet = sheet
+
 class GMMArgs(object):
     def __init__(self, numClusters = 0, numEpochs = 10, numIterations = 100, colorRows = True, hasHeader = False):
         self.rangeAddr = None
+        self.outputAddr = CellAddress()
         self.numClusters = numClusters
         self.numEpochs = numEpochs
         self.numIterations = numIterations
         self.colorRows = colorRows
         self.hasHeader = hasHeader
 
+    def __str__(self):
+        rangeAddrStr = f"\n\t\tcols=[{self.rangeAddr.StartColumn}, {self.rangeAddr.EndColumn}]"
+        rangeAddrStr += f"\n\t\trows=[{self.rangeAddr.StartRow}, {self.rangeAddr.EndRow}]\n\t\tsheet={self.rangeAddr.Sheet}"
+        outputAddrStr = f"\n\t\tcol = {self.outputAddr.col}, row = {self.outputAddr.row}, sheet = {self.outputAddr.sheet}"
+        paramStr = f"numClusters = {self.numClusters}, numEpochs = {self.numEpochs}, numIterations = {self.numIterations}"
+        paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}"
+        return f"GMMArgs(\n\trangeAddr({rangeAddrStr}),\n\toutputAddr({outputAddrStr})\n\t{paramStr})"
+
+    def rows(self):
+        """Returns the number of rows in the range"""
+        return self.rangeAddr.EndRow - self.rangeAddr.StartRow + 1
+
     def drows(self):
         """Returns the number of data rows"""
-        rowCount = self.rangeAddr.EndRow - self.rangeAddr.StartRow + 1
+        rowCount = self.rows()
         return rowCount - 1 if self.hasHeader else rowCount
 
     def dcols(self):
         """Returns the number of data columns"""
         return self.rangeAddr.EndColumn - self.rangeAddr.StartColumn + 1
 
+    def updateOutputLocation(self):
+        if self.rangeAddr is None:
+            return
+
+        if self.outputAddr is None:
+            self.outputAddr = CellAddress(row = self.rangeAddr.StartRow,
+                col = self.rangeAddr.EndColumn + 1, sheet = self.rangeAddr.Sheet)
+            return
+
+        self.outputAddr.col = self.rangeAddr.EndColumn + 1
+        self.outputAddr.row = self.rangeAddr.StartRow
+        self.outputAddr.sheet = self.rangeAddr.Sheet
+
+    def setOutputLocation(self, rangeAddr = None):
+        if rangeAddr is None:
+            self.outputAddr = None
+            return
+
+        if self.outputAddr is None:
+            self.outputAddr = CellAddress(row = rangeAddr.StartRow,
+                col = rangeAddr.StartRow, sheet = rangeAddr.Sheet)
+            return
+
+        self.outputAddr.col = rangeAddr.StartColumn
+        self.outputAddr.row = rangeAddr.StartRow
+        self.outputAddr.sheet = rangeAddr.Sheet
 
 class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def __init__(self, ctx, logger, userRange):
@@ -201,16 +245,38 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.controller = self.model.CurrentController
         self.gmmArgs = GMMArgs()
         self.gmmArgs.rangeAddr = crrange.stringToCellRange(userRange, self.model)
+        self.gmmArgs.updateOutputLocation()
+        self.rangeListener = None
+        self.settingControlValue = False
 
     def setDialog(self, dialog):
         self.dialog = dialog
+        self.setDialogRanges()
+        self._markFieldError("LabelText_Error", hasError=True)
+
+    def setDialogRanges(self):
+        self.settingControlValue = True
+        # input
+        rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
+        self.dialog.getControl("TextField_DataRange").setText(rangeStr)
+
+        # output
+        if self.gmmArgs.outputAddr is None:
+            outRangeStr = ""
+        else:
+            outRangeStr = crrange.cellAddressToString(
+                self.gmmArgs.outputAddr.col, self.gmmArgs.outputAddr.row,
+                sheet=self.model.Sheets[self.gmmArgs.outputAddr.sheet].Name)
+        self.dialog.getControl("TextField_OutputLocation").setText(outRangeStr)
+        self.settingControlValue = False
 
     def getSupportedMethodNames(self):
         return (
             "onOKButtonPress",
             "onCancelButtonPress",
             "onInputFocusLost",
-            "onRangeSelButtonPress")
+            "onRangeSelButtonPress",
+            "onOutputSelButtonPress")
 
     def callHandlerMethod(self, dialog, eventObject, methodName):
         self.logger.debug("CRDialogHandler.callHandlerMethod : methodName = " + methodName)
@@ -222,49 +288,102 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             elif methodName == "onInputFocusLost":
                 self.validate()
             elif methodName == "onRangeSelButtonPress":
-                self._onRangeSelButtonPress(dialog)
+                self._onRangeSelButtonPress()
+            elif methodName == "onOutputSelButtonPress":
+                self._onOutputSelButtonPress()
 
         except Exception as e:
             self.logger.exception("CRDialogHandler.callHandlerMethod() crashed.")
 
         return True
 
-    def showDialog(self):
-        if self.dialog is None:
+    def _onDataRangeSelected(self):
+        if not self.rangeListener.failed:
+            self.gmmArgs.rangeAddr = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
+            self.gmmArgs.updateOutputLocation()
+            self.setDialogRanges()
+            self.validate()
+
+        self.dialog.setVisible(True)
+
+    def _onOutputLocationSelected(self):
+        if not self.rangeListener.failed:
+            cellRange = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
+            self.gmmArgs.setOutputLocation(cellRange)
+            self.setDialogRanges()
+            self.validate()
+
+        self.dialog.setVisible(True)
+
+    def _onRangeSelButtonPress(self):
+        self.dialog.setVisible(False)
+        rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
+        self.startRangeSelection(windowTitle = "Select the data cell range", rlId = "input", initialRangeStr=rangeStr)
+
+    def _onOutputSelButtonPress(self):
+        self.dialog.setVisible(False)
+        addr = self.gmmArgs.outputAddr
+        if addr is None:
+            rangeStr = ""
+        else:
+            rangeStr = crrange.cellAddressToString(col = addr.col,
+                row = addr.row, sheet = self.model.Sheets[addr.sheet].Name)
+        self.startRangeSelection(windowTitle = "Select the location to write the results",
+            rlId = "output", initialRangeStr=rangeStr)
+
+    def startRangeSelection(self, windowTitle, rlId, initialRangeStr):
+        if not self.rangeListener is None:
+            self.logger.error("CRDialogHandler.startRangeSelection: rangeListener already exists!")
             return
 
-        try:
-            if not self.rangeListener.failed:
-                self.gmmArgs.rangeAddr = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
-                setDialogRange(self.rangeListener.rangeStr, self.dialog, self.logger)
-                self.validate()
-
-            self.controller.removeRangeSelectionListener(self.rangeListener)
-            self.dialog.setVisible(True)
-        except Exception as e:
-            self.logger.exception("CRDialogHandler.showDialog() crashed")
-
-    def _onRangeSelButtonPress(self, dialog):
-        self.dialog = dialog
-        self.dialog.setVisible(False)
-        self.rangeListener = CRRangeSelectionListener(self)
+        self.rangeListener = CRRangeSelectionListener(self, rlId = rlId)
 
         self.controller.addRangeSelectionListener(self.rangeListener)
         initialValue = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
         title = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
         closeOnMouseRelease = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+        singleCellMode = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
         initialValue.Name = "InitialValue"
-        initialValue.Value = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
+        initialValue.Value = initialRangeStr
         title.Name = "Title"
-        title.Value = "Select the cell range where the data is"
+        title.Value = windowTitle
         closeOnMouseRelease.Name = "CloseOnMouseRelease"
         closeOnMouseRelease.Value = True
+        singleCellMode.Name = "SingleCellMode"
+        singleCellMode.Value = (rlId == "output")
 
-        self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease))
+        self.controller.startRangeSelection((initialValue, title, closeOnMouseRelease, singleCellMode))
+
+    def stopRangeSelection(self):
+        if self.rangeListener is None:
+            self.logger.error("CRDialogHandler.stopRangeSelection: rangeListener is missing!")
+            return
+
+        try:
+            self.controller.removeRangeSelectionListener(self.rangeListener)
+
+            if self.rangeListener.rlId == "input":
+                self._onDataRangeSelected()
+            elif self.rangeListener.rlId == "output":
+                self._onOutputLocationSelected()
+            else:
+                self.logger.error(f"CRDialogHandler.stopRangeSelection: invalid rangeListener.rlId = {self.rangeListener.rlId}")
+
+            self.rangeListener = None
+        except Exception as e:
+            self.logger.exception("CRDialogHandler.stopRangeSelection() crashed")
 
     def readDialogInputs(self):
+        # input
         rangeStr = self.dialog.getControl("TextField_DataRange").getText()
         self.gmmArgs.rangeAddr = crrange.stringToCellRange(rangeStr, self.model)
+
+        # output
+        rangeStr = self.dialog.getControl("TextField_OutputLocation").getText()
+        rangeAddr = crrange.stringToCellRange(rangeStr, self.model)
+        self.gmmArgs.setOutputLocation(rangeAddr)
+
+        # other parameters
         self.gmmArgs.hasHeader = bool(self.dialog.getControl("CheckBox_HasHeader").getState())
         self.gmmArgs.numClusters = int(self.dialog.getControl("NumericField_NumClusters").getValue())
         self.gmmArgs.numEpochs = int(self.dialog.getControl("NumericField_NumEpochs").getValue())
@@ -281,11 +400,11 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         dataRange.EndRow = self.gmmArgs.rangeAddr.EndRow
 
         resultsRange = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
-        resultsRange.Sheet = dataRange.Sheet
-        resultsRange.StartColumn = dataRange.EndColumn + 1
+        resultsRange.Sheet = self.gmmArgs.outputAddr.sheet
+        resultsRange.StartColumn = self.gmmArgs.outputAddr.col
         resultsRange.EndColumn = resultsRange.StartColumn + 1
-        resultsRange.StartRow = dataRange.StartRow
-        resultsRange.EndRow = dataRange.EndRow
+        resultsRange.StartRow = self.gmmArgs.outputAddr.row + (1 if self.gmmArgs.hasHeader else 0)
+        resultsRange.EndRow = resultsRange.StartRow + dataRange.EndRow - dataRange.StartRow
 
         undoMgr = self.model.getUndoManager()
         if not undoMgr is None:
@@ -299,7 +418,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations})")
 
         if args.hasHeader:
-            sheet = self.model.Sheets[dataRange.Sheet]
+            sheet = self.model.Sheets[resultsRange.Sheet]
             cell = sheet.getCellByPosition(resultsRange.StartColumn, resultsRange.StartRow - 1)
             cell.setFormula("ClusterId")
             cell = sheet.getCellByPosition(resultsRange.StartColumn + 1, resultsRange.StartRow - 1)
@@ -310,7 +429,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
         if self.gmmArgs.colorRows:
             self._addClusterStyles()
-            self._colorClusterData(dataRange)
+            self._colorClusterData(dataRange, resultsRange)
 
         if not undoMgr is None:
             undoMgr.leaveUndoContext()
@@ -344,7 +463,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             clusterStyle.setPropertyValue("CellBackColor", color)
             self.logger.debug(f"CRDialogHandler._addClusterStyles: added cell style : {styleName} with backcolor = {hex(color)}")
 
-    def _colorClusterData(self, dataRange):
+    def _colorClusterData(self, dataRange, resultsRange):
         rangeObj = crrange.rangeAddressToObject(dataRange, self.model)
         cfEntries = rangeObj.getPropertyValue("ConditionalFormat")
         if cfEntries is None:
@@ -352,8 +471,10 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             return
         cfEntries.clear()
 
+        sheetName = crrange.sheetName(resultsRange.Sheet, self.model)
         # row is 0 which is relative w.r.t data table's top row
-        refCell = "$" + crrange.cellAddressToString(dataRange.EndColumn + 1, 0, absolute=False)
+        refCell = f"${sheetName}.$" + crrange.cellAddressToString(
+            resultsRange.StartColumn, abs(resultsRange.StartRow - dataRange.StartRow), absolute=False)
         self.logger.debug(f"CRDialogHandler._colorClusterData: refCell = {refCell}")
 
         numClusters = self.gmmArgs.numClusters
@@ -377,11 +498,9 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def _getStyleName(self, clusterIndex, numClusters):
         return f"ClusterRows_N{numClusters}_Cluster_{clusterIndex}"
 
-    def _markFieldError(self, controlName, hasError = True, defColor = None):
-        model = self.dialog.getControl(controlName).getModel()
-        model.setPropertyValue("TextColor", 0xff0000 if hasError else None)
-
     def validate(self):
+        if self.settingControlValue:
+            return
         try:
             self._validate()
         except Exception as e:
@@ -401,15 +520,34 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             self._markFieldError("TextField_DataRange")
             return
 
-        # No space to write results
-        if self.gmmArgs.rangeAddr.EndColumn > MAXCOL - 2:
-            self._setStatus("Not enough space to write the results (2 columns)")
-            self._markFieldError("TextField_DataRange")
+        if self.gmmArgs.outputAddr is None:
+            self._setStatus("Invalid output location!")
+            self._markFieldError("TextField_OutputLocation")
+            return
+
+        if self.gmmArgs.colorRows and (self.gmmArgs.rangeAddr.StartRow > self.gmmArgs.outputAddr.row):
+            self._setStatus("For coloring rows output location cannot start above(rows) data range")
+            self._markFieldError("TextField_OutputLocation")
             return
 
         self._markFieldError("TextField_DataRange", hasError=False)
         # Range is valid, preserve it by creating a selection.
         selectRange(self.gmmArgs.rangeAddr, self.model, self.logger)
+
+        # No column space to write results
+        if self.gmmArgs.outputAddr.col + 1 > MAXCOL:
+            self._setStatus("Not enough column space to write the results (2 columns)")
+            self._markFieldError("TextField_OutputLocation")
+            return
+
+        # No row space to write results
+        rows = self.gmmArgs.rows()
+        if (self.gmmArgs.outputAddr.row + rows - 1) > MAXROW:
+            self._setStatus(f"Not enough row space to write the results ({rows} rows)")
+            self._markFieldError("TextField_OutputLocation")
+            return
+
+        self._markFieldError("TextField_OutputLocation", hasError=False)
 
         # numCluster checks
         if self.gmmArgs.numClusters < 0 or self.gmmArgs.numClusters > 15:
@@ -445,27 +583,23 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         computeButton.getModel().setPropertyValue("Enabled", not hasError)
         errorLabel.setText(("Error: " + errMsg) if hasError else errMsg)
 
+    def _markFieldError(self, controlName, hasError = True, defColor = None):
+        model = self.dialog.getControl(controlName).getModel()
+        model.setPropertyValue("TextColor", 0xff0000 if hasError else None)
+
     def setupControlHandlers(self):
         self.dataRangeTextListener = CRDataRangeTextListener(self)
         self.dialog.getControl("TextField_DataRange").addTextListener(self.dataRangeTextListener)
+        self.dialog.getControl("TextField_OutputLocation").addTextListener(self.dataRangeTextListener)
         self.headerCheckBoxListener = CRHeaderCheckBoxListener(self)
         self.dialog.getControl("CheckBox_HasHeader").addItemListener(self.headerCheckBoxListener)
 
     def clearDialogControlHandlers(self):
         self.dialog.getControl("TextField_DataRange").removeTextListener(self.dataRangeTextListener)
+        self.dialog.getControl("TextField_OutputLocation").removeTextListener(self.dataRangeTextListener)
         self.dialog.getControl("CheckBox_HasHeader").removeItemListener(self.headerCheckBoxListener)
 
 # global functions
-
-def setDialogRange(rangeStr, dialog, logger):
-    if not isinstance(rangeStr, str):
-        rangeStr = "NONE"
-    label = dialog.getControl("TextField_DataRange")
-    if label is None:
-        logger.error("global.setDialogRange: cannot get DataRange label control from dialog")
-        return False
-    label.setText(rangeStr)
-    return True
 
 def selectRange(rangeAddress, document, logger):
     rangeObj = crrange.rangeAddressToObject(rangeAddress, document)
@@ -476,8 +610,9 @@ def selectRange(rangeAddress, document, logger):
 
 
 class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
-    def __init__(self, dlgHandler):
+    def __init__(self, dlgHandler, rlId):
         self.dlgHandler = dlgHandler
+        self.rlId = rlId
         self.failed = False
         self.rangeStr = ""
         return
@@ -485,11 +620,11 @@ class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
     def done(self, event):
         self.rangeStr = event.RangeDescriptor
         self.failed = False
-        self.dlgHandler.showDialog()
+        self.dlgHandler.stopRangeSelection()
 
     def aborted(self, event):
         self.failed = True
-        self.dlgHandler.showDialog()
+        self.dlgHandler.stopRangeSelection()
 
     def disposing(self, event):
         return
