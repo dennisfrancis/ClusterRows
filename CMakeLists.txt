@@ -29,11 +29,11 @@ add_library(gmm ${COMP_SOURCE_FILES})
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
-set(COMP_IDENTIFIER com.github.dennisfrancis.ClusterRowsImpl)
+set(COMP_IDENTIFIER com.github.dennisfrancis.ClusterRows)
 set(COMP_PYDIR ${CMAKE_SOURCE_DIR}/src/py)
 set(COMP_PYFILES
     ${COMP_PYDIR}/ClusterRows.py
-    ${COMP_PYDIR}/GMMCluster.py
+    ${COMP_PYDIR}/DataCluster.py
     ${COMP_PYDIR}/CRJob.py
     ${COMP_PYDIR}/crlogger.py
     ${COMP_PYDIR}/crplatform.py
@@ -53,7 +53,7 @@ if (WIN32 OR CYGWIN)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -Wl,-Bstatic -lstdc++")
 endif()
 
-set(COMP_RDB_NAME "GMMCluster.uno.rdb")
+set(COMP_RDB_NAME "DataCluster.uno.rdb")
 
 file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
@@ -102,7 +102,7 @@ add_custom_target(
 target_include_directories(gmm PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
 
 set(COMP_XCU_FILES
-    ${CMAKE_SOURCE_DIR}/xcu/GMMCluster.xcu
+    ${CMAKE_SOURCE_DIR}/xcu/DataCluster.xcu
     ${CMAKE_SOURCE_DIR}/xcu/Jobs.xcu
     ${CMAKE_SOURCE_DIR}/xcu/Addons.xcu)
 

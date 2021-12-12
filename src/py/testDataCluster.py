@@ -13,12 +13,12 @@ cmd_folder = os.path.realpath(
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
-import GMMCluster
+import DataCluster
 
 def main():
-    gmmImpl = GMMCluster.GMMClusterImpl({}, testMode=True)
+    clusterImpl = DataCluster.DataClusterImpl({}, testMode=True)
     data = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
-    ret = gmmImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
+    ret = clusterImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
     print(ret)
 
 if __name__ == '__main__':

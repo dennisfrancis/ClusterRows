@@ -1,11 +1,11 @@
-#ifndef __com_github_dennisfrancis_xgmmcluster_idl__
-#define __com_github_dennisfrancis_xgmmcluster_idl__
+#ifndef __com_github_dennisfrancis_xdatacluster_idl__
+#define __com_github_dennisfrancis_xdatacluster_idl__
 
 #include <com/sun/star/uno/XInterface.idl>
 
 module com { module github { module dennisfrancis {
 
-    interface XGMMCluster : com::sun::star::uno::XInterface
+    interface XDataCluster : com::sun::star::uno::XInterface
     {
         sequence< sequence< double > > gmmCluster(
             [in] sequence < sequence < double > > data,

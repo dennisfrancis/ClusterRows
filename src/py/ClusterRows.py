@@ -25,15 +25,15 @@ cmd_folder = os.path.realpath(
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
-from GMMCluster import GMMClusterImpl
+from DataCluster import DataClusterImpl
 from CRJob import CRJobImpl
 
 import unohelper
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation( \
-    GMMClusterImpl.createInstance, GMMClusterImpl.getImplementationName(),
-        GMMClusterImpl.getServiceNames(),)
+    DataClusterImpl.createInstance, DataClusterImpl.getImplementationName(),
+        DataClusterImpl.getServiceNames(),)
 
 g_ImplementationHelper.addImplementation( \
     CRJobImpl.createInstance, CRJobImpl.getImplementationName(),
