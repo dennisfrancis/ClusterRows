@@ -3,14 +3,14 @@
 ClusterRows is a LibreOffice Calc extension that clusters the rows in a table and colors them to indicate the clusters.
 
 ## Install
-Use the extension manager of LibreOffice to install the pre-built extension downloaded from the Release page. Alternatively you can install the downloaded extension from the console as:
+Use the extension manager of LibreOffice to install the pre-built extension downloaded from the [releases page](https://github.com/dennisfrancis/ClusterRows/releases). Alternatively you can install the downloaded extension from the console as:
 ```
 $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ```
 
 ## What's new?
 * Support for Windows and MacOSX
-  * Platform specific extension packages in the Release page.
+  * Platform specific extension packages in the releases page.
 * Dialog based workflow
 * GMMCluster() formula
 * Input range and the output location may be selected interactively and edited in the dialog
