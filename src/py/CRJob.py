@@ -258,11 +258,19 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
     def setDialogRanges(self):
         self.settingControlValue = True
         # input
-        rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
+        rangeAddr = self.gmmArgs.rangeAddr
+        noInput = (rangeAddr is None)
+        inputIsSingleCell =  (not noInput) \
+            and (rangeAddr.StartColumn == rangeAddr.EndColumn) \
+            and (rangeAddr.StartRow == rangeAddr.EndRow)
+        if noInput or inputIsSingleCell:
+            rangeStr = ""
+        else:
+            rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
         self.dialog.getControl("TextField_DataRange").setText(rangeStr)
 
         # output
-        if self.gmmArgs.outputAddr is None:
+        if (self.gmmArgs.outputAddr is None) or inputIsSingleCell or noInput:
             outRangeStr = ""
         else:
             outRangeStr = crrange.cellAddressToString(
@@ -509,6 +517,11 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
     def _validate(self):
         self.readDialogInputs()
+
+        if self.dialog.getControl("TextField_DataRange").getText() == "":
+            self._setStatus("No input range specified!")
+            self._markFieldError("TextField_DataRange")
+            return
 
         if self.gmmArgs.rangeAddr is None:
             self._setStatus("Invalid data range!")
