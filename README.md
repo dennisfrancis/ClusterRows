@@ -9,9 +9,10 @@ $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ```
 
 ## What's new?
+* Support for Windows and MacOSX
+  * Platform specific extension packages in the Release page.
 * Dialog based workflow
 * GMMCluster() formula
-* Support for Windows and MacOSX
 * Input range and the output location may be selected interactively and edited in the dialog
 
 ## How to use?
@@ -54,14 +55,14 @@ The document also contains visualizations of the data in the sheet `charts`. The
 This is known to work only in GNU/Linux systems. Builds for Windows and MacOS can be done using cmake toolchain files provided with the project.
 1. Install `cmake` and optionally `ccmake`. In Ubuntu 20.04+ `sudo apt install cmake cmake-curses-gui` will install them.
 2. Install LibreOffice SDK. For instance in Ubuntu 20.04+ `sudo apt install libreoffice-dev` will install it.
-3. In the terminal go to `<project root>`/`build`/`linux`/
+3. In the terminal go to `<project root>/build/linux/`
    * Run `cmake ../../ -DCMAKE_BUILD_TYPE=RelWithDebInfo`
    * Run `make ClusterRows`
      * Alternatively run `make deploy` to build and deploy this extension to the default LibreOffice installation.
      * Or run `make deployrun` to build, deploy and start LibreOffice Calc with a test document.
        * See the debug logs using `make showlogs`
 
-The built extensions will be placed in `<project root>`/`extension`. When building for Linux, this file is named `ClusterRows-Linux.oxt` which can be manually installed by invoking `unopkg install <extension file>`.
+The built extensions will be placed in `<project root>/extension`. When building for Linux, this file is named `ClusterRows-Linux.oxt` which can be manually installed by invoking `unopkg install <extension file>`.
 
 If you get errors on running any of these commands or if you want to report any bug please open an issue here.
 
