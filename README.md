@@ -55,6 +55,7 @@ This is known to work only in GNU/Linux systems. Builds for Windows and MacOS ca
      * Alternatively run `make deploy` to build and deploy this extension to the default LibreOffice installation.
      * Or run `make deployrun` to build, deploy and start LibreOffice Calc with a test document.
        * See the debug logs using `make showlogs`
+
 The built extensions will be placed in `<project root>`/`extension`. When building for Linux, this file is named `ClusterRows-Linux.oxt` which can be manually installed by invoking `unopkg install <extension file>`.
 
 If you get errors on running any of these commands or if you want to report any bug please open an issue here.
