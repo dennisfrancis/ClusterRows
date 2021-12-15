@@ -8,13 +8,16 @@ Use the extension manager of LibreOffice to install the pre-built extension down
 $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ```
 
+## What's new?
+* Support for Windows and MacOSX
+* Input range/Output location may be selected interactively when using the dialog.
+
 ## How to use?
 
-1. Place the cursor on any cell inside your table with data (no need to select the whole table)
-2. Either click the toolbar item named `Cluster rows` ![icon](img/icon.png) which is next to the AutoFilter item or click on the `Clustering...` menu item under `Data > Statistics`.
-3. Now a dialog will appear where the parameters of clustering can be set. It is also possible to specify whether the data rows need to be colored according to the cluster assignments.
+1. Click the toolbar item named `Cluster rows` ![icon](img/icon.png) which is next to the AutoFilter item or click on the `Clustering...` menu item under `Data > Statistics`.
+2. Now a dialog will appear where the input data cell-range(with or without header), the output location and the parameters of clustering can be set. It is also possible to specify whether the data rows need to be colored according to the cluster assignments. By default the output location is set to the column next to the last column of the input data cell-range for convenience.
    ![Dialog](img/dialog.png)
-4. After pressing the *Compute* button, two new columns [ClusterId and Confidence] are added to the right of the table. **ClusterId** specifies the cluster to which the row is assigned and **Confidence** indicates the algorithm's confidence in scale [0,1] that this cluster assignment may be correct (higher number implies higher confidence). Depending on the choice provided in the dialog, the data rows are colored according to the cluster assignments.
+3. After pressing the *Compute* button, two new columns [ClusterId and Confidence] will be written to the user specified output location. **ClusterId** specifies the cluster to which the row is assigned and **Confidence** indicates the algorithm's confidence in scale [0,1] that this cluster assignment may be correct (higher number implies higher confidence). Depending on the choice provided in the dialog, the data rows are colored according to the cluster assignments.
 
 ## Advanced usage via `GMMCLUSTER` formula
 
@@ -32,23 +35,28 @@ The project does not depend on any machine learning or linear algebra libraries.
 
 ## Planned features
 
-* Support for Windows and MacOSX. As of the present release, only Linux is supported.
 * Optional 'seed' (5th) parameter for `GMMCLUSTER()` to make the results reproducible.
-* Editing of input data range (with/without header) in the dialog
-* Allow placement of computed results at any place in the sheet via dialog.
 * Add support for other common clustering algorithms.
 
 ## Sample usage of the extension
-In `testdocs` directory there is a spreadsheet file called `three-clusters.ods`. In that sheet there is a dataset in the range `A1:C301` synthetically  generated from a 3-cluster Gaussian mixture model. This toy dataset has two dimensions/variables(column A and B). Column C has the ground truth cluster id information of each row. To test the extension a copy of the dataset is placed(excluding the ground-truth column) at `F1:G301`. Now place the cursor anywhere in the range `F1:G301` and go to the menu `Data > Statistics > Clustering...` and click `Compute` button in the dialog. The extension will compute the 3 clusters and produce the columns `ClusterId` and `Confidence` next to the data. The cell `L9` in that sheet will indicate the clustering accuracy. This is a measure of how well the clustering algorithm was able to assign clusters compared to the ground truths in the original dataset. Typically we get around 97% accuracy for this dataset.
+In `testdocs` directory there is a spreadsheet file called `three-clusters.ods`. In that sheet there is a dataset in the range `A1:C301` synthetically  generated from a 3-cluster Gaussian mixture model. This toy dataset has two dimensions/variables(column A and B). Column C has the ground truth cluster id information of each row. To test the extension a copy of the dataset is placed(excluding the ground-truth column) at `F1:G301`. Go to the menu `Data > Statistics > Clustering...` and select or enter the input data range `F1:G301` and check the option `Header in the first row` and click `Compute` button in the dialog. The extension will compute the 3 clusters and produce the columns `ClusterId` and `Confidence` next to the data. The cell `L9` in that sheet will indicate the clustering accuracy. This is a measure of how well the clustering algorithm was able to assign clusters compared to the ground truths in the original dataset. Typically we get around 97% accuracy for this dataset.
 ![Clustering Output](img/output.png)
 The document also contains visualizations of the data in the sheet `charts`. The left chart shows the data points colored according to the ground truth clusters of the dataset. The middle chart shows the data points without the cluster information (which is the input to the clustering algorithm). The right chart shows the data colored according to the cluster assignments made by the algorithm.
 ![Visualization](img/chart.png)
 
 ## Building the extension from source
 
-1. Setup LibreOffice SDK. See [http://api.libreoffice.org/docs/install.html](http://api.libreoffice.org/docs/install.html).
-Then run `make` in the project's root directory. After this the extension file `ClusterRows.oxt` can be found in `build/extension/`. Running `make install` will install the extension to Calc (via `unopkg install` command).
+This is known to work only in GNU/Linux systems. Builds for Windows and MacOS can be done using cmake toolchain files provided with the project.
+1. Install `cmake` and optionally `ccmake`. In Ubuntu 20.04+ `sudo apt install cmake cmake-curses-gui` will install them.
+2. Install LibreOffice SDK. For instance in Ubuntu 20.04+ `sudo apt install libreoffice-dev` will install it.
+3. In the terminal go to `<project root>`/`build`/`linux`/
+   * Run `cmake ../../ -DCMAKE_BUILD_TYPE=RelWithDebInfo`
+   * Run `make ClusterRows`
+     * Alternatively run `make deploy` to build and deploy this extension to the default LibreOffice installation.
+     * Or run `make deployrun` to build, deploy and start LibreOffice Calc with a test document.
+       * See the debug logs using `make showlogs`
+The built extensions will be placed in `<project root>`/`extension`. When building for Linux, this file is named `ClusterRows-Linux.oxt` which can be manually installed by invoking `unopkg install <extension file>`.
 
-If you get errors on running `make`, check if the SDK's environment variables are set properly after setting up the SDK. If the errors persist, please open an issue here.
+If you get errors on running any of these commands or if you want to report any bug please open an issue here.
 
-As always pull-requests are welcome. Happy hacking !
+As always pull-requests are welcome. Happy hacking!
