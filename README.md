@@ -1,6 +1,6 @@
 # ClusterRows
 
-A LibreOffice Calc extension that clusters the rows in a table and colors them to indicate the clusters.
+ClusterRows is a LibreOffice Calc extension that clusters the rows in a table and colors them to indicate the clusters.
 
 ## Install
 Use the extension manager of LibreOffice to install the pre-built extension downloaded from the Release page. Alternatively you can install the downloaded extension from the console as:
@@ -15,8 +15,8 @@ $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ## How to use?
 
 1. Click the toolbar item named `Cluster rows` ![icon](img/icon.png) which is next to the AutoFilter item or click on the `Clustering...` menu item under `Data > Statistics`.
-2. Now a dialog will appear where the input data cell-range(with or without header), the output location and the parameters of clustering can be set. It is also possible to specify whether the data rows need to be colored according to the cluster assignments. By default the output location is set to the column next to the last column of the input data cell-range for convenience.
-   ![Dialog](img/dialog.png)
+2. Now a dialog will appear where the input data cell-range(with or without header), the output location and the parameters of clustering can be set. It is also possible to specify whether the data rows need to be colored according to the cluster assignments. By default the output location is set to the column next to the last column of the input data cell-range for convenience.\
+![Dialog](img/dialog.png)
 3. After pressing the *Compute* button, two new columns [ClusterId and Confidence] will be written to the user specified output location. **ClusterId** specifies the cluster to which the row is assigned and **Confidence** indicates the algorithm's confidence in scale [0,1] that this cluster assignment may be correct (higher number implies higher confidence). Depending on the choice provided in the dialog, the data rows are colored according to the cluster assignments.
 
 ## Advanced usage via `GMMCLUSTER` formula
