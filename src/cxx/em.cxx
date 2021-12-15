@@ -25,22 +25,51 @@
 #include <random>
 #include <cstring>
 
+namespace
+{
+void fillConstLabel(int label, double confidence, int rows, int* clusterLabels,
+                    double* labelConfidence)
+{
+    if (!clusterLabels || !labelConfidence)
+        return;
+
+    for (int idx = 0; idx < rows; ++idx)
+    {
+        clusterLabels[idx] = label;
+        labelConfidence[idx] = confidence;
+    }
+}
+
+}
+
 extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, int numClusters,
                                        int numEpochs, int numIterations, int* clusterLabels,
                                        double* labelConfidence)
 {
-    if (!array || !clusterLabels || !labelConfidence || rows < 10)
+    if (!array || !clusterLabels || !labelConfidence)
         return -1;
+
+    if (rows < 10)
+    {
+        fillConstLabel(-1, 0, rows, clusterLabels, labelConfidence);
+        return 0;
+    }
+
+    if (numClusters == 1)
+    {
+        fillConstLabel(0, 1, rows, clusterLabels, labelConfidence);
+        return 0;
+    }
 
     em::DataMatrix mat(array, rows, cols);
 
     em::GMM aGMM(array, rows, cols, numEpochs, numIterations);
-    if (numClusters <= 1) // Auto computer optimum number of clusters
+    if (numClusters <= 0) // Auto computer optimum number of clusters
     {
         const std::vector<int> aNumClustersArray = { 2, 3, 4, 5 };
         aGMM.TrainModel(aNumClustersArray);
     }
-    else
+    else // numClusters > 1
     {
         const std::vector<int> aNumClustersArray = { numClusters };
         aGMM.TrainModel(aNumClustersArray);
