@@ -49,15 +49,15 @@ extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, 
     if (!array || !clusterLabels || !labelConfidence)
         return -1;
 
-    if (rows < 10)
-    {
-        fillConstLabel(-1, 0, rows, clusterLabels, labelConfidence);
-        return 0;
-    }
-
     if (numClusters == 1)
     {
         fillConstLabel(0, 1, rows, clusterLabels, labelConfidence);
+        return 0;
+    }
+
+    if (rows < 10)
+    {
+        fillConstLabel(-1, 0, rows, clusterLabels, labelConfidence);
         return 0;
     }
 
