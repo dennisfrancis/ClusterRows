@@ -20,7 +20,7 @@
   <dlg:numericfield dlg:id="NumericField_NumEpochs" dlg:tab-index="4" dlg:left="116" dlg:top="87" dlg:width="46" dlg:height="10" dlg:help-text="Maximum number of epochs to use" dlg:decimal-accuracy="0" dlg:value="10" dlg:value-min="3" dlg:value-max="100">
    <script:event script:event-name="on-blur" script:macro-name="vnd.sun.star.UNO:onInputFocusLost" script:language="UNO"/>
   </dlg:numericfield>
-  <dlg:numericfield dlg:id="NumericField_NumIter" dlg:tab-index="5" dlg:left="116" dlg:top="116" dlg:width="46" dlg:height="12" dlg:help-text="Maximum number of iterations to do in each epoch" dlg:decimal-accuracy="0" dlg:value="10" dlg:value-min="5" dlg:value-max="10000">
+  <dlg:numericfield dlg:id="NumericField_NumIter" dlg:tab-index="5" dlg:left="116" dlg:top="116" dlg:width="46" dlg:height="12" dlg:help-text="Maximum number of iterations to do in each epoch" dlg:decimal-accuracy="0" dlg:value="100" dlg:value-min="5" dlg:value-max="10000">
    <script:event script:event-name="on-blur" script:macro-name="vnd.sun.star.UNO:onInputFocusLost" script:language="UNO"/>
   </dlg:numericfield>
   <dlg:textfield dlg:id="TextField_DataRange" dlg:tab-index="0" dlg:left="116" dlg:top="20" dlg:width="46" dlg:height="10"/>
