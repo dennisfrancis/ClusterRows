@@ -41,6 +41,7 @@ from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
 from com.sun.star.sheet.GeneralFunction import MAX as GeneralFunction_MAX
 from com.sun.star.sheet.ConditionOperator import FORMULA as ConditionOperator_FORMULA
+from com.sun.star.table.CellContentType import TEXT as CellContentType_TEXT
 
 MAXROW = 1048575
 MAXCOL = 1023
@@ -255,6 +256,20 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self._markFieldError("LabelText_Error", hasError=True)
         self.validate()
 
+    def _detectHeader(self):
+        rangeAddr = self.gmmArgs.rangeAddr
+        if not rangeAddr:
+            return
+        sheet = self.model.Sheets[rangeAddr.Sheet]
+        foundHeader = False
+        for col in range(rangeAddr.StartColumn, rangeAddr.EndColumn + 1):
+            cell = sheet.getCellByPosition(col, rangeAddr.StartRow)
+            if cell.getType() == CellContentType_TEXT:
+                foundHeader = True
+                break
+        self.gmmArgs.hasHeader = foundHeader
+        self.dialog.getControl("CheckBox_HasHeader").setState(1 if foundHeader else 0)
+
     def setDialogRanges(self):
         self.settingControlValue = True
         # input
@@ -268,6 +283,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         else:
             rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
         self.dialog.getControl("TextField_DataRange").setText(rangeStr)
+        self._detectHeader()
 
         # output
         if (self.gmmArgs.outputAddr is None) or inputIsSingleCell or noInput:
