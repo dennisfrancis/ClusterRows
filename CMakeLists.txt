@@ -9,10 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(NATIVE_BUILD OFF)
+
 # No cross-compile toolchain in use
 if (NOT DEFINED EXTENSION_PLATFORM)
     # Native build is currently linux only.
     set(EXTENSION_PLATFORM "linux_x86_64")
+    set(NATIVE_BUILD ON)
 endif()
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
@@ -173,31 +176,33 @@ add_custom_target(showlogs
     COMMAND python3 ${CMAKE_SOURCE_DIR}/src/py/showlogs.py
     )
 
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-)
+if (NATIVE_BUILD)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+    )
 
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_Populate(googletest)
-add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_Populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 
-enable_testing()
+    enable_testing()
 
-add_executable(
-    gmmTests
-    ${CMAKE_SOURCE_DIR}/test/gmmTests.cxx
-)
-target_link_libraries(
-    gmmTests
-    gmm
-    gtest_main
-)
+    add_executable(
+        gmmTests
+        ${CMAKE_SOURCE_DIR}/test/gmmTests.cxx
+    )
+    target_link_libraries(
+        gmmTests
+        gmm
+        gtest_main
+    )
 
-include(GoogleTest)
-gtest_discover_tests(gmmTests)
+    include(GoogleTest)
+    gtest_discover_tests(gmmTests)
+endif()
 
 add_custom_target(
     copy-compile-commands ALL
