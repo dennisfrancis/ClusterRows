@@ -135,7 +135,7 @@ void em::GMM::TrainModel(const std::vector<int>& numClustersArray)
 
     for (int numClusters : numClustersArray)
     {
-        pModel.reset(new GMMModel(numClusters, this, mnNumEpochs, mnNumIter));
+        pModel.reset(new GMMModel(numClusters, *this, mnNumEpochs, mnNumIter));
         const double currBIC = pModel->Fit();
         if (currBIC < bestBIC)
         {
@@ -155,15 +155,15 @@ void em::GMM::GetClusterLabels(int* clusterLabels, double* labelConfidence)
 
 // em::GMMModel
 
-em::GMMModel::GMMModel(const int numClusters, const GMM* pTrainer, int numEpochs, int numIter)
+em::GMMModel::GMMModel(const int numClusters, const GMM& rTrainer, int numEpochs, int numIter)
     : mnNumClusters(numClusters)
-    , mpGMM(pTrainer)
+    , mrGMM(rTrainer)
     , mfBICScore(9999999)
     , mnNumEpochs(numEpochs)
     , mnNumIter(numIter)
 {
-    maWeights.resize(mpGMM->mnNumSamples);
-    for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+    maWeights.resize(mrGMM.mnNumSamples);
+    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
         maWeights[sampleIdx].resize(mnNumClusters);
 
     maPhi.resize(mnNumClusters);
@@ -175,12 +175,12 @@ em::GMMModel::GMMModel(const int numClusters, const GMM* pTrainer, int numEpochs
     maStd.resize(mnNumClusters);
     for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
     {
-        maMeans[clusterIdx].resize(mpGMM->mnNumDimensions);
-        maStd[clusterIdx].resize(mpGMM->mnNumDimensions);
+        maMeans[clusterIdx].resize(mrGMM.mnNumDimensions);
+        maStd[clusterIdx].resize(mrGMM.mnNumDimensions);
     }
 
-    maClusterLabels.resize(mpGMM->mnNumSamples);
-    maLabelConfidence.resize(mpGMM->mnNumSamples);
+    maClusterLabels.resize(mrGMM.mnNumSamples);
+    maLabelConfidence.resize(mrGMM.mnNumSamples);
 }
 
 void em::GMMModel::initParms()
@@ -188,17 +188,17 @@ void em::GMMModel::initParms()
     // obtain a time-based seed:
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     // Select mnNumClusters data points at random from the samples to act as cluster centers.
-    std::vector<int> sampleIndices(mpGMM->mnNumSamples);
-    for (int idx = 0; idx < mpGMM->mnNumSamples; ++idx)
+    std::vector<int> sampleIndices(mrGMM.mnNumSamples);
+    for (int idx = 0; idx < mrGMM.mnNumSamples; ++idx)
         sampleIndices[idx] = idx;
     std::shuffle(sampleIndices.begin(), sampleIndices.end(), std::default_random_engine(seed));
 
     for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
     {
         int randIdx = sampleIndices[clusterIdx];
-        for (int dim = 0; dim < mpGMM->mnNumDimensions; ++dim)
-            maMeans[clusterIdx][dim] = mpGMM->getNormalized(randIdx, dim);
-        maStd[clusterIdx].assign(mpGMM->mnNumDimensions, 1.5);
+        for (int dim = 0; dim < mrGMM.mnNumDimensions; ++dim)
+            maMeans[clusterIdx][dim] = mrGMM.getNormalized(randIdx, dim);
+        maStd[clusterIdx].assign(mrGMM.mnNumDimensions, 1.5);
     }
     // Do not init maClusterLabels or maLabelConfidence
     // as they are holding the best of all epochs.
@@ -213,10 +213,10 @@ double em::GMMModel::dnorm(double x, double mean, double stddev)
 
 double em::GMMModel::Fit()
 {
-    std::vector<double> epochLabelConfidence(mpGMM->mnNumSamples);
-    std::vector<int> epochClusterLabels(mpGMM->mnNumSamples);
-    std::vector<double> tmpLabelConfidence(mpGMM->mnNumSamples);
-    std::vector<int> tmpClusterLabels(mpGMM->mnNumSamples);
+    std::vector<double> epochLabelConfidence(mrGMM.mnNumSamples);
+    std::vector<int> epochClusterLabels(mrGMM.mnNumSamples);
+    std::vector<double> tmpLabelConfidence(mrGMM.mnNumSamples);
+    std::vector<int> tmpClusterLabels(mrGMM.mnNumSamples);
     writeLog("\nFitting for #clusters = %d\n", mnNumClusters);
     for (int epochIdx = 0; epochIdx < mnNumEpochs; ++epochIdx)
     {
@@ -228,16 +228,16 @@ double em::GMMModel::Fit()
             // E step
             {
                 double BICScore = 0.0;
-                for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+                for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
                 {
                     double normalizer = 0.0;
                     for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
                     {
                         double weightVal = maPhi[clusterIdx];
-                        for (int dimIdx = 0; dimIdx < mpGMM->mnNumDimensions; ++dimIdx)
+                        for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
                         {
                             weightVal
-                                *= dnorm(mpGMM->getNormalized(sampleIdx, dimIdx),
+                                *= dnorm(mrGMM.getNormalized(sampleIdx, dimIdx),
                                          maMeans[clusterIdx][dimIdx], maStd[clusterIdx][dimIdx]);
                         }
 
@@ -289,22 +289,22 @@ double em::GMMModel::Fit()
                 for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
                 {
                     double phi = 0.0;
-                    for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+                    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
                         phi += maWeights[sampleIdx][clusterIdx];
-                    phi /= static_cast<double>(mpGMM->mnNumSamples);
+                    phi /= static_cast<double>(mrGMM.mnNumSamples);
                     maPhi[clusterIdx] = phi;
                 }
 
                 //Update maMeans
                 for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
                 {
-                    double den = (static_cast<double>(mpGMM->mnNumSamples) * maPhi[clusterIdx]);
-                    for (int dimIdx = 0; dimIdx < mpGMM->mnNumDimensions; ++dimIdx)
+                    double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
+                    for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
                     {
                         double num = 0.0;
-                        for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+                        for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
                             num += (maWeights[sampleIdx][clusterIdx]
-                                    * mpGMM->getNormalized(sampleIdx, dimIdx));
+                                    * mrGMM.getNormalized(sampleIdx, dimIdx));
                         maMeans[clusterIdx][dimIdx] = (num / den);
                     }
                 }
@@ -312,14 +312,14 @@ double em::GMMModel::Fit()
                 // Update maStd
                 for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
                 {
-                    double den = (static_cast<double>(mpGMM->mnNumSamples) * maPhi[clusterIdx]);
-                    for (int dimIdx = 0; dimIdx < mpGMM->mnNumDimensions; ++dimIdx)
+                    double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
+                    for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
                     {
                         const double mean = maMeans[clusterIdx][dimIdx];
                         double num = 0.0;
-                        for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+                        for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
                         {
-                            const double x = mpGMM->getNormalized(sampleIdx, dimIdx);
+                            const double x = mrGMM.getNormalized(sampleIdx, dimIdx);
                             num += (maWeights[sampleIdx][clusterIdx] * x * x);
                         }
                         maStd[clusterIdx][dimIdx] = std::sqrt((num / den) - (mean * mean));
@@ -345,7 +345,7 @@ double em::GMMModel::Fit()
 
 void em::GMMModel::GetClusterLabels(int* clusterLabels, double* labelConfidence)
 {
-    for (int sampleIdx = 0; sampleIdx < mpGMM->mnNumSamples; ++sampleIdx)
+    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
     {
         clusterLabels[sampleIdx] = maClusterLabels[sampleIdx];
         labelConfidence[sampleIdx] = maLabelConfidence[sampleIdx];

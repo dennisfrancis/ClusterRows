@@ -51,7 +51,7 @@ class GMM;
 class GMMModel
 {
 public:
-    GMMModel(const int numClusters, const GMM* pTrainer, int numEpochs, int numIter);
+    GMMModel(const int numClusters, const GMM& pTrainer, int numEpochs, int numIter);
     ~GMMModel() {}
 
     double Fit();
@@ -62,7 +62,7 @@ private:
     void initParms();
 
     int mnNumClusters;
-    const GMM* mpGMM;
+    const GMM& mrGMM;
     std::vector<std::vector<double>> maWeights;
     std::vector<double> maPhi;
     std::vector<std::vector<double>> maMeans;
