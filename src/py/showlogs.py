@@ -26,6 +26,9 @@ def main():
         roots = [ x for x in os.listdir(ext) if x.endswith(".oxt") and x.startswith("ClusterRows-") ]
         if len(roots) > 0:
             log = os.path.join(ext, roots[0], "log.txt")
+            if not os.path.isfile(log):
+                print("Seems ClusterRows extension was never used after install!")
+                return
             print("logfile is " + log)
             with open(log, "rb") as f:
                 shutil.copyfileobj(f, sys.stdout.buffer)
