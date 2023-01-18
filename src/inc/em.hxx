@@ -29,6 +29,10 @@ namespace em
 class DataMatrix
 {
 public:
+    /// @brief Accepts a externally owned double array to use it as a column major matrix.
+    /// @param pRows externally owned array
+    /// @param nRows number of rows
+    /// @param nCols number of columns
     DataMatrix(const double* pRows, const int nRows, const int nCols)
         : pData(pRows)
         , mnRows(nRows)
