@@ -67,8 +67,8 @@ TEST(GMMTests, ConstLabelCases)
     constexpr int rowsLow = 5;
     constexpr int rowsHigh = 20;
     constexpr int cols = 3;
-    double dataLow[rowsLow][cols] = { 0 };
-    double dataHigh[rowsHigh][cols] = { 0 };
+    double dataLow[rowsLow][cols]{};
+    double dataHigh[rowsHigh][cols]{};
     int labelsLow[rowsLow];
     int labelsHigh[rowsHigh];
     double confidenceLow[rowsLow];
