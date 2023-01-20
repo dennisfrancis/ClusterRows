@@ -52,7 +52,7 @@ if (LOGGING_ENABLED)
 endif()
 target_compile_definitions(gmm PUBLIC ${ClusterRowsDefinitions})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wall -Wextra -Werror")
 
 if (WIN32 OR CYGWIN)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -Wl,-Bstatic -lstdc++")
