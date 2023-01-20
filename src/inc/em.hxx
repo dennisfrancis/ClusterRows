@@ -57,10 +57,10 @@ class GMMModel
 public:
     /// @brief Stores a gaussian mixture model
     /// @param numClusters desired number of clusters (auto determines it if 0 is provided)
-    /// @param pTrainer GMM trainer object
+    /// @param rTrainer GMM trainer object
     /// @param numEpochs desired number of epochs
     /// @param numIter desired number of iteration in each epoch
-    GMMModel(const int numClusters, const GMM& pTrainer, int numEpochs, int numIter);
+    GMMModel(const int numClusters, const GMM& rTrainer, int numEpochs, int numIter);
     ~GMMModel() {}
 
     double Fit();
