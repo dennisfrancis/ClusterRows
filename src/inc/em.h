@@ -28,7 +28,16 @@
 extern "C"
 {
 #endif
-
+    /// @brief computes cluster assignments for each row of data according to gaussian mixture model.
+    /// @param array input matrix stored in column major form.
+    /// @param rows number of rows of the input matrix.
+    /// @param cols number of columns of the input matrix.
+    /// @param numClusters desired number of clusters (It will auto compute this if 0 is provided).
+    /// @param numEpochs desired number of epochs.
+    /// @param numIterations maximum number of iterations in each epoch.
+    /// @param clusterLabels output array to put each row's cluster assignment label.
+    /// @param labelConfidence output array to store confidence score of each cluster assignment.
+    /// @return 0 on success and -1 on failure.
     int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, int numClusters,
                                 int numEpochs, int numIterations, int* clusterLabels,
                                 double* labelConfidence);
