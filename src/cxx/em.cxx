@@ -21,7 +21,6 @@
 
 #include <cmath>
 #include <chrono>
-#include <algorithm>
 #include <random>
 #include <cstring>
 
@@ -97,12 +96,6 @@ em::GMM::GMM(const double* pRows, int nRows, int nCols, int nNumEpochs, int nNum
 
 void em::GMM::computeStats()
 {
-    for (int dim = 0; dim < mnNumDimensions; ++dim)
-    {
-        maStds[dim] = 0;
-        maMeans[dim] = 0;
-    }
-
     for (int dim = 0; dim < mnNumDimensions; ++dim)
     {
         double& mean = maMeans[dim];
