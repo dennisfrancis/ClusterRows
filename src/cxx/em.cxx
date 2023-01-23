@@ -23,6 +23,7 @@
 #include <chrono>
 #include <random>
 #include <cstring>
+#include <algorithm>
 
 namespace
 {
@@ -161,8 +162,7 @@ em::GMMModel::GMMModel(const int numClusters, const GMM& rTrainer, int numEpochs
 
     maPhi.resize(mnNumClusters);
     double fPhi = (1.0 / static_cast<double>(mnNumClusters));
-    for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-        maPhi[clusterIdx] = fPhi;
+    std::fill_n(maPhi.begin(), mnNumClusters, fPhi);
 
     maMeans.resize(mnNumClusters);
     maStd.resize(mnNumClusters);
