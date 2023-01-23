@@ -338,9 +338,6 @@ double em::GMMModel::Fit()
 
 void em::GMMModel::GetClusterLabels(int* clusterLabels, double* labelConfidence)
 {
-    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
-    {
-        clusterLabels[sampleIdx] = maClusterLabels[sampleIdx];
-        labelConfidence[sampleIdx] = maLabelConfidence[sampleIdx];
-    }
+    std::copy_n(maClusterLabels.begin(), mrGMM.mnNumSamples, clusterLabels);
+    std::copy_n(maLabelConfidence.begin(), mrGMM.mnNumSamples, labelConfidence);
 }
