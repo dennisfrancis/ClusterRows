@@ -144,7 +144,7 @@ TEST(GMMTests, ThreeClusterCase)
     int ret = gmm(&data[0][0], rows, cols, numClusters, 40, 100, gmmLabels, gmmConfidences);
     EXPECT_EQ(ret, 0);
 
-    int confusion[numClusters][numClusters] = {};
+    int confusion[numClusters][numClusters]{ 0 };
 
     for (int row = 0; row < rows; ++row)
     {
@@ -155,6 +155,7 @@ TEST(GMMTests, ThreeClusterCase)
     }
 
     double accuracy = 0;
+    int realToActual[numClusters];
     for (int real = 0; real < numClusters; ++real)
     {
         int max = 0;
@@ -163,7 +164,17 @@ TEST(GMMTests, ThreeClusterCase)
             int count = confusion[real][actual];
             //std::cout << count << "  ";
             if (count > max)
+            {
                 max = count;
+                realToActual[real] = actual;
+            }
+        }
+
+        for (int prevReal = 0; prevReal < real; ++prevReal)
+        {
+            EXPECT_NE(realToActual[real], realToActual[prevReal])
+                << " both the real labels " << real << " and " << prevReal
+                << " are mapped to the same actual label " << realToActual[real] << " !";
         }
         //std::cout << " | " << max << std::endl;
         accuracy += (static_cast<double>(max) / rows1Cluster);
