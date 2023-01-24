@@ -213,115 +213,8 @@ double em::GMMModel::Fit()
     writeLog("\nFitting for #clusters = %d\n", mnNumClusters);
     for (int epochIdx = 0; epochIdx < mnNumEpochs; ++epochIdx)
     {
-        initParms();
-        double epochBICScore = 9999999;
-        writeLog("\n\tEpoch #%d : ", epochIdx);
-        for (int iter = 0; iter < mnNumIter; ++iter)
-        {
-            // E step
-            {
-                double BICScore = 0.0;
-                for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
-                {
-                    double normalizer = 0.0;
-                    for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-                    {
-                        double weightVal = maPhi[clusterIdx];
-                        for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
-                        {
-                            weightVal
-                                *= dnorm(mrGMM.getNormalized(sampleIdx, dimIdx),
-                                         maMeans[clusterIdx][dimIdx], maStd[clusterIdx][dimIdx]);
-                        }
-
-                        maWeights[sampleIdx][clusterIdx] = weightVal;
-
-                        normalizer += weightVal;
-                    }
-
-                    // Find best cluster for sample nSampleIdx
-                    double bestClusterWeight = 0.0;
-                    int bestCluster = 0;
-
-                    // Apply normalization factor to all elems of maWeights[nSampleIdx]
-                    for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-                    {
-                        double wt = maWeights[sampleIdx][clusterIdx];
-                        wt /= normalizer;
-                        maWeights[sampleIdx][clusterIdx] = wt;
-                        if (wt > bestClusterWeight)
-                        {
-                            bestClusterWeight = wt;
-                            bestCluster = clusterIdx;
-                        }
-                    }
-                    tmpClusterLabels[sampleIdx] = bestCluster;
-                    tmpLabelConfidence[sampleIdx] = bestClusterWeight;
-                    BICScore += (-std::log(std::abs(bestClusterWeight)));
-                }
-
-                writeLog("%f, ", BICScore);
-                if (epochBICScore > BICScore && ((epochBICScore - BICScore) > EPSILON))
-                {
-                    // There is improvement in BIC score in this epoch.
-                    epochBICScore = BICScore;
-                    epochClusterLabels = tmpClusterLabels;
-                    epochLabelConfidence = tmpLabelConfidence;
-                }
-                else
-                {
-                    writeLog("\n\tBest BIC score of epoch#%d = %f", epochIdx, epochBICScore);
-                    break;
-                }
-
-            } // End of E step
-
-            // M step
-            {
-                // Update maPhi
-                for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-                {
-                    double phi = 0.0;
-                    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
-                        phi += maWeights[sampleIdx][clusterIdx];
-                    phi /= static_cast<double>(mrGMM.mnNumSamples);
-                    maPhi[clusterIdx] = phi;
-                }
-
-                //Update maMeans
-                for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-                {
-                    double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
-                    for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
-                    {
-                        double num = 0.0;
-                        for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
-                            num += (maWeights[sampleIdx][clusterIdx]
-                                    * mrGMM.getNormalized(sampleIdx, dimIdx));
-                        maMeans[clusterIdx][dimIdx] = (num / den);
-                    }
-                }
-
-                // Update maStd
-                for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
-                {
-                    double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
-                    for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
-                    {
-                        const double mean = maMeans[clusterIdx][dimIdx];
-                        double num = 0.0;
-                        for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
-                        {
-                            const double x = mrGMM.getNormalized(sampleIdx, dimIdx);
-                            num += (maWeights[sampleIdx][clusterIdx] * x * x);
-                        }
-                        maStd[clusterIdx][dimIdx] = std::sqrt((num / den) - (mean * mean));
-                    }
-                }
-
-            } // End of M step
-        } // End of one epoch
-
+        double epochBICScore = runEpoch(epochIdx, epochLabelConfidence, epochClusterLabels,
+                                        tmpLabelConfidence, tmpClusterLabels);
         if (epochBICScore < mfBICScore)
         {
             mfBICScore = epochBICScore;
@@ -334,6 +227,122 @@ double em::GMMModel::Fit()
     } // End of epoch loop
     writeLog("\n\t**** Best BIC score over all epochs = %f\n", mfBICScore);
     return mfBICScore;
+}
+
+double em::GMMModel::runEpoch(int epochIndex, std::vector<double>& epochLabelConfidence,
+                              std::vector<int>& epochClusterLabels,
+                              std::vector<double>& tmpLabelConfidence,
+                              std::vector<int>& tmpClusterLabels)
+{
+    initParms();
+    double epochBICScore = 9999999;
+    writeLog("\n\tEpoch #%d : ", epochIndex);
+    for (int iter = 0; iter < mnNumIter; ++iter)
+    {
+        // E step
+        {
+            double BICScore = 0.0;
+            for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
+            {
+                double normalizer = 0.0;
+                for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
+                {
+                    double weightVal = maPhi[clusterIdx];
+                    for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
+                    {
+                        weightVal *= dnorm(mrGMM.getNormalized(sampleIdx, dimIdx),
+                                           maMeans[clusterIdx][dimIdx], maStd[clusterIdx][dimIdx]);
+                    }
+
+                    maWeights[sampleIdx][clusterIdx] = weightVal;
+
+                    normalizer += weightVal;
+                }
+
+                // Find best cluster for sample nSampleIdx
+                double bestClusterWeight = 0.0;
+                int bestCluster = 0;
+
+                // Apply normalization factor to all elems of maWeights[nSampleIdx]
+                for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
+                {
+                    double wt = maWeights[sampleIdx][clusterIdx];
+                    wt /= normalizer;
+                    maWeights[sampleIdx][clusterIdx] = wt;
+                    if (wt > bestClusterWeight)
+                    {
+                        bestClusterWeight = wt;
+                        bestCluster = clusterIdx;
+                    }
+                }
+                tmpClusterLabels[sampleIdx] = bestCluster;
+                tmpLabelConfidence[sampleIdx] = bestClusterWeight;
+                BICScore += (-std::log(std::abs(bestClusterWeight)));
+            }
+
+            writeLog("%f, ", BICScore);
+            if (epochBICScore > BICScore && ((epochBICScore - BICScore) > EPSILON))
+            {
+                // There is improvement in BIC score in this epoch.
+                epochBICScore = BICScore;
+                epochClusterLabels = tmpClusterLabels;
+                epochLabelConfidence = tmpLabelConfidence;
+            }
+            else
+            {
+                writeLog("\n\tBest BIC score of epoch#%d = %f", epochIndex, epochBICScore);
+                break;
+            }
+
+        } // End of E step
+
+        // M step
+        {
+            // Update maPhi
+            for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
+            {
+                double phi = 0.0;
+                for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
+                    phi += maWeights[sampleIdx][clusterIdx];
+                phi /= static_cast<double>(mrGMM.mnNumSamples);
+                maPhi[clusterIdx] = phi;
+            }
+
+            //Update maMeans
+            for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
+            {
+                double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
+                for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
+                {
+                    double num = 0.0;
+                    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
+                        num += (maWeights[sampleIdx][clusterIdx]
+                                * mrGMM.getNormalized(sampleIdx, dimIdx));
+                    maMeans[clusterIdx][dimIdx] = (num / den);
+                }
+            }
+
+            // Update maStd
+            for (int clusterIdx = 0; clusterIdx < mnNumClusters; ++clusterIdx)
+            {
+                double den = (static_cast<double>(mrGMM.mnNumSamples) * maPhi[clusterIdx]);
+                for (int dimIdx = 0; dimIdx < mrGMM.mnNumDimensions; ++dimIdx)
+                {
+                    const double mean = maMeans[clusterIdx][dimIdx];
+                    double num = 0.0;
+                    for (int sampleIdx = 0; sampleIdx < mrGMM.mnNumSamples; ++sampleIdx)
+                    {
+                        const double x = mrGMM.getNormalized(sampleIdx, dimIdx);
+                        num += (maWeights[sampleIdx][clusterIdx] * x * x);
+                    }
+                    maStd[clusterIdx][dimIdx] = std::sqrt((num / den) - (mean * mean));
+                }
+            }
+
+        } // End of M step
+    } // End of one epoch
+
+    return epochBICScore;
 }
 
 void em::GMMModel::GetClusterLabels(int* clusterLabels, double* labelConfidence)

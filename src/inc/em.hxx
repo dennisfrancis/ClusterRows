@@ -69,6 +69,9 @@ public:
 private:
     double dnorm(double fX, double fMean, double fStd);
     void initParms();
+    double runEpoch(int epochIndex, std::vector<double>& epochLabelConfidence,
+                    std::vector<int>& epochClusterLabels, std::vector<double>& tmpLabelConfidence,
+                    std::vector<int>& tmpClusterLabels);
 
     int mnNumClusters;
     const GMM& mrGMM;
