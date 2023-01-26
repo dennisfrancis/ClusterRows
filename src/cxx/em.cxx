@@ -197,6 +197,7 @@ void em::GMMModel::initParms()
     // as they are holding the best of all epochs.
 }
 
+// Density of normal distribution at X = x with given mean and stddev
 double em::GMMModel::dnorm(double x, double mean, double stddev)
 {
     const double scale = 0.3989422804 / stddev;
