@@ -33,21 +33,21 @@ public:
     /// @param pRows externally owned array
     /// @param nRows number of rows
     /// @param nCols number of columns
-    DataMatrix(const double* pRows, const int nRows, const int nCols)
+    DataMatrix(const double* pRows, const int rows, const int cols)
         : pData(pRows)
-        , mnRows(nRows)
-        , mnCols(nCols)
+        , m_rows(rows)
+        , m_cols(cols)
     {
     }
 
     ~DataMatrix() {}
 
-    const double* operator[](int nRow) const { return pData + (nRow * mnCols); }
+    const double* operator[](int row) const { return pData + (row * m_cols); }
 
 private:
     const double* pData;
-    const int mnRows;
-    const int mnCols;
+    const int m_rows;
+    const int m_cols;
 };
 
 class GMM;
