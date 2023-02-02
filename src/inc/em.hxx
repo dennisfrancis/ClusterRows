@@ -31,8 +31,8 @@ class DataMatrix
 public:
     /// @brief Accepts a externally owned double array to use it as a column major matrix.
     /// @param pRows externally owned array
-    /// @param nRows number of rows
-    /// @param nCols number of columns
+    /// @param rows number of rows
+    /// @param cols number of columns
     DataMatrix(const double* pRows, const int rows, const int cols)
         : pData(pRows)
         , m_rows(rows)
