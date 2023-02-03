@@ -73,17 +73,17 @@ private:
                     std::vector<int>& epochClusterLabels, std::vector<double>& tmpLabelConfidence,
                     std::vector<int>& tmpClusterLabels);
 
-    int mnNumClusters;
-    const GMM& mrGMM;
-    std::vector<std::vector<double>> maWeights;
-    std::vector<double> maPhi;
-    std::vector<std::vector<double>> maMeans;
-    std::vector<std::vector<double>> maStd;
-    std::vector<int> maClusterLabels;
-    std::vector<double> maLabelConfidence;
-    double mfBICScore;
-    int mnNumEpochs;
-    int mnNumIter;
+    int m_numClusters;
+    const GMM& m_rGMM;
+    std::vector<std::vector<double>> m_weights;
+    std::vector<double> m_phi;
+    std::vector<std::vector<double>> m_means;
+    std::vector<std::vector<double>> m_std;
+    std::vector<int> m_clusterLabels;
+    std::vector<double> m_labelConfidence;
+    double m_BICScore;
+    int m_numEpochs;
+    int m_numIter;
 };
 
 class GMM
