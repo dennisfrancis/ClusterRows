@@ -63,19 +63,19 @@ extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, 
 
     em::DataMatrix mat(array, rows, cols);
 
-    em::GMM aGMM(array, rows, cols, numEpochs, numIterations);
+    em::GMM gmm(array, rows, cols, numEpochs, numIterations);
     if (numClusters <= 0) // Auto computer optimum number of clusters
     {
-        const std::vector<int> aNumClustersArray = { 2, 3, 4, 5 };
-        aGMM.TrainModel(aNumClustersArray);
+        const std::vector<int> numClustersArray = { 2, 3, 4, 5 };
+        gmm.TrainModel(numClustersArray);
     }
     else // numClusters > 1
     {
-        const std::vector<int> aNumClustersArray = { numClusters };
-        aGMM.TrainModel(aNumClustersArray);
+        const std::vector<int> numClustersArray = { numClusters };
+        gmm.TrainModel(numClustersArray);
     }
 
-    aGMM.GetClusterLabels(clusterLabels, labelConfidence);
+    gmm.GetClusterLabels(clusterLabels, labelConfidence);
 
     return 0;
 }
