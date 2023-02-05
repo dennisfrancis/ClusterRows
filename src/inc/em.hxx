@@ -67,7 +67,7 @@ public:
     void GetClusterLabels(int* clusterLabels, double* labelConfidence);
 
 private:
-    double dnorm(double fX, double fMean, double fStd);
+    static double dnorm(double fX, double fMean, double fStd);
     void initParms();
     double runEpoch(int epochIndex, std::vector<double>& epochLabelConfidence,
                     std::vector<int>& epochClusterLabels, std::vector<double>& tmpLabelConfidence,
