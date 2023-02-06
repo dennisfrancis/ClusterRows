@@ -161,8 +161,8 @@ em::GMMModel::GMMModel(const int numClusters, const GMM& rTrainer, int numEpochs
         m_weights[sampleIdx].resize(m_numClusters);
 
     m_phi.resize(m_numClusters);
-    double fPhi = (1.0 / static_cast<double>(m_numClusters));
-    std::fill_n(m_phi.begin(), m_numClusters, fPhi);
+    double phi = (1.0 / static_cast<double>(m_numClusters));
+    std::fill_n(m_phi.begin(), m_numClusters, phi);
 
     m_means.resize(m_numClusters);
     m_std.resize(m_numClusters);
