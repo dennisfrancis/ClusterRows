@@ -125,7 +125,7 @@ void em::GMM::TrainModel(const std::vector<int>& numClustersArray)
 {
     std::unique_ptr<GMMModel> pModel;
     double bestBIC = 9999999;
-    int bestNumClusters = 2;
+    int bestNumClusters = 1;
 
     for (int numClusters : numClustersArray)
     {
