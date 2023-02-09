@@ -60,6 +60,9 @@ TEST(GMMTests, ReturnErrorCases)
 
     ret = gmm(&data[0][0], rows, cols, 3, 10, 100, nullptr, confidence);
     EXPECT_EQ(ret, -1);
+
+    ret = gmm(&data[0][0], rows, cols, 3, 10, 100, labels, nullptr);
+    EXPECT_EQ(ret, -1);
 }
 
 TEST(GMMTests, ConstLabelCases)
