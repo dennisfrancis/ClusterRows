@@ -17,24 +17,24 @@
 import os
 import shutil
 import sys
+from pathlib import Path
 
 def main():
     home = os.path.expanduser("~")
-    pyextdir = home + "/.config/libreoffice/4/user/uno_packages/cache/uno_packages"
-    exts = list(filter(os.path.isdir, (os.path.join(pyextdir, x) for x in os.listdir(pyextdir))))
+    pyextdir = Path(home) / ".config/libreoffice/4/user/uno_packages/cache/uno_packages"
+    exts = (extensions for extensions in pyextdir.iterdir() if extensions.is_dir())
     for ext in exts:
-        roots = [ x for x in os.listdir(ext) if x.endswith(".oxt") and x.startswith("ClusterRows-") ]
+        roots = [ x for x in ext.iterdir() if x.is_dir() and x.suffix == ".oxt" and x.stem.startswith("ClusterRows-") ]
         if len(roots) > 0:
-            log = os.path.join(ext, roots[0], "log.txt")
-            if not os.path.isfile(log):
+            log = roots[0] / "log.txt"
+            if (not log.exists()) or (not log.is_file()):
                 print("Seems ClusterRows extension was never used after install!")
                 return
-            print("logfile is " + log)
+            print("logfile is {}".format(log))
             with open(log, "rb") as f:
                 shutil.copyfileobj(f, sys.stdout.buffer)
             return
     print("Cannot find ClusterRows extension installation directory!")
-    print(exts)
 
 if __name__ == '__main__':
     main()
