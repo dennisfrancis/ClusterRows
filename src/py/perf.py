@@ -24,7 +24,7 @@ class PerfTimer(object):
         self.indent = '  ' * level
         self.logger = logger
         if self.showStart:
-            self.print(f'{self.indent}{self.name} START')
+            self.print(f"{self.indent}{self.name} START")
         self.start = time.time()
 
     def print(self, msg: str):
@@ -43,5 +43,5 @@ class PerfTimer(object):
 
     def reset(self):
         if self.showStart:
-            self.print(f'{self.indent}{self.name} RESTART')
+            self.print(f"{self.indent}{self.name} RESTART")
         self.start = time.time()
