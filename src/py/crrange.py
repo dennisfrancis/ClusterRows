@@ -45,7 +45,7 @@ def cellAddressToString(col, row, absolute = True, sheet = None) -> str:
     else:
         return f"${sheet}.{buf.decode()}"
 
-def sheetName(sheetNum, document):
+def sheetName(sheetNum, document) -> str:
     return document.Sheets[sheetNum].Name
 
 def cellRangeToString(cellRange, document) -> str:
@@ -100,6 +100,6 @@ def stringToCellRange(rangeStr: str, document):
     rangeObj = stringToRangeObj(rangeStr, document)
     return None if rangeObj is None else rangeObj.getRangeAddress()
 
-def isStringRangeValid(rangeStr: str, document):
+def isStringRangeValid(rangeStr: str, document) -> bool:
     rangeObj = stringToRangeObj(rangeStr, document)
     return False if rangeObj is None else True
