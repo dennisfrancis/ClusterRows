@@ -35,11 +35,11 @@ class PerfTimer(object):
 
     def elapsedMSFormatted(self, prec = 2) -> str:
         s = time.time() - self.start
-        return '{} ms'.format(round(s * 1000, prec))
+        return "{} ms".format(round(s * 1000, prec))
 
     def show(self):
         end = " END" if self.showStart else ""
-        self.print(f'{self.indent}{self.name}{end} : {self.elapsedMSFormatted()}')
+        self.print(f"{self.indent}{self.name}{end} : {self.elapsedMSFormatted()}")
 
     def reset(self):
         if self.showStart:
