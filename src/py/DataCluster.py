@@ -46,7 +46,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         self.logger.debug("INIT DataClusterImpl")
         self.logger.debug(self.platvars)
         if not self.testMode:
-            self.logger.debug(f'extension path = {self._getExtensionPath()}')
+            self.logger.debug(f"extension path = {self._getExtensionPath()}")
 
     @staticmethod
     def createInstance(ctx):
@@ -66,7 +66,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
 
     def _getExtensionPath(self) -> str:
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-        extension_uri = piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRows')
+        extension_uri = piProvider.getPackageLocation("com.github.dennisfrancis.ClusterRows")
         return unohelper.fileUrlToSystemPath(extension_uri)
 
     def _getLogPath(self) -> str:
@@ -75,7 +75,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
     def _getGMMLibPath(self) -> str:
         fname = self.platvars.dllName
         if self.testMode:
-            return os.path.normpath(os.path.join('build', self.platvars.osName, fname))
+            return os.path.normpath(os.path.join("build", self.platvars.osName, fname))
 
         extension_path = self._getExtensionPath()
         return os.path.normpath(os.path.join(extension_path, fname))
@@ -95,7 +95,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         if numClusters is None: numClusters = 0
         if numEpochs is None: numEpochs = 10
         if numIterations is None: numIterations = 100
-        self.logger.debug(f'Params: numClusters = {numClusters} numEpochs = {numEpochs} numIterations = {numIterations}')
+        self.logger.debug(f"Params: numClusters = {numClusters} numEpochs = {numEpochs} numIterations = {numIterations}")
         if (not DataClusterImpl._isNumeric(numClusters)) \
             or (not DataClusterImpl._isNumeric(numEpochs)) \
                 or (not DataClusterImpl._isNumeric(numIterations)) \
