@@ -56,7 +56,7 @@ class CRJobImpl(unohelper.Base, XJob):
         self.logger.debug(self.platvars)
         self.dialog = None
         if not self.testMode:
-            self.logger.debug(f'extension path = {self._getExtensionPath()}')
+            self.logger.debug(f"extension path = {self._getExtensionPath()}")
 
     @staticmethod
     def createInstance(ctx):
@@ -72,14 +72,14 @@ class CRJobImpl(unohelper.Base, XJob):
 
     def _getExtensionURL(self):
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-        return piProvider.getPackageLocation('com.github.dennisfrancis.ClusterRows')
+        return piProvider.getPackageLocation("com.github.dennisfrancis.ClusterRows")
 
     def _getExtensionPath(self) -> str:
         extension_uri = self._getExtensionURL()
         return unohelper.fileUrlToSystemPath(extension_uri)
 
     def _getLogPath(self) -> str:
-        return os.path.join('build', self.platvars.osName) if self.testMode else self._getExtensionPath()
+        return os.path.join("build", self.platvars.osName) if self.testMode else self._getExtensionPath()
 
     def _getSuccessReturn(self):
         if self.envType != "DISPATCH":
@@ -164,7 +164,7 @@ class CRJobImpl(unohelper.Base, XJob):
             return ()
 
         self.logger.debug("CRJobImpl.execute: _parseArgs succeeded")
-        self.logger.debug(f'CRJobImpl.execute: envType = {self.envType}, eventName = {self.eventName}, \n\tframe = {self.frame}\n\tmodel = {self.model}')
+        self.logger.debug(f"CRJobImpl.execute: envType = {self.envType}, eventName = {self.eventName}, \n\tframe = {self.frame}\n\tmodel = {self.model}")
 
         if self.eventName == "onClusterRowsReqDialog":
             self._launchClusterDialog()
@@ -634,7 +634,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 def selectRange(rangeAddress, document, logger):
     rangeObj = crrange.rangeAddressToObject(rangeAddress, document)
     if rangeObj is None:
-        logger.error('global.selectRange: crrange.stringToRangeObj returned None!')
+        logger.error("global.selectRange: crrange.stringToRangeObj returned None!")
         return
     document.getCurrentController().select(rangeObj)
 
