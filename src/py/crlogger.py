@@ -17,7 +17,7 @@
 import logging
 from pathlib import Path, PurePath
 
-_logPath = '.'
+_logPath = "."
 _logger = None
 
 def setupLogger(logPath: str) -> logging.Logger:
@@ -30,7 +30,7 @@ def setupLogger(logPath: str) -> logging.Logger:
     _logger = logging.getLogger()
     _logger.setLevel(logging.DEBUG)
     logfile = str(PurePath(_logPath, "log.txt"))
-    fh = logging.FileHandler(logfile, mode='a', encoding=None, delay=False)
+    fh = logging.FileHandler(logfile, mode="a", encoding=None, delay=False)
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
