@@ -20,7 +20,7 @@ class CRPlatForm(object):
     def __init__(self):
         self._addMembers()
 
-    def _addMembers(self):
+    def _addMembers(self) -> None:
         if sys.platform == "linux" or sys.platform == "linux2":
             self.dllName = "libgmm.so"
             self.osName = "linux"
@@ -31,5 +31,5 @@ class CRPlatForm(object):
             self.dllName = "libgmm.dll"
             self.osName = "windows"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'CRPlatform(dllName={self.dllName}, osName={self.osName})'
