@@ -32,4 +32,4 @@ class CRPlatForm(object):
             self.osName = "windows"
 
     def __str__(self) -> str:
-        return f'CRPlatform(dllName={self.dllName}, osName={self.osName})'
+        return f"CRPlatform(dllName={self.dllName}, osName={self.osName})"
