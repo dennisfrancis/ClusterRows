@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 def cellAddressToString(col: int, row: int, absolute: bool = True, sheet: bool = None) -> str:
-    buf = bytearray('', encoding="utf-8")
-    aVal = ord('A')
-    dollarVal = ord('$')
+    buf = bytearray("", encoding="utf-8")
+    aVal = ord("A")
+    dollarVal = ord("$")
     if col < 26 * 26:
         if absolute:
             buf.append(dollarVal)
@@ -60,10 +60,10 @@ def cellRangeToString(cellRange, document) -> str:
         ":",
         cellAddressToString(cellRange.EndColumn, cellRange.EndRow),
     ]
-    return ''.join(parts)
+    return "".join(parts)
 
 def stringToRangeObj(rangeStr: str, document):
-    dotPos = rangeStr.find('.')
+    dotPos = rangeStr.find(".")
     sheet = None
     rangeStrSheet = rangeStr
     if dotPos != -1:
