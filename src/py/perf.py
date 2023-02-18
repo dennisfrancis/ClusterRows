@@ -18,7 +18,7 @@ import logging
 import time
 
 class PerfTimer(object):
-    def __init__(self, name, showStart=False, level=0, logger: logging.Logger=None):
+    def __init__(self, name: str, showStart: bool = False, level: int = 0, logger: logging.Logger = None):
         self.name = name
         self.showStart = showStart
         self.indent = '  ' * level
@@ -33,7 +33,7 @@ class PerfTimer(object):
         else:
             print(msg, flush=True)
 
-    def elapsedMSFormatted(self, prec = 2) -> str:
+    def elapsedMSFormatted(self, prec: int = 2) -> str:
         s = time.time() - self.start
         return "{} ms".format(round(s * 1000, prec))
 
