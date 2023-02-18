@@ -70,7 +70,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         return unohelper.fileUrlToSystemPath(extension_uri)
 
     def _getLogPath(self) -> str:
-        return os.path.join('build', self.platvars.osName) if self.testMode else self._getExtensionPath()
+        return os.path.join("build", self.platvars.osName) if self.testMode else self._getExtensionPath()
 
     def _getGMMLibPath(self) -> str:
         fname = self.platvars.dllName
