@@ -4,7 +4,7 @@ import os
 import inspect
 import random
 
-sys.path.append('/usr/lib/libreoffice/program')
+sys.path.append("/usr/lib/libreoffice/program")
 
 cmd_folder = os.path.realpath(
     os.path.abspath(
@@ -21,5 +21,5 @@ def main():
     ret = clusterImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
     print(ret)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

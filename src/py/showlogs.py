@@ -19,7 +19,7 @@ import shutil
 import sys
 from pathlib import Path
 
-def main():
+def main() -> None:
     home = os.path.expanduser("~")
     pyextdir = Path(home) / ".config/libreoffice/4/user/uno_packages/cache/uno_packages"
     exts = (extensions for extensions in pyextdir.iterdir() if extensions.is_dir())
@@ -36,5 +36,5 @@ def main():
             return
     print("Cannot find ClusterRows extension installation directory!")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
