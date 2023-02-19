@@ -27,7 +27,7 @@ class PerfTimer(object):
             self.print(f"{self.indent}{self.name} START")
         self.start = time.time()
 
-    def print(self, msg: str):
+    def print(self, msg: str) -> None:
         if self.logger:
             self.logger.debug(msg)
         else:
@@ -37,11 +37,11 @@ class PerfTimer(object):
         s = time.time() - self.start
         return "{} ms".format(round(s * 1000, prec))
 
-    def show(self):
+    def show(self) -> None:
         end = " END" if self.showStart else ""
         self.print(f"{self.indent}{self.name}{end} : {self.elapsedMSFormatted()}")
 
-    def reset(self):
+    def reset(self) -> None:
         if self.showStart:
             self.print(f"{self.indent}{self.name} RESTART")
         self.start = time.time()
