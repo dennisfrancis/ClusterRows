@@ -28,9 +28,9 @@ testing::AssertionResult hasCorrectConstLabels(const int* labels, const double* 
 {
     constexpr double precision = 0.01;
     if (!labels)
-        return testing::AssertionFailure() << "labels in null";
+        return testing::AssertionFailure() << "labels is null";
     if (!confidences)
-        return testing::AssertionFailure() << "confidences in null";
+        return testing::AssertionFailure() << "confidences is null";
 
     for (int idx = 0; idx < samples; ++idx)
     {
