@@ -6,9 +6,12 @@ import random
 
 sys.path.append("/usr/lib/libreoffice/program")
 
-cmd_folder = os.path.realpath(
+curFrame = inspect.currentframe()
+assert not curFrame is None
+
+cmd_folder: str = os.path.realpath(
     os.path.abspath(
-        os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+        os.path.split(inspect.getfile(curFrame))[0]))
 
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
