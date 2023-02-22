@@ -80,7 +80,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         extension_path = self._getExtensionPath()
         return os.path.normpath(os.path.join(extension_path, fname))
 
-    def gmmCluster(self, data: Tuple[Tuple[float]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float]]:
+    def gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float, ...]]:
         """Compute clusters for each row of input data matrix with
         the given parameters"""
         ret = ((-1, 0),)
@@ -90,7 +90,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
             self.logger.exception("_gmmCluster crashed.")
         return ret
 
-    def _gmmCluster(self, data: Tuple[Tuple[float]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float]]:
+    def _gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float, ...]]:
         mainPerf = PerfTimer("gmmCluster", showStart=True, logger=self.logger)
         if numClusters is None: numClusters = 0
         if numEpochs is None: numEpochs = 10

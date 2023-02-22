@@ -4,6 +4,8 @@ import os
 import inspect
 import random
 
+from typing import Tuple
+
 sys.path.append("/usr/lib/libreoffice/program")
 
 curFrame = inspect.currentframe()
@@ -20,7 +22,7 @@ import DataCluster
 
 def main():
     clusterImpl = DataCluster.DataClusterImpl({}, testMode=True)
-    data = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
+    data: Tuple[Tuple[float, float]] = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
     ret = clusterImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
     print(ret)
 
