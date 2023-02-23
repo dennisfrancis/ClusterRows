@@ -21,9 +21,12 @@ import sys
 import inspect
 import os
 
+cur_frame = inspect.currentframe()
+assert not cur_frame is None
+
 cmd_folder = os.path.realpath(
     os.path.abspath(
-        os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+        os.path.split(inspect.getfile(cur_frame))[0]))
 
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
