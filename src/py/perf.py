@@ -18,7 +18,7 @@ import logging
 import time
 
 class PerfTimer(object):
-    def __init__(self, name: str, showStart: bool = False, level: int = 0, logger: logging.Logger = None):
+    def __init__(self, name: str, showStart: bool = False, level: int = 0, logger: logging.Logger | None = None):
         self.name = name
         self.showStart = showStart
         self.indent = '  ' * level
