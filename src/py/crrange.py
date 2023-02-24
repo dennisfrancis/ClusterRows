@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def cellAddressToString(col: int, row: int, absolute: bool = True, sheet: bool = None) -> str:
+def cellAddressToString(col: int, row: int, absolute: bool = True, sheet: str | None = None) -> str:
     buf = bytearray("", encoding="utf-8")
     aVal = ord("A")
     dollarVal = ord("$")
