@@ -9,5 +9,5 @@ class XJob:
     def __init__(self):
         return
 
-    def execute(self, args: Tuple[NameValue]) -> None:
+    def execute(self, args: Tuple[NameValue, ...]) -> None:
         return
