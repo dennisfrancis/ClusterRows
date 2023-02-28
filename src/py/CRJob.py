@@ -174,16 +174,23 @@ class CRJobImpl(unohelper.Base, XJob):
 
         return self._getSuccessReturn()
 
-class CellAddress(object):
-    def __init__(self, row = -1, col = -1, sheet = -1):
+class CellAddress:
+    def __init__(self, row: int = -1, col: int = -1, sheet: int = -1):
         self.row = row
         self.col = col
         self.sheet = sheet
 
+class RangeAddress:
+    def __init__(self, colStart: int, rowStart: int, colEnd: int, rowEnd: int, sheet: int):
+        self.StartColumn = colStart
+        self.StartRow = rowStart
+        self.EndColumn = colEnd
+        self.EndRow = rowEnd
+
 class GMMArgs(object):
-    def __init__(self, numClusters = 0, numEpochs = 10, numIterations = 100, colorRows = True, hasHeader = False):
-        self.rangeAddr = None
-        self.outputAddr = CellAddress()
+    def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False):
+        self.rangeAddr: RangeAddress | None = None
+        self.outputAddr: CellAddress = CellAddress()
         self.numClusters = numClusters
         self.numEpochs = numEpochs
         self.numIterations = numIterations
@@ -191,8 +198,11 @@ class GMMArgs(object):
         self.hasHeader = hasHeader
 
     def __str__(self):
-        rangeAddrStr = f"\n\t\tcols=[{self.rangeAddr.StartColumn}, {self.rangeAddr.EndColumn}]"
-        rangeAddrStr += f"\n\t\trows=[{self.rangeAddr.StartRow}, {self.rangeAddr.EndRow}]\n\t\tsheet={self.rangeAddr.Sheet}"
+        if not self.rangeAddr is None:
+            rangeAddrStr = f"\n\t\tcols=[{self.rangeAddr.StartColumn}, {self.rangeAddr.EndColumn}]"
+            rangeAddrStr += f"\n\t\trows=[{self.rangeAddr.StartRow}, {self.rangeAddr.EndRow}]\n\t\tsheet={self.rangeAddr.Sheet}"
+        else:
+            rangeAddrStr = "{UnknownAddress}"
         outputAddrStr = f"\n\t\tcol = {self.outputAddr.col}, row = {self.outputAddr.row}, sheet = {self.outputAddr.sheet}"
         paramStr = f"numClusters = {self.numClusters}, numEpochs = {self.numEpochs}, numIterations = {self.numIterations}"
         paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}"
