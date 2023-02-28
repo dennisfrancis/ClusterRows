@@ -208,8 +208,10 @@ class GMMArgs(object):
         paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}"
         return f"GMMArgs(\n\trangeAddr({rangeAddrStr}),\n\toutputAddr({outputAddrStr})\n\t{paramStr})"
 
-    def rows(self):
+    def rows(self) -> int:
         """Returns the number of rows in the range"""
+        if self.rangeAddr is None:
+            return 0
         return self.rangeAddr.EndRow - self.rangeAddr.StartRow + 1
 
     def drows(self):
