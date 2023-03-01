@@ -214,13 +214,15 @@ class GMMArgs(object):
             return 0
         return self.rangeAddr.EndRow - self.rangeAddr.StartRow + 1
 
-    def drows(self):
+    def drows(self) -> int:
         """Returns the number of data rows"""
         rowCount = self.rows()
         return rowCount - 1 if self.hasHeader else rowCount
 
-    def dcols(self):
+    def dcols(self) -> int:
         """Returns the number of data columns"""
+        if self.rangeAddr is None:
+            return 0
         return self.rangeAddr.EndColumn - self.rangeAddr.StartColumn + 1
 
     def updateOutputLocation(self):
