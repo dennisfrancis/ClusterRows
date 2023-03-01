@@ -186,6 +186,7 @@ class RangeAddress:
         self.StartRow = rowStart
         self.EndColumn = colEnd
         self.EndRow = rowEnd
+        self.Sheet = sheet
 
 class GMMArgs(object):
     def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False):
