@@ -191,7 +191,7 @@ class RangeAddress:
 class GMMArgs(object):
     def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False):
         self.rangeAddr: RangeAddress | None = None
-        self.outputAddr: CellAddress = CellAddress()
+        self.outputAddr: CellAddress | None = CellAddress()
         self.numClusters = numClusters
         self.numEpochs = numEpochs
         self.numIterations = numIterations
@@ -204,7 +204,10 @@ class GMMArgs(object):
             rangeAddrStr += f"\n\t\trows=[{self.rangeAddr.StartRow}, {self.rangeAddr.EndRow}]\n\t\tsheet={self.rangeAddr.Sheet}"
         else:
             rangeAddrStr = "{UnknownAddress}"
-        outputAddrStr = f"\n\t\tcol = {self.outputAddr.col}, row = {self.outputAddr.row}, sheet = {self.outputAddr.sheet}"
+        if self.outputAddr is None:
+            outputAddrStr = "{UnknownAddress}"
+        else:
+            outputAddrStr = f"\n\t\tcol = {self.outputAddr.col}, row = {self.outputAddr.row}, sheet = {self.outputAddr.sheet}"
         paramStr = f"numClusters = {self.numClusters}, numEpochs = {self.numEpochs}, numIterations = {self.numIterations}"
         paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}"
         return f"GMMArgs(\n\trangeAddr({rangeAddrStr}),\n\toutputAddr({outputAddrStr})\n\t{paramStr})"
