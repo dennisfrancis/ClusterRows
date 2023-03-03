@@ -73,7 +73,7 @@ class CRJobImpl(unohelper.Base, XJob):
     def getServiceNames() -> Tuple[str]:
         return ("com.sun.star.task.Job",)
 
-    def _getExtensionURL(self):
+    def _getExtensionURL(self) -> str:
         piProvider = self.ctx.getByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
         return piProvider.getPackageLocation("com.github.dennisfrancis.ClusterRows")
 
