@@ -39,7 +39,7 @@ import unohelper
 import uno
 
 from com.sun.star.task import XJob
-from com.sun.star.awt import XDialogEventHandler, XTextListener, XItemListener
+from com.sun.star.awt import XDialogEventHandler, XTextListener, XItemListener, XDialog, XDialogProvider2
 from com.sun.star.sheet import XRangeSelectionListener
 from com.sun.star.frame.DispatchResultState import SUCCESS
 from com.sun.star.sheet.GeneralFunction import MAX as GeneralFunction_MAX
@@ -57,7 +57,7 @@ class CRJobImpl(unohelper.Base, XJob):
         self.logger = crlogger.setupLogger(self._getLogPath())
         self.logger.debug("INIT CRJobImpl")
         self.logger.debug(self.platvars)
-        self.dialog = None
+        self.dialog: XDialog | None = None
         if not self.testMode:
             self.logger.debug(f"extension path = {self._getExtensionPath()}")
 
@@ -129,7 +129,7 @@ class CRJobImpl(unohelper.Base, XJob):
             self.dialog.setVisible(True)
             return True
 
-        dialogProvider = self.ctx.getServiceManager() \
+        dialogProvider: XDialogProvider2 = self.ctx.getServiceManager() \
             .createInstanceWithContext("com.sun.star.awt.DialogProvider2", self.ctx)
         if dialogProvider is None:
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialogProvider!")
@@ -142,6 +142,8 @@ class CRJobImpl(unohelper.Base, XJob):
             self.logger.error("CRJobImpl._createDialogAndExecute: cannot create dialog!")
             return False
 
+        if self.dialog is None:
+            return False
         dlgHandler.setDialog(self.dialog)
         dlgHandler.setupControlHandlers()
         self.dialog.setVisible(True)
