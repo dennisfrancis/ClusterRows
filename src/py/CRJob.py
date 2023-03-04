@@ -273,7 +273,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.rangeListener = None
         self.settingControlValue = False
 
-    def setDialog(self, dialog):
+    def setDialog(self, dialog: XDialog) -> None:
         self.dialog = dialog
         self.setDialogRanges()
         self._markFieldError("LabelText_Error", hasError=True)
@@ -281,7 +281,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
     def _detectHeader(self):
         rangeAddr = self.gmmArgs.rangeAddr
-        if not rangeAddr:
+        if not rangeAddr or not self.dialog:
             return
         sheet = self.model.Sheets[rangeAddr.Sheet]
         foundHeader = False
@@ -294,6 +294,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog.getControl("CheckBox_HasHeader").setState(1 if foundHeader else 0)
 
     def setDialogRanges(self):
+        if not self.dialog:
+            return
         self.settingControlValue = True
         # input
         rangeAddr = self.gmmArgs.rangeAddr

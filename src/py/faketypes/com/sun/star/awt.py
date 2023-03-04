@@ -24,6 +24,19 @@ class XDialog(XWindow):
     def execute(self):
         return
 
+    def getControl(self, name: str) -> "XControl":
+        return XControl()
+
+class XControl:
+    def __init__(self):
+        return
+
+    def setState(self, state: int) -> None:
+        return
+
+    def setText(self, text: str) -> None:
+        return
+
 class XDialogProvider2:
     def __init__(self):
         return
