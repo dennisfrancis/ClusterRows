@@ -348,6 +348,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         return True
 
     def _onDataRangeSelected(self):
+        if self.rangeListener is None or self.dialog is None:
+            return
         if not self.rangeListener.failed:
             self.gmmArgs.rangeAddr = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
             self.gmmArgs.updateOutputLocation()
@@ -357,6 +359,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog.setVisible(True)
 
     def _onOutputLocationSelected(self):
+        if self.rangeListener is None or self.dialog is None:
+            return
         if not self.rangeListener.failed:
             cellRange = crrange.stringToCellRange(self.rangeListener.rangeStr, self.model)
             self.gmmArgs.setOutputLocation(cellRange)
@@ -665,7 +669,7 @@ def selectRange(rangeAddress, document, logger):
 
 
 class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
-    def __init__(self, dlgHandler, rlId):
+    def __init__(self, dlgHandler: CRDialogHandler, rlId: str):
         self.dlgHandler = dlgHandler
         self.rlId = rlId
         self.failed = False
