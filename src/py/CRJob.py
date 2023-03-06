@@ -370,11 +370,15 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog.setVisible(True)
 
     def _onRangeSelButtonPress(self):
+        if self.dialog is None:
+            return
         self.dialog.setVisible(False)
         rangeStr = crrange.cellRangeToString(self.gmmArgs.rangeAddr, self.model)
         self.startRangeSelection(windowTitle = "Select the data cell range", rlId = "input", initialRangeStr=rangeStr)
 
     def _onOutputSelButtonPress(self):
+        if self.dialog is None:
+            return
         self.dialog.setVisible(False)
         addr = self.gmmArgs.outputAddr
         if addr is None:
