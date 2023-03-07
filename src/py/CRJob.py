@@ -432,6 +432,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             self.logger.exception("CRDialogHandler.stopRangeSelection() crashed")
 
     def readDialogInputs(self):
+        if self.dialog is None:
+            return
         # input
         rangeStr = self.dialog.getControl("TextField_DataRange").getText()
         self.gmmArgs.rangeAddr = crrange.stringToCellRange(rangeStr, self.model)

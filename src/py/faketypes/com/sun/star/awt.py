@@ -34,8 +34,17 @@ class XControl:
     def setState(self, state: int) -> None:
         return
 
+    def getState(self) -> int:
+        return 0
+
+    def getValue(self) -> int:
+        return 0
+
     def setText(self, text: str) -> None:
         return
+
+    def getText(self) -> str:
+        return ''
 
 class XDialogProvider2:
     def __init__(self):
