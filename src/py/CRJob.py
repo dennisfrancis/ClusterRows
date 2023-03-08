@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Tuple
+from typing import Tuple, Any
 
 import sys
 import inspect
@@ -452,6 +452,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
 
     def writeResults(self):
         self.readDialogInputs()
+        if self.gmmArgs.rangeAddr is None or self.gmmArgs.outputAddr is None or self.dialog is None:
+            return
         dataRange = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
         dataRange.Sheet = self.gmmArgs.rangeAddr.Sheet
         dataRange.StartColumn = self.gmmArgs.rangeAddr.StartColumn
@@ -470,7 +472,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         if not undoMgr is None:
             undoMgr.enterUndoContext("ClusterRowsImpl_UNDO")
 
-        resRangeObj = crrange.rangeAddressToObject(resultsRange, self.model)
+        resRangeObj: Any = crrange.rangeAddressToObject(resultsRange, self.model)
         formulaName = "COM.GITHUB.DENNISFRANCIS.DATACLUSTER.GMMCLUSTER"
         rangeArg = crrange.cellRangeToString(dataRange, self.model)
         args = self.gmmArgs
