@@ -526,7 +526,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             self.logger.debug(f"CRDialogHandler._addClusterStyles: added cell style : {styleName} with backcolor = {hex(color)}")
 
     def _colorClusterData(self, dataRange, resultsRange):
-        rangeObj = crrange.rangeAddressToObject(dataRange, self.model)
+        rangeObj: Any = crrange.rangeAddressToObject(dataRange, self.model)
         cfEntries = rangeObj.getPropertyValue("ConditionalFormat")
         if cfEntries is None:
             self.logger.error("CRDialogHandler._colorClusterData: cannot get XSheetConditionalEntries from data range")
