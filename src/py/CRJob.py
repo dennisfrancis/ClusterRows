@@ -569,6 +569,9 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
             self.logger.exception("CRDialogHandler.validate() crashed.")
 
     def _validate(self):
+        if self.dialog is None:
+            return
+
         self.readDialogInputs()
 
         if self.dialog.getControl("TextField_DataRange").getText() == "":

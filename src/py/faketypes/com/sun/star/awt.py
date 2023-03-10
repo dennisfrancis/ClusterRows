@@ -17,16 +17,6 @@ class XWindow:
     def setVisible(self, flag: bool):
         return
 
-class XDialog(XWindow):
-    def __init__(self):
-        return
-
-    def execute(self):
-        return
-
-    def getControl(self, name: str) -> "XControl":
-        return XControl()
-
 class XControl:
     def __init__(self):
         return
@@ -45,6 +35,16 @@ class XControl:
 
     def getText(self) -> str:
         return ''
+
+class XDialog(XWindow):
+    def __init__(self):
+        return
+
+    def execute(self):
+        return
+
+    def getControl(self, name: str) -> XControl:
+        return XControl()
 
 class XDialogProvider2:
     def __init__(self):
