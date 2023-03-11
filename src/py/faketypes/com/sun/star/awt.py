@@ -36,6 +36,9 @@ class XControl:
     def getText(self) -> str:
         return ''
 
+    def getModel(self) -> Any:
+        return ()
+
 class XDialog(XWindow):
     def __init__(self):
         return

@@ -647,6 +647,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self._setStatus()
 
     def _setStatus(self, errMsg: str = ""):
+        if self.dialog is None:
+            return
         hasError = bool(errMsg)
         computeButton = self.dialog.getControl("CommandButton_OK")
         errorLabel = self.dialog.getControl("LabelText_Error")
