@@ -39,4 +39,5 @@ def setupLogger(logPath: str) -> logging.Logger:
     return _logger
 
 def getLogger() -> logging.Logger:
+    assert not _logger is None
     return _logger
