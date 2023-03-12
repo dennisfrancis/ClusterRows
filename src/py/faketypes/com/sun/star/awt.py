@@ -39,6 +39,18 @@ class XControl:
     def getModel(self) -> Any:
         return ()
 
+    def addTextListener(self, listener: Any) -> None:
+        return
+
+    def addItemListener(self, listener: Any) -> None:
+        return
+
+    def removeTextListener(self, listener: Any) -> None:
+        return
+
+    def removeItemListener(self, listener: Any) -> None:
+        return
+
 class XDialog(XWindow):
     def __init__(self):
         return

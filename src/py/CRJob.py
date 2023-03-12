@@ -655,11 +655,15 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         computeButton.getModel().setPropertyValue("Enabled", not hasError)
         errorLabel.setText(("Error: " + errMsg) if hasError else errMsg)
 
-    def _markFieldError(self, controlName, hasError = True, defColor = None):
+    def _markFieldError(self, controlName: str, hasError = True, defColor = None):
+        if self.dialog is None:
+            return
         model = self.dialog.getControl(controlName).getModel()
         model.setPropertyValue("TextColor", 0xff0000 if hasError else None)
 
     def setupControlHandlers(self):
+        if self.dialog is None:
+            return
         self.dataRangeTextListener = CRDataRangeTextListener(self)
         self.dialog.getControl("TextField_DataRange").addTextListener(self.dataRangeTextListener)
         self.dialog.getControl("TextField_OutputLocation").addTextListener(self.dataRangeTextListener)
@@ -667,6 +671,8 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.dialog.getControl("CheckBox_HasHeader").addItemListener(self.headerCheckBoxListener)
 
     def clearDialogControlHandlers(self):
+        if self.dialog is None:
+            return
         self.dialog.getControl("TextField_DataRange").removeTextListener(self.dataRangeTextListener)
         self.dialog.getControl("TextField_OutputLocation").removeTextListener(self.dataRangeTextListener)
         self.dialog.getControl("CheckBox_HasHeader").removeItemListener(self.headerCheckBoxListener)
