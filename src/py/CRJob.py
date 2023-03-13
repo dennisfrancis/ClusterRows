@@ -709,7 +709,7 @@ class CRRangeSelectionListener(unohelper.Base, XRangeSelectionListener):
 
 
 class CRDataRangeTextListener(unohelper.Base, XTextListener):
-    def __init__(self, dlgHandler):
+    def __init__(self, dlgHandler: CRDialogHandler):
         self.dlgHandler = dlgHandler
 
     def textChanged(self, e):
@@ -720,7 +720,7 @@ class CRDataRangeTextListener(unohelper.Base, XTextListener):
 
 
 class CRHeaderCheckBoxListener(unohelper.Base, XItemListener):
-    def __init__(self, dlgHandler):
+    def __init__(self, dlgHandler: CRDialogHandler):
         self.dlgHandler = dlgHandler
 
     def itemStateChanged(self, e):
