@@ -204,7 +204,7 @@ double em::GMMModel::dnorm(double x, double mean, double stddev)
 {
     const double scale = normDistScale / stddev;
     double arg = (x - mean) / stddev;
-    return exp(-0.5 * (arg * arg)) * scale;
+    return std::exp(-0.5 * (arg * arg)) * scale;
 }
 
 double em::GMMModel::Fit()
