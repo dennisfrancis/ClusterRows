@@ -61,7 +61,7 @@ extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, 
         return 0;
     }
 
-    em::DataMatrix mat(array, rows, cols);
+    util::DataMatrix mat(array, rows, cols);
 
     em::GMM gmm(array, rows, cols, numEpochs, numIterations);
     if (numClusters <= 0) // Auto computer optimum number of clusters
