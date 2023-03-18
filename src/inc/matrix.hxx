@@ -18,6 +18,7 @@
 
 #pragma once
 #include <memory>
+#include <cassert>
 
 namespace util
 {
@@ -32,13 +33,32 @@ public:
     {
     }
 
-    const double& at(int row, int col) const { return m_data[row * m_cols + col]; }
-    double& at(int row, int col) { return m_data[row * m_cols + col]; }
+    const double& at(int row, int col) const
+    {
+        assert_bounds(row, col);
+        return m_data[row * m_cols + col];
+    }
+    double& at(int row, int col)
+    {
+        assert_bounds(row, col);
+        return m_data[row * m_cols + col];
+    }
 
 private:
     std::unique_ptr<double[]> m_data;
     const int m_rows;
     const int m_cols;
-};
 
+#ifndef NDEBUG
+    void assert_bounds(int row, int col) const
+    {
+        assert(row >= 0);
+        assert(col >= 0);
+        assert(row < m_rows);
+        assert(col < m_cols);
+    }
+#else
+    void assert_bounds(int /*row*/, int /*col*/) const {}
+#endif
+};
 }
