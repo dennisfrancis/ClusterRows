@@ -127,12 +127,12 @@ void em::GMM::TrainModel(const std::vector<int>& numClustersArray)
 
     for (int numClusters : numClustersArray)
     {
-        pModel.reset(new GMMModel(numClusters, *this, mnNumEpochs, mnNumIter));
+        pModel = std::make_unique<GMMModel>(numClusters, *this, mnNumEpochs, mnNumIter);
         const double currBIC = pModel->Fit();
         if (currBIC < bestBIC)
         {
             bestBIC = currBIC;
-            mpBestModel.reset(pModel.release());
+            mpBestModel = std::move(pModel);
             bestNumClusters = numClusters;
         }
     }
