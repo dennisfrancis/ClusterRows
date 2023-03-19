@@ -22,8 +22,6 @@
 #include <cmath>
 #include <chrono>
 #include <random>
-#include <cstring>
-#include <algorithm>
 
 namespace
 {
