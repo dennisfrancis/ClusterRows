@@ -147,7 +147,7 @@ TEST(GMMTests, ThreeClusterCase)
     int ret = gmm(&data[0][0], rows, cols, numClusters, 40, 100, gmmLabels, gmmConfidences);
     EXPECT_EQ(ret, 0);
 
-    int confusion[numClusters][numClusters]{ 0 };
+    int confusion[numClusters][numClusters]{ { 0 } };
 
     for (int row = 0; row < rows; ++row)
     {
