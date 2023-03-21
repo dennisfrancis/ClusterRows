@@ -37,7 +37,7 @@ public:
     /// @param rTrainer GMM trainer object
     /// @param numEpochs desired number of epochs
     /// @param numIter desired number of iteration in each epoch
-    GMMModel(const int numClusters, const GMM& rTrainer, int numEpochs, int numIter);
+    GMMModel(int numClusters, const GMM& rTrainer, int numEpochs, int numIter);
     ~GMMModel() {}
 
     double Fit();
