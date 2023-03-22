@@ -38,7 +38,7 @@ public:
     /// @param numEpochs desired number of epochs
     /// @param numIter desired number of iteration in each epoch
     GMMModel(int numClusters, const GMM& rTrainer, int numEpochs, int numIter);
-    ~GMMModel() {}
+    ~GMMModel() = default;
 
     double Fit();
     void GetClusterLabels(int* clusterLabels, double* labelConfidence);
