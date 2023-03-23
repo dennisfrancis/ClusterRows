@@ -69,7 +69,7 @@ class GMM
 
 public:
     GMM(const double* pRows, int nRows, int nCols, int nNumEpochs, int nNumIter);
-    ~GMM() {}
+    ~GMM() = default;
 
     void TrainModel(const std::vector<int>& numClustersArray);
     void GetClusterLabels(int* clusterLabels, double* labelConfidence);
