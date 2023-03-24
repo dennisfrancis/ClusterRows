@@ -76,6 +76,7 @@ public:
 
 private:
     void computeStats();
+    [[nodiscard]]
     double getNormalized(int row, int col) const;
 
 private:
