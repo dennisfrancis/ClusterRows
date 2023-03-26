@@ -34,7 +34,13 @@ public:
     }
 
     Matrix(const Matrix& other) = delete;
-    
+    Matrix(Matrix&& other) noexcept
+        : m_data(std::move(other.m_data))
+        , m_rows(other.m_rows)
+        , m_cols(other.m_cols)
+    {
+    }
+
     const double& at(int row, int col) const
     {
         assert_bounds(row, col);
@@ -46,6 +52,7 @@ public:
         return m_data[row * m_cols + col];
     }
 
+    [[nodiscard]]
     Matrix dot(const Matrix& right) const;
 
 private:
