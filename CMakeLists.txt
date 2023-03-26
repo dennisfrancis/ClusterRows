@@ -199,8 +199,21 @@ if (NATIVE_BUILD)
             gtest_main
     )
 
+    add_executable(
+            utilTests
+            ${CMAKE_SOURCE_DIR}/test/utilTests.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
+    )
+    target_link_libraries(
+            utilTests
+            gtest_main
+    )
+    target_include_directories(utilTests PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
+
     include(GoogleTest)
     gtest_discover_tests(gmmTests)
+    gtest_discover_tests(utilTests)
+
 endif ()
 
 add_custom_target(

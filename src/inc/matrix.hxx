@@ -43,33 +43,22 @@ public:
 
     const double& at(int row, int col) const
     {
-        assert_bounds(row, col);
+        check_bounds(row, col);
         return m_data[row * m_cols + col];
     }
     double& at(int row, int col)
     {
-        assert_bounds(row, col);
+        check_bounds(row, col);
         return m_data[row * m_cols + col];
     }
 
-    [[nodiscard]]
-    Matrix dot(const Matrix& right) const;
+    [[nodiscard]] Matrix dot(const Matrix& right) const;
 
 private:
     std::unique_ptr<double[]> m_data;
     const int m_rows;
     const int m_cols;
 
-#ifndef NDEBUG
-    void assert_bounds(int row, int col) const
-    {
-        assert(row >= 0);
-        assert(col >= 0);
-        assert(row < m_rows);
-        assert(col < m_cols);
-    }
-#else
-    void assert_bounds(int /*row*/, int /*col*/) const {}
-#endif
+    void check_bounds(int row, int col) const;
 };
 }

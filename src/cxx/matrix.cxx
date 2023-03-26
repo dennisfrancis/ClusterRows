@@ -24,4 +24,10 @@ Matrix Matrix::dot(const Matrix& right) const
     return res;
 }
 
+void Matrix::check_bounds(int row, int col) const
+{
+    if (row < 0 || col < 0 || row >= m_rows || col >= m_cols)
+        throw std::out_of_range("Out of bounds element access");
+}
+
 }
