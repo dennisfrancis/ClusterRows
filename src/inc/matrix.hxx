@@ -52,6 +52,8 @@ public:
         return m_data[row * m_cols + col];
     }
 
+    Matrix dot(const Matrix& right) const;
+
 private:
     std::unique_ptr<double[]> m_data;
     const int m_rows;
