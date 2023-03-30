@@ -41,7 +41,7 @@ public:
     {
     }
 
-    const double& at(int row, int col) const
+    [[nodiscard]] const double& at(int row, int col) const
     {
         check_bounds(row, col);
         return m_data[row * m_cols + col];
