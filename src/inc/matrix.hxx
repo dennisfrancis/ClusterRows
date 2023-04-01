@@ -57,6 +57,7 @@ public:
     [[nodiscard]] Matrix dot(const Matrix& right) const;
 
     friend bool operator==(const Matrix& m1, const Matrix& m2);
+    friend bool operator==(const Matrix& m1, const double* m2);
 
 private:
     std::unique_ptr<double[]> m_data;
