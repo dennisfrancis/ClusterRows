@@ -77,13 +77,4 @@ bool operator==(const Matrix& m1, const Matrix& m2)
     return true;
 }
 
-bool operator==(const Matrix& m1, const double* m2)
-{
-    size_t size = m1.m_cols * m1.m_rows;
-    for (size_t i = 0; i < size; ++i)
-        if (std::abs(m1.m_data[i] - m2[i]) > 0.0001)
-            return false;
-    return true;
-}
-
 }
