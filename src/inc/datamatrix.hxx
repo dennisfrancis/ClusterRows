@@ -34,8 +34,6 @@ public:
     {
     }
 
-    ~DataMatrix() {}
-
     const double* operator[](int row) const { return pData + (row * m_cols); }
 
 private:
