@@ -64,4 +64,17 @@ Matrix::Matrix(const int rows, const int cols, const double* matrix)
     }
 }
 
+bool operator==(const Matrix& m1, const Matrix& m2)
+{
+    if (m1.m_cols != m2.m_cols || m1.m_rows != m2.m_rows)
+        return false;
+
+    size_t size = m1.m_cols * m1.m_rows;
+    for (size_t i = 0; i < size; ++i)
+        if (std::abs(m1.m_data[i] - m2.m_data[i]) > 0.0001)
+            return false;
+
+    return true;
+}
+
 }
