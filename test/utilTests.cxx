@@ -41,3 +41,24 @@ TEST(UtilTests, MatrixElementAccess)
     EXPECT_EQ(m1.at(0, 0), -100.0);
     EXPECT_ANY_THROW(m1.at(5, 3));
 }
+
+TEST(UtilTests, MatrixMultiplication)
+{
+    util::Matrix m1(2, 2);
+    constexpr int size = 2;
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j)
+            m1.at(i, j) = (i == j) ? (i + 1) : 0;
+    auto mres = m1.dot(m1);
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < size; ++j)
+        {
+            auto x = int(mres.at(i, j));
+            if (i == j)
+                EXPECT_EQ(x, (i + 1) * (i + 1));
+            else
+                EXPECT_EQ(x, 0);
+        }
+    }
+}
