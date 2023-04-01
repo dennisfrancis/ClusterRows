@@ -50,4 +50,18 @@ void Matrix::check_bounds(int row, int col) const
         throw std::out_of_range("Out of bounds element access");
 }
 
+Matrix::Matrix(const int rows, const int cols, const double* matrix)
+    : Matrix(rows, cols)
+{
+    for (int i = 0; i < rows; ++i)
+    {
+        size_t begin = i * cols;
+        for (int j = 0; j < cols; ++j)
+        {
+            size_t idx = begin + j;
+            m_data[idx] = matrix[idx];
+        }
+    }
+}
+
 }

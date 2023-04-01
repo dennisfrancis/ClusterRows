@@ -33,6 +33,8 @@ public:
     {
     }
 
+    Matrix(int rows, int cols, const double* matrix);
+
     Matrix(const Matrix& other) = delete;
     Matrix(Matrix&& other) noexcept
         : m_data(std::move(other.m_data))
@@ -44,12 +46,12 @@ public:
     [[nodiscard]] const double& at(int row, int col) const
     {
         check_bounds(row, col);
-        return m_data[row * m_cols + col];
+        return m_data[index(row, col)];
     }
     double& at(int row, int col)
     {
         check_bounds(row, col);
-        return m_data[row * m_cols + col];
+        return m_data[index(row, col)];
     }
 
     [[nodiscard]] Matrix dot(const Matrix& right) const;
@@ -60,5 +62,6 @@ private:
     const int m_cols;
 
     void check_bounds(int row, int col) const;
+    [[nodiscard]] inline size_t index(int row, int col) const { return row * m_cols + col; }
 };
 }
