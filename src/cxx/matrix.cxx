@@ -37,7 +37,7 @@ Matrix Matrix::dot(const Matrix& right) const
         {
             double val = 0;
             for (int inner = 0; inner < m_cols; ++inner)
-                val += at(row, inner) * at(inner, col);
+                val += at(row, inner) * right.at(inner, col);
             res.at(row, col) = val;
         }
     }
