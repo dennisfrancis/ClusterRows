@@ -44,11 +44,14 @@ TEST(UtilTests, MatrixElementAccess)
 
 TEST(UtilTests, MatrixMultiplication)
 {
-    constexpr int size = 2;
-    constexpr double mat[size][size] = { { 1, 0 }, { 0, 2 } };
-    constexpr double exp_res[size][size] = { { 1, 0 }, { 0, 4.1 } };
-    util::Matrix m1(size, size, reinterpret_cast<const double*>(mat));
-    util::Matrix exp_mres(size, size, reinterpret_cast<const double*>(exp_res));
-    auto mres = m1.dot(m1);
+    constexpr int size1 = 2;
+    constexpr int size2 = 3;
+    constexpr double matA[size1][size1] = { { 1, 2 }, { 3, 4 } };
+    constexpr double matB[size1][size2] = { { 1, 1, 1 }, { 1, 1, 1 } };
+    constexpr double exp_res[size1][size2] = { { 3, 3, 3 }, { 7, 7, 7 } };
+    util::Matrix mA(size1, size1, reinterpret_cast<const double*>(matA));
+    util::Matrix mB(size1, size2, reinterpret_cast<const double*>(matB));
+    util::Matrix exp_mres(size1, size2, reinterpret_cast<const double*>(exp_res));
+    auto mres = mA.dot(mB);
     EXPECT_EQ(mres, exp_mres);
 }
