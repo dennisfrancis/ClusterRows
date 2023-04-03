@@ -47,8 +47,8 @@ TEST(UtilTests, MatrixMultiplication)
     constexpr int size1 = 2;
     constexpr int size2 = 3;
     constexpr double matA[size1][size1] = { { 1, 2 }, { 3, 4 } };
-    constexpr double matB[size1][size2] = { { 1, 1, 1 }, { 1, 1, 1 } };
-    constexpr double exp_res[size1][size2] = { { 3, 3, 3 }, { 7, 7, 7 } };
+    constexpr double matB[size1][size2] = { { 1, 1, 1 }, { 1, 2, 3 } };
+    constexpr double exp_res[size1][size2] = { { 3, 5, 7 }, { 7, 11, 15 } };
     util::Matrix mA(size1, size1, reinterpret_cast<const double*>(matA));
     util::Matrix mB(size1, size2, reinterpret_cast<const double*>(matB));
     util::Matrix exp_mres(size1, size2, reinterpret_cast<const double*>(exp_res));
