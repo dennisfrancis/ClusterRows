@@ -42,6 +42,17 @@ TEST(UtilTests, MatrixElementAccess)
     EXPECT_ANY_THROW(m1.at(5, 3));
 }
 
+TEST(UtilTests, MatrixMultiplicationException)
+{
+    constexpr int size1 = 2;
+    constexpr int size2 = 3;
+    constexpr double matA[size1][size2] = { { 1, 3, 1 }, { 1, 7, 3 } };
+    constexpr double matB[size1][size2] = { { 1, 1, 1 }, { 1, 2, 3 } };
+    util::Matrix mA(size1, size2, reinterpret_cast<const double*>(matA));
+    util::Matrix mB(size1, size2, reinterpret_cast<const double*>(matB));
+    EXPECT_ANY_THROW(auto x = mA.dot(mB));
+}
+
 TEST(UtilTests, MatrixMultiplication)
 {
     constexpr int size1 = 2;
