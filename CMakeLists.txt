@@ -29,7 +29,7 @@ set(LO_REGMERGE "${LO_PATH}/program/regmerge")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_UNOPKG "${LO_PATH}/program/unopkg")
 
-add_library(gmm src/cxx/em.cxx src/cxx/logging.cxx src/cxx/matrix.cxx)
+add_library(gmm src/cxx/em.cxx src/cxx/logging.cxx src/cxx/matrix.cxx src/cxx/diagonal.cxx)
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
