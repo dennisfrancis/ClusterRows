@@ -22,6 +22,7 @@
 
 namespace util
 {
+class DiagonalMatrix;
 
 class Matrix
 {
@@ -55,6 +56,7 @@ public:
     }
 
     [[nodiscard]] Matrix dot(const Matrix& right) const;
+    [[nodiscard]] Matrix dot(const DiagonalMatrix& right) const;
 
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 

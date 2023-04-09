@@ -27,4 +27,11 @@ void DiagonalMatrix::check_bounds(int size) const
         throw std::out_of_range("Out of bounds element access");
 }
 
+DiagonalMatrix::DiagonalMatrix(int size, const double* diagonal_vector)
+    : DiagonalMatrix(size)
+{
+    for (int index = 0; index < size; ++index)
+        m_data[index] = diagonal_vector[index];
+}
+
 }

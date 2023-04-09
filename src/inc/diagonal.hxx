@@ -22,14 +22,19 @@
 namespace util
 {
 
+class Matrix;
 class DiagonalMatrix
 {
+    friend class Matrix;
+
 public:
     explicit DiagonalMatrix(const int size)
         : m_data(std::make_unique<double[]>(size))
         , m_size(size)
     {
     }
+
+    DiagonalMatrix(int size, const double* diagonal_vector);
 
     DiagonalMatrix(const DiagonalMatrix& other) = delete;
     DiagonalMatrix(DiagonalMatrix&& other) = default;

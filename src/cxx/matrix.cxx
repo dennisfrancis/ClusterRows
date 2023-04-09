@@ -17,6 +17,7 @@
 */
 
 #include "matrix.hxx"
+#include "diagonal.hxx"
 
 #include "stdexcept"
 
@@ -75,6 +76,25 @@ bool operator==(const Matrix& m1, const Matrix& m2)
             return false;
 
     return true;
+}
+Matrix Matrix::dot(const DiagonalMatrix& right) const
+{
+    if (m_cols != right.m_size)
+    {
+        throw std::runtime_error("dot: A.cols != BDiag.size");
+    }
+
+    Matrix res(m_rows, m_cols);
+    int index = 0;
+    for (int row = 0; row < m_rows; ++row)
+    {
+        for (int col = 0; col < m_cols; ++col)
+        {
+            res.m_data[index] = m_data[index] * right.m_data[col];
+            ++index;
+        }
+    }
+    return res;
 }
 
 }
