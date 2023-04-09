@@ -31,6 +31,9 @@ public:
     {
     }
 
+    DiagonalMatrix(const DiagonalMatrix& other) = delete;
+    DiagonalMatrix(DiagonalMatrix&& other) = default;
+
     [[nodiscard]] const double& at(int index) const
     {
         check_bounds(index);
