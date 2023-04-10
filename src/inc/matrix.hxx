@@ -37,12 +37,7 @@ public:
     Matrix(int rows, int cols, const double* matrix);
 
     Matrix(const Matrix& other) = delete;
-    Matrix(Matrix&& other) noexcept
-        : m_data(std::move(other.m_data))
-        , m_rows(other.m_rows)
-        , m_cols(other.m_cols)
-    {
-    }
+    Matrix(Matrix&& other) = default;
 
     [[nodiscard]] const double& at(int row, int col) const
     {
