@@ -53,6 +53,8 @@ public:
     [[nodiscard]] Matrix dot(const Matrix& right) const;
     [[nodiscard]] Matrix dot(const DiagonalMatrix& right) const;
 
+    [[nodiscard]] Matrix givens_rot(int col1, int col2, double theta) const;
+
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:

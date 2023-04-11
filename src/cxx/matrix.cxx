@@ -19,7 +19,8 @@
 #include "matrix.hxx"
 #include "diagonal.hxx"
 
-#include "stdexcept"
+#include <stdexcept>
+#include <cmath>
 
 namespace util
 {
@@ -93,6 +94,40 @@ Matrix Matrix::dot(const DiagonalMatrix& right) const
             res.m_data[index] = m_data[index] * right.m_data[col];
             ++index;
         }
+    }
+    return res;
+}
+Matrix Matrix::givens_rot(int col1, int col2, double theta) const
+{
+    if (col1 < 0 || col1 >= m_cols || col2 < 0 || col2 >= m_cols || col1 == col2)
+    {
+        throw std::runtime_error("givens_rot: invalid col1 and/or col2");
+    }
+    if (col1 > col2)
+        std::swap(col1, col2);
+
+    Matrix res(m_rows, m_cols);
+
+    double c = std::cos(theta);
+    double s = std::sin(theta);
+
+    int res_index = 0;
+    int row_begin_index = 0;
+    for (int i = 0; i < m_rows; ++i)
+    {
+        for (int j = 0; j < m_cols; ++j)
+        {
+            double& res_val = res.m_data[res_index];
+            if (j != col1 && j != col2)
+                res_val = m_data[res_index];
+            else if (j == col1)
+                res_val = m_data[res_index] * c + m_data[row_begin_index + col2] * s;
+            else /* j == col2 */
+                res_val = m_data[res_index] * c - m_data[row_begin_index + col1] * s;
+
+            ++res_index;
+        }
+        row_begin_index += m_cols;
     }
     return res;
 }
