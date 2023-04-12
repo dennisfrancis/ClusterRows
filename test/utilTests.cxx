@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include "matrix.hxx"
 #include "diagonal.hxx"
+#include <cmath>
 
 TEST(UtilTests, MatrixMoveConstructor)
 {
@@ -81,4 +82,48 @@ TEST(UtilTests, MatrixMultDiagonal)
 
     auto mres = mA.dot(mDiag);
     EXPECT_EQ(mres, exp_mres);
+}
+
+TEST(UtilTests, MatrixGivensRotation)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 6;
+    constexpr double matA[rows][cols]
+        = { { 1, 2, 3, 4, 2, 5 }, { 2, 1, 3, 4, 1, 8 }, { 4, 3, 2, 1, 5, 2 } };
+    double matGivens[cols][cols];
+    constexpr double theta = M_PI * 35.0 / 180;
+    const double c = std::cos(theta);
+    const double s = std::sin(theta);
+
+    constexpr int col1 = 1;
+    constexpr int col2 = 2;
+    for (int i = 0; i < cols; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            if (i == j)
+            {
+                if (j != col1 && j != col2)
+                    matGivens[i][j] = 1.0;
+                else
+                    matGivens[i][j] = c;
+            }
+            else
+            {
+                if (i == col2 && j == col1)
+                    matGivens[i][j] = s;
+                else if (i == col1 && j == col2)
+                    matGivens[i][j] = -s;
+                else
+                    matGivens[i][j] = 0.0;
+            }
+        }
+    }
+
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    util::Matrix mGivens(cols, cols, reinterpret_cast<const double*>(matGivens));
+    util::Matrix expected = mA.dot(mGivens);
+    util::Matrix actual = mA.givens_rot(col1, col2, theta);
+
+    EXPECT_EQ(actual, expected);
 }
