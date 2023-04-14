@@ -58,6 +58,8 @@ public:
     [[nodiscard]] int rows() const { return m_rows; }
     [[nodiscard]] int cols() const { return m_cols; }
 
+    void set_identity();
+
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:

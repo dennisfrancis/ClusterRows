@@ -129,5 +129,22 @@ Matrix::Matrix(const Matrix& other)
 {
     std::copy_n(other.m_data.get(), m_rows * m_cols, m_data.get());
 }
+void Matrix::set_identity()
+{
+    if (m_rows != m_cols)
+    {
+        throw std::runtime_error("set_identity: should be a square matrix!");
+    }
+
+    int index = 0;
+    for (int i = 0; i < m_rows; ++i)
+    {
+        for (int j = 0; j < m_rows; ++j)
+        {
+            m_data[index] = (i == j) ? 1.0 : 0.0;
+            ++index;
+        }
+    }
+}
 
 }
