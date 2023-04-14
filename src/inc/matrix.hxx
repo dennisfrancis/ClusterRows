@@ -36,7 +36,7 @@ public:
 
     Matrix(int rows, int cols, const double* matrix);
 
-    Matrix(const Matrix& other) = delete;
+    Matrix(const Matrix& other);
     Matrix(Matrix&& other) = default;
 
     [[nodiscard]] const double& at(int row, int col) const
@@ -54,6 +54,9 @@ public:
     [[nodiscard]] Matrix dot(const DiagonalMatrix& right) const;
 
     [[nodiscard]] Matrix givens_rot(int col1, int col2, double theta) const;
+
+    [[nodiscard]] int rows() const { return m_rows; }
+    [[nodiscard]] int cols() const { return m_cols; }
 
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 

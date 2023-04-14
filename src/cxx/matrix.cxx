@@ -21,6 +21,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <algorithm>
 
 namespace util
 {
@@ -130,6 +131,11 @@ Matrix Matrix::givens_rot(int col1, int col2, double theta) const
         row_begin_index += m_cols;
     }
     return res;
+}
+Matrix::Matrix(const Matrix& other)
+    : Matrix(other.m_rows, other.m_cols)
+{
+    std::copy_n(other.m_data.get(), m_rows * m_cols, m_data.get());
 }
 
 }
