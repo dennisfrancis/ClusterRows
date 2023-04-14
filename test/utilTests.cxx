@@ -127,3 +127,16 @@ TEST(UtilTests, MatrixGivensRotation)
 
     EXPECT_EQ(actual, expected);
 }
+
+TEST(UtilTests, IdentityMatrix)
+{
+    constexpr int size = 4;
+    constexpr double matA[size][size]
+        = { { 1, 2, 3, 4 }, { 2, 1, 3, 4 }, { 4, 3, 2, 1 }, { 4, 2, 3, 1 } };
+
+    util::Matrix mA(size, size, reinterpret_cast<const double*>(matA));
+    util::Matrix I(size, size);
+    I.set_identity();
+
+    EXPECT_EQ(mA.dot(I), mA);
+}
