@@ -60,6 +60,8 @@ public:
 
     void set_identity();
 
+    [[nodiscard]] double sum_of_squares() const;
+
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:

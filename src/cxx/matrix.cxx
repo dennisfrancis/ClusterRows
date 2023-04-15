@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 
 namespace util
 {
@@ -145,6 +146,12 @@ void Matrix::set_identity()
             ++index;
         }
     }
+}
+double Matrix::sum_of_squares() const
+{
+    const auto begin = m_data.get();
+    const auto end = begin + (m_rows * m_cols);
+    return std::inner_product(begin, end, begin, 0.0);
 }
 
 }
