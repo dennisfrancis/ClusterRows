@@ -140,3 +140,14 @@ TEST(UtilTests, IdentityMatrix)
 
     EXPECT_EQ(mA.dot(I), mA);
 }
+
+TEST(UtilTests, SumOfSquares)
+{
+    constexpr int rows = 2;
+    constexpr int cols = 3;
+    constexpr double matA[rows][cols] = { { 1, 2, 3 }, { 4, 7, 5 } };
+
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+
+    EXPECT_EQ(mA.sum_of_squares(), 1 + 4 + 9 + 16 + 49 + 25);
+}
