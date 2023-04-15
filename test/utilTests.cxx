@@ -151,3 +151,14 @@ TEST(UtilTests, SumOfSquares)
 
     EXPECT_EQ(mA.sum_of_squares(), 1 + 4 + 9 + 16 + 49 + 25);
 }
+
+TEST(UtilTests, ColumnsInnerProduct)
+{
+    constexpr int rows = 2;
+    constexpr int cols = 3;
+    constexpr double matA[rows][cols] = { { 1, 2, -3 }, { 4, 7, 5 } };
+
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+
+    EXPECT_EQ(mA.cols_inner_product(0, 2), 1 * (-3) + 4 * 5);
+}
