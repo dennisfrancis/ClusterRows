@@ -153,5 +153,21 @@ double Matrix::sum_of_squares() const
     const auto end = begin + (m_rows * m_cols);
     return std::inner_product(begin, end, begin, 0.0);
 }
+double Matrix::cols_inner_product(int col1, int col2) const
+{
+    if (col1 < 0 || col2 < 0 || col1 >= m_cols || col2 >= m_cols)
+    {
+        throw std::runtime_error("cols_inner_product: invalid col1 or col2");
+    }
+
+    int row_start = 0;
+    double ip = 0;
+    for (int k = 0; k < m_rows; ++k)
+    {
+        ip += (m_data[row_start + col1] * m_data[row_start + col2]);
+        row_start += m_cols;
+    }
+    return ip;
+}
 
 }
