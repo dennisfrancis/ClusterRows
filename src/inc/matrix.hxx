@@ -39,6 +39,9 @@ public:
     Matrix(const Matrix& other);
     Matrix(Matrix&& other) = default;
 
+    Matrix& operator=(const Matrix& other) = delete;
+    Matrix& operator=(Matrix&& other) = default;
+
     [[nodiscard]] const double& at(int row, int col) const
     {
         check_bounds(row, col);
@@ -67,8 +70,8 @@ public:
 
 private:
     std::unique_ptr<double[]> m_data;
-    const int m_rows;
-    const int m_cols;
+    int m_rows;
+    int m_cols;
 
     void check_bounds(int row, int col) const;
     [[nodiscard]] inline size_t index(int row, int col) const { return row * m_cols + col; }
