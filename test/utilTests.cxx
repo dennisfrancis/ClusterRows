@@ -84,6 +84,21 @@ TEST(UtilTests, MatrixMultDiagonal)
     EXPECT_EQ(mres, exp_mres);
 }
 
+TEST(UtilTests, MatrixMultInverseDiagonal)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 4;
+    constexpr double matA[rows][cols] = { { 1, 2, 3, 4 }, { 2, 1, 3, 4 }, { 4, 3, 2, 1 } };
+    constexpr double diagB[cols] = { 1, 0.5, 1.0 / 3.0, 0.25 };
+    constexpr double exp_res[rows][cols] = { { 1, 4, 9, 16 }, { 2, 2, 9, 16 }, { 4, 6, 6, 4 } };
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    util::DiagonalMatrix mDiag(cols, diagB);
+    util::Matrix exp_mres(rows, cols, reinterpret_cast<const double*>(exp_res));
+
+    auto mres = mA.dot_inverse(mDiag);
+    EXPECT_EQ(mres, exp_mres);
+}
+
 TEST(UtilTests, MatrixGivensRotation)
 {
     constexpr int rows = 3;
