@@ -72,25 +72,8 @@ bool operator==(const Matrix& m1, const Matrix& m2)
 
     return true;
 }
-Matrix Matrix::dot(const DiagonalMatrix& right) const
-{
-    if (m_cols != right.m_size)
-    {
-        throw std::runtime_error("dot: A.cols != BDiag.size");
-    }
 
-    Matrix res(m_rows, m_cols);
-    int index = 0;
-    for (int row = 0; row < m_rows; ++row)
-    {
-        for (int col = 0; col < m_cols; ++col)
-        {
-            res.m_data[index] = m_data[index] * right.m_data[col];
-            ++index;
-        }
-    }
-    return res;
-}
+Matrix Matrix::dot(const DiagonalMatrix& right) const { return dot_impl(right); }
 Matrix Matrix::givens_rot(int col1, int col2, double theta) const
 {
     if (col1 < 0 || col1 >= m_cols || col2 < 0 || col2 >= m_cols || col1 == col2)
@@ -168,6 +151,36 @@ double Matrix::cols_inner_product(int col1, int col2) const
         row_start += m_cols;
     }
     return ip;
+}
+
+Matrix Matrix::dot_inverse(const DiagonalMatrix& right) const { return dot_impl(right, true); }
+
+Matrix Matrix::dot_impl(const DiagonalMatrix& right, bool inverse) const
+{
+    if (m_cols != right.m_size)
+    {
+        throw std::runtime_error("dot: A.cols != BDiag.size");
+    }
+
+    Matrix res(m_rows, m_cols);
+    int index = 0;
+    for (int row = 0; row < m_rows; ++row)
+    {
+        for (int col = 0; col < m_cols; ++col)
+        {
+            double scale = right.m_data[col];
+            if (inverse)
+            {
+                if (scale == 0.0)
+                    throw std::runtime_error("dot: zero diagonal element in right");
+
+                scale = 1 / scale;
+            }
+            res.m_data[index] = m_data[index] * scale;
+            ++index;
+        }
+    }
+    return res;
 }
 
 }

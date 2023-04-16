@@ -55,6 +55,7 @@ public:
 
     [[nodiscard]] Matrix dot(const Matrix& right) const;
     [[nodiscard]] Matrix dot(const DiagonalMatrix& right) const;
+    [[nodiscard]] Matrix dot_inverse(const DiagonalMatrix& right) const;
 
     [[nodiscard]] Matrix givens_rot(int col1, int col2, double theta) const;
 
@@ -75,5 +76,6 @@ private:
 
     void check_bounds(int row, int col) const;
     [[nodiscard]] inline size_t index(int row, int col) const { return row * m_cols + col; }
+    [[nodiscard]] Matrix dot_impl(const DiagonalMatrix& right, bool inverse = false) const;
 };
 }
