@@ -56,6 +56,7 @@ public:
     [[nodiscard]] Matrix dot(const Matrix& right) const;
     [[nodiscard]] Matrix dot(const DiagonalMatrix& right) const;
     [[nodiscard]] Matrix dot_inverse(const DiagonalMatrix& right) const;
+    [[nodiscard]] Matrix dot_transpose(const Matrix& right) const;
 
     [[nodiscard]] Matrix givens_rot(int col1, int col2, double theta) const;
 

@@ -182,5 +182,25 @@ Matrix Matrix::dot_impl(const DiagonalMatrix& right, bool inverse) const
     }
     return res;
 }
+Matrix Matrix::dot_transpose(const Matrix& right) const
+{
+    if (m_cols != right.m_cols)
+    {
+        throw std::runtime_error("dot: A.cols != B.cols");
+    }
+    Matrix res(m_rows, right.m_rows);
+
+    for (int rowl = 0; rowl < m_rows; ++rowl)
+    {
+        for (int rowr = 0; rowr < right.m_rows; ++rowr)
+        {
+            double val = 0;
+            for (int inner = 0; inner < m_cols; ++inner)
+                val += at(rowl, inner) * right.at(rowr, inner);
+            res.at(rowl, rowr) = val;
+        }
+    }
+    return res;
+}
 
 }
