@@ -177,3 +177,17 @@ TEST(UtilTests, ColumnsInnerProduct)
 
     EXPECT_EQ(mA.cols_inner_product(0, 2), 1 * (-3) + 4 * 5);
 }
+
+TEST(UtilTests, MatrixDotTranspose)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 4;
+    constexpr double matA[rows][cols] = { { 1, 2, 3, 4 }, { 2, 1, 3, 4 }, { 4, 3, 2, 1 } };
+    constexpr double matB[rows][cols] = { { 2, 3, 5, 2 }, { 3, 2, 4, 5 }, { 6, 3, 2, 1 } };
+    constexpr double matBTranspose[cols][rows]
+        = { { 2, 3, 6 }, { 3, 2, 3 }, { 5, 4, 2 }, { 2, 5, 1 } };
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    util::Matrix mB(rows, cols, reinterpret_cast<const double*>(matB));
+    util::Matrix mBT(cols, rows, reinterpret_cast<const double*>(matBTranspose));
+    EXPECT_EQ(mA.dot(mBT), mA.dot_transpose(mB));
+}
