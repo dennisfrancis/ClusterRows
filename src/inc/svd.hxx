@@ -1,13 +1,17 @@
+#pragma once
 #include "matrix.hxx"
 #include "diagonal.hxx"
 
 namespace util
 {
 
-class SVD
+struct SVD
 {
-private:
+    explicit SVD(const Matrix& A);
+
     Matrix U;
     DiagonalMatrix S;
     Matrix V;
 };
+
+}
