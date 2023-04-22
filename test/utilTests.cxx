@@ -203,3 +203,25 @@ TEST(UtilTests, MatrixSVD)
     util::SVD factors(mA);
     EXPECT_EQ(factors.U.dot(factors.S).dot_transpose(factors.V), mA);
 }
+
+TEST(UtilTests, MatrixSVD2)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 3;
+    constexpr double matA[rows][cols] = { { 1, 2, 3 }, { 2, 1, 4 }, { 4, 2, 1 } };
+    constexpr double matI[rows][cols] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    util::Matrix mI(rows, cols, reinterpret_cast<const double*>(matI));
+
+    util::SVD factors(mA);
+    EXPECT_EQ(factors.U.dot(factors.S).dot_transpose(factors.V), mA);
+    //factors.display();
+    EXPECT_EQ(factors.U.dot_transpose(factors.U), mI);
+    EXPECT_EQ(mI.dot_transpose(factors.V).dot(factors.V), mI);
+    EXPECT_EQ(factors.U.dot(factors.S)
+                  .dot_transpose(factors.V)
+                  .dot(factors.V)
+                  .dot_inverse(factors.S)
+                  .dot_transpose(factors.U),
+              mI);
+}
