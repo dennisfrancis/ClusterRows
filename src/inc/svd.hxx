@@ -30,6 +30,8 @@ struct SVD
     Matrix U;
     DiagonalMatrix S;
     Matrix V;
+
+    void display() const;
 };
 
 }

@@ -18,6 +18,7 @@
 
 #include "svd.hxx"
 #include <cmath>
+#include <iostream>
 
 namespace util
 {
@@ -60,6 +61,28 @@ SVD::SVD(const Matrix& A)
         S.at(i) = std::sqrt(U.cols_inner_product(i, i));
 
     U = U.dot_inverse(S);
+}
+void SVD::display() const
+{
+    std::cout << "U :\n";
+    for (int i = 0; i < U.rows(); ++i)
+    {
+        for (int j = 0; j < U.cols(); ++j)
+            std::cout << U.at(i, j) << '\t';
+        std::cout << '\n';
+    }
+
+    std::cout << "\nS :\n";
+    for (int i = 0; i < U.cols(); ++i)
+        std::cout << S.at(i) << '\t';
+
+    std::cout << "\nV :\n";
+    for (int i = 0; i < V.rows(); ++i)
+    {
+        for (int j = 0; j < V.cols(); ++j)
+            std::cout << V.at(i, j) << '\t';
+        std::cout << '\n';
+    }
 }
 
 }
