@@ -204,6 +204,7 @@ if (NATIVE_BUILD)
             ${CMAKE_SOURCE_DIR}/test/utilTests.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
     )
     target_link_libraries(
             utilTests

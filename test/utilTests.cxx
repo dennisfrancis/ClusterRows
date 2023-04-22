@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include "matrix.hxx"
 #include "diagonal.hxx"
+#include "svd.hxx"
 #include <cmath>
 
 TEST(UtilTests, MatrixMoveConstructor)
@@ -190,4 +191,15 @@ TEST(UtilTests, MatrixDotTranspose)
     util::Matrix mB(rows, cols, reinterpret_cast<const double*>(matB));
     util::Matrix mBT(cols, rows, reinterpret_cast<const double*>(matBTranspose));
     EXPECT_EQ(mA.dot(mBT), mA.dot_transpose(mB));
+}
+
+TEST(UtilTests, MatrixSVD)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 4;
+    constexpr double matA[rows][cols] = { { 1, 2, 3, 4 }, { 2, 1, 3, 4 }, { 4, 3, 2, 1 } };
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+
+    util::SVD factors(mA);
+    EXPECT_EQ(factors.U.dot(factors.S).dot_transpose(factors.V), mA);
 }
