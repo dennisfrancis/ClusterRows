@@ -108,11 +108,13 @@ Matrix Matrix::givens_rot(int col1, int col2, double theta) const
     }
     return res;
 }
+
 Matrix::Matrix(const Matrix& other)
     : Matrix(other.m_rows, other.m_cols)
 {
     std::copy_n(other.m_data.get(), m_rows * m_cols, m_data.get());
 }
+
 void Matrix::set_identity()
 {
     if (m_rows != m_cols)
@@ -130,12 +132,14 @@ void Matrix::set_identity()
         }
     }
 }
+
 double Matrix::sum_of_squares() const
 {
     const auto begin = m_data.get();
     const auto end = begin + (m_rows * m_cols);
     return std::inner_product(begin, end, begin, 0.0);
 }
+
 double Matrix::cols_inner_product(int col1, int col2) const
 {
     if (col1 < 0 || col2 < 0 || col1 >= m_cols || col2 >= m_cols)
@@ -182,6 +186,7 @@ Matrix Matrix::dot_impl(const DiagonalMatrix& right, bool inverse) const
     }
     return res;
 }
+
 Matrix Matrix::dot_transpose(const Matrix& right) const
 {
     if (m_cols != right.m_cols)
