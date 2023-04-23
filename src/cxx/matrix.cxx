@@ -18,6 +18,7 @@
 
 #include "matrix.hxx"
 #include "diagonal.hxx"
+#include "svd.hxx"
 
 #include <stdexcept>
 #include <cmath>
@@ -206,6 +207,22 @@ Matrix Matrix::dot_transpose(const Matrix& right) const
         }
     }
     return res;
+}
+
+Matrix Matrix::inverse() const
+{
+    if (m_cols != m_rows)
+    {
+        throw std::runtime_error("inverse: matrix needs to be square!");
+    }
+
+    SVD factors(*this);
+    if (factors.S.is_singular())
+    {
+        throw std::runtime_error("inverse: input matrix is singular!");
+    }
+
+    return factors.V.dot_inverse(factors.S).dot_transpose(factors.U);
 }
 
 }

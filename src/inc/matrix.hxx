@@ -68,6 +68,8 @@ public:
     [[nodiscard]] double sum_of_squares() const;
     [[nodiscard]] double cols_inner_product(int col1, int col2) const;
 
+    Matrix inverse() const;
+
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:

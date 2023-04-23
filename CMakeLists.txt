@@ -29,7 +29,12 @@ set(LO_REGMERGE "${LO_PATH}/program/regmerge")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_UNOPKG "${LO_PATH}/program/unopkg")
 
-add_library(gmm src/cxx/em.cxx src/cxx/logging.cxx src/cxx/matrix.cxx src/cxx/diagonal.cxx)
+add_library(gmm
+        src/cxx/em.cxx
+        src/cxx/logging.cxx
+        src/cxx/matrix.cxx
+        src/cxx/diagonal.cxx
+        src/cxx/svd.cxx)
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
@@ -192,6 +197,9 @@ if (NATIVE_BUILD)
     add_executable(
             gmmTests
             ${CMAKE_SOURCE_DIR}/test/gmmTests.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
     )
     target_link_libraries(
             gmmTests
