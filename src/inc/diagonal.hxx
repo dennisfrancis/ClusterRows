@@ -50,6 +50,8 @@ public:
         return m_data[index];
     }
 
+    bool is_singular() const;
+
 private:
     std::unique_ptr<double[]> m_data;
     const int m_size;

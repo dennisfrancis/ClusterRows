@@ -33,5 +33,12 @@ DiagonalMatrix::DiagonalMatrix(int size, const double* diagonal_vector)
     for (int index = 0; index < size; ++index)
         m_data[index] = diagonal_vector[index];
 }
+bool DiagonalMatrix::is_singular() const
+{
+    for (int index = 0; index < m_size; ++index)
+        if (m_data[index] < 0.0001)
+            return true;
+    return false;
+}
 
 }
