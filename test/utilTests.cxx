@@ -225,3 +225,15 @@ TEST(UtilTests, MatrixSVD2)
                   .dot_transpose(factors.U),
               mI);
 }
+
+TEST(UtilTests, DiagonalSingular)
+{
+    constexpr int size = 3;
+    constexpr double diag_singular[size] = { 1, 0.5, 0.0 };
+    constexpr double diag_non_singular[size] = { 1, 0.5, 0.75 };
+    util::DiagonalMatrix singular(size, diag_singular);
+    util::DiagonalMatrix non_singular(size, diag_non_singular);
+
+    EXPECT_TRUE(singular.is_singular());
+    EXPECT_FALSE(non_singular.is_singular());
+}
