@@ -237,3 +237,19 @@ TEST(UtilTests, DiagonalSingular)
     EXPECT_TRUE(singular.is_singular());
     EXPECT_FALSE(non_singular.is_singular());
 }
+
+TEST(UtilTests, MatrixInverse)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 3;
+    constexpr double matA[rows][cols] = { { 1, 2, 3 }, { 2, 1, 4 }, { 4, 2, 1 } };
+
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    auto mAInverse = mA.inverse();
+
+    util::Matrix mI(rows, cols);
+    mI.set_identity();
+
+    EXPECT_EQ(mA.dot(mAInverse), mI);
+    EXPECT_EQ(mAInverse.dot(mA), mI);
+}
