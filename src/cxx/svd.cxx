@@ -62,27 +62,17 @@ SVD::SVD(const Matrix& A)
 
     U = U.dot_inverse(S);
 }
+
 void SVD::display() const
 {
     std::cout << "U :\n";
-    for (int i = 0; i < U.rows(); ++i)
-    {
-        for (int j = 0; j < U.cols(); ++j)
-            std::cout << U.at(i, j) << '\t';
-        std::cout << '\n';
-    }
+    U.display();
 
     std::cout << "\nS :\n";
-    for (int i = 0; i < U.cols(); ++i)
-        std::cout << S.at(i) << '\t';
+    S.display();
 
     std::cout << "\nV :\n";
-    for (int i = 0; i < V.rows(); ++i)
-    {
-        for (int j = 0; j < V.cols(); ++j)
-            std::cout << V.at(i, j) << '\t';
-        std::cout << '\n';
-    }
+    V.display();
 }
 
 }

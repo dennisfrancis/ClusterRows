@@ -70,6 +70,8 @@ public:
 
     Matrix inverse() const;
 
+    void display() const;
+
     friend bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:

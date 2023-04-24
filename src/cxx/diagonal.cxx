@@ -16,6 +16,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <iostream>
 #include "diagonal.hxx"
 
 namespace util
@@ -39,6 +40,12 @@ bool DiagonalMatrix::is_singular() const
         if (m_data[index] < 0.0001)
             return true;
     return false;
+}
+
+void DiagonalMatrix::display() const
+{
+    for (int i = 0; i < m_size; ++i)
+        std::cout << m_data[i] << '\t';
 }
 
 }

@@ -24,6 +24,7 @@
 #include <cmath>
 #include <algorithm>
 #include <numeric>
+#include <iostream>
 
 namespace util
 {
@@ -223,6 +224,17 @@ Matrix Matrix::inverse() const
     }
 
     return factors.V.dot_inverse(factors.S).dot_transpose(factors.U);
+}
+
+void Matrix::display() const
+{
+    int index = 0;
+    for (int i = 0; i < m_rows; ++i)
+    {
+        for (int j = 0; j < m_cols; ++j)
+            std::cout << m_data[index++] << '\t';
+        std::cout << '\n';
+    }
 }
 
 }

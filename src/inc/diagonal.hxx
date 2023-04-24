@@ -52,6 +52,8 @@ public:
 
     bool is_singular() const;
 
+    void display() const;
+
 private:
     std::unique_ptr<double[]> m_data;
     const int m_size;
