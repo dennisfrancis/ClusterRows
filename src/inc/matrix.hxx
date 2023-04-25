@@ -68,7 +68,7 @@ public:
     [[nodiscard]] double sum_of_squares() const;
     [[nodiscard]] double cols_inner_product(int col1, int col2) const;
 
-    Matrix inverse() const;
+    [[nodiscard]] Matrix inverse() const;
 
     void display() const;
 
