@@ -50,7 +50,7 @@ public:
         return m_data[index];
     }
 
-    bool is_singular() const;
+    [[nodiscard]] bool is_singular() const;
 
     void display() const;
 
