@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../inc/em.hxx"
-#include "../inc/logging.hxx"
+#include "em.hxx"
+#include "logging.hxx"
 
 #include <cmath>
 #include <chrono>
