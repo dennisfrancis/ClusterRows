@@ -23,6 +23,10 @@
 namespace util
 {
 
+/**
+ * SVD computes singular value decomposition of @param matrix A.
+ * The factors U, S and V are computed and can be accessed directly.
+ */
 SVD::SVD(const Matrix& A)
     : U(A)
     , S(A.cols())
