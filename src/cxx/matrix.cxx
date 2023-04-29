@@ -76,6 +76,7 @@ bool operator==(const Matrix& m1, const Matrix& m2)
 }
 
 Matrix Matrix::dot(const DiagonalMatrix& right) const { return dot_impl(right); }
+
 Matrix Matrix::givens_rot(int col1, int col2, double theta) const
 {
     if (col1 < 0 || col1 >= m_cols || col2 < 0 || col2 >= m_cols || col1 == col2)
