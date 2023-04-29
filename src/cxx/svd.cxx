@@ -67,6 +67,9 @@ SVD::SVD(const Matrix& A)
     U = U.dot_inverse(S);
 }
 
+/**
+ * Shows the factors U, S, V of the original matrix in the console.
+ */
 void SVD::display() const
 {
     std::cout << "U :\n";
