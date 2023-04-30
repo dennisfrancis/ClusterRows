@@ -253,3 +253,13 @@ TEST(UtilTests, MatrixInverse)
     EXPECT_EQ(mA.dot(mAInverse), mI);
     EXPECT_EQ(mAInverse.dot(mA), mI);
 }
+
+TEST(UtilTests, DiagonalDeterminant)
+{
+    constexpr int size = 4;
+    constexpr double diag[size] = { 1, 0.5, 2.0, 0.25 };
+
+    util::DiagonalMatrix mDiag(size, diag);
+
+    EXPECT_EQ(mDiag.determinant(), 0.25);
+}
