@@ -43,6 +43,15 @@ bool DiagonalMatrix::is_singular() const
     return false;
 }
 
+double DiagonalMatrix::determinant() const
+{
+    double prod = 1;
+    for (int index = 0; index < m_size; ++index)
+        prod *= m_data[index];
+
+    return prod;
+}
+
 void DiagonalMatrix::display() const
 {
     for (int i = 0; i < m_size; ++i)

@@ -52,6 +52,8 @@ public:
 
     [[nodiscard]] bool is_singular() const;
 
+    [[nodiscard]] double determinant() const;
+
     void display() const;
 
 private:
