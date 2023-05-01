@@ -82,4 +82,9 @@ void SVD::display() const
     V.display();
 }
 
+double SVD::determinant() const
+{
+    return S.determinant();
+}
+
 }

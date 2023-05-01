@@ -31,6 +31,7 @@ struct SVD
     DiagonalMatrix S;
     Matrix V;
 
+    [[nodiscard]] double determinant() const;
     void display() const;
 };
 
