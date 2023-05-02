@@ -263,3 +263,15 @@ TEST(UtilTests, DiagonalDeterminant)
 
     EXPECT_EQ(mDiag.determinant(), 0.25);
 }
+
+TEST(UtilTests, MatrixDeterminant)
+{
+    constexpr int rows = 3;
+    constexpr int cols = 3;
+    constexpr double matA[rows][cols] = { { 0, 2, 0 }, { 0, 0, 3 }, { 5, 0, 0 } };
+
+    util::Matrix mA(rows, cols, reinterpret_cast<const double*>(matA));
+    util::SVD factors(mA);
+
+    EXPECT_EQ(factors.determinant(), 30.0);
+}
