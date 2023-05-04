@@ -34,7 +34,8 @@ add_library(gmm
         src/cxx/logging.cxx
         src/cxx/matrix.cxx
         src/cxx/diagonal.cxx
-        src/cxx/svd.cxx)
+        src/cxx/svd.cxx
+        src/cxx/gmm/cluster.cxx)
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
@@ -200,6 +201,7 @@ if (NATIVE_BUILD)
             ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/cluster.cxx
     )
     target_link_libraries(
             gmmTests
@@ -213,6 +215,7 @@ if (NATIVE_BUILD)
             ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
             ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
+            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/cluster.cxx
     )
     target_link_libraries(
             utilTests
