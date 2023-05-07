@@ -23,7 +23,7 @@
 
 namespace gmm
 {
-class Weights
+class Model
 {
 };
 
