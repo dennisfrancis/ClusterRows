@@ -25,6 +25,12 @@ namespace gmm
 {
 class Model
 {
+public:
+    Model(const util::DataMatrix& data);
+
+private:
+    const util::Matrix m_weights;
+    const util::DataMatrix& data;
 };
 
 }
