@@ -35,6 +35,8 @@ public:
     }
 
     const double* operator[](int row) const { return pData + (row * m_cols); }
+    [[nodiscard]] int rows() const { return m_rows; }
+    [[nodiscard]] int cols() const { return m_cols; }
 
 private:
     const double* pData;
