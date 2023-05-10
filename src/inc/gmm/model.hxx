@@ -26,11 +26,16 @@ namespace gmm
 class Model
 {
 public:
-    Model(const util::DataMatrix& data);
+    Model(const util::DataMatrix& data, int num_clusters);
+
+    [[nodiscard]] int cluster_count() const { return num_clusters; }
+    [[nodiscard]] int sample_count() const { return data.rows(); }
+    [[nodiscard]] int dim_count() const { return data.cols(); }
 
 private:
-    const util::Matrix m_weights;
-    const util::DataMatrix& data;
+    const util::Matrix m_weights; // shape is c x m
+    const util::DataMatrix& data; // shape is m x n
+    const int num_clusters;
 };
 
 }
