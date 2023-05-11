@@ -17,3 +17,10 @@
 */
 
 #include "gmm/model.hxx"
+
+gmm::Model::Model(const util::DataMatrix& data, int num_clusters)
+    : m_weights(num_clusters, data.rows())
+    , data(data)
+    , num_clusters(num_clusters)
+{
+}
