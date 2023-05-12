@@ -19,11 +19,22 @@
 #pragma once
 
 #include "matrix.hxx"
+#include "datamatrix.hxx"
 
 namespace gmm
 {
-struct Cluster
+
+class Cluster
 {
+    int32_t m_id;
+    double m_phi;
+    util::Matrix m_mu;
+    util::Matrix m_sigma;
+    const util::DataMatrix& data;
+    const util::Matrix& weights;
+
+public:
+    Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights);
 };
 
 }
