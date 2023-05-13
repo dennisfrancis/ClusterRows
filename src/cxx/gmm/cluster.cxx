@@ -17,3 +17,13 @@
 */
 
 #include "gmm/cluster.hxx"
+
+gmm::Cluster::Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights)
+    : m_id(id)
+    , m_phi(1.0 / weights.rows())
+    , m_mu(data.cols(), 1)
+    , m_sigma(data.cols(), data.cols())
+    , data(data)
+    , weights(weights)
+{
+}
