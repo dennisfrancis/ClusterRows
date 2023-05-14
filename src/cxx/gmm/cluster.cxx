@@ -18,6 +18,9 @@
 
 #include "gmm/cluster.hxx"
 
+#include <chrono>
+#include <random>
+
 gmm::Cluster::Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights)
     : m_id(id)
     , m_phi(1.0 / weights.rows())
@@ -26,4 +29,14 @@ gmm::Cluster::Cluster(int32_t id, const util::DataMatrix& data, const util::Matr
     , data(data)
     , weights(weights)
 {
+    init();
 }
+
+void gmm::Cluster::init()
+{
+    // TODO: Implement me.
+}
+
+int gmm::Cluster::num_samples() const { return data.rows(); }
+
+int gmm::Cluster::num_dims() const { return data.cols(); }

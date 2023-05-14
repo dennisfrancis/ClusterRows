@@ -33,6 +33,10 @@ class Cluster
     const util::DataMatrix& data;
     const util::Matrix& weights;
 
+    void init();
+    [[nodiscard]] int num_samples() const;
+    [[nodiscard]] int num_dims() const;
+
 public:
     Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights);
 };
