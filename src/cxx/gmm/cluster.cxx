@@ -34,7 +34,36 @@ gmm::Cluster::Cluster(int32_t id, const util::DataMatrix& data, const util::Matr
 
 void gmm::Cluster::init()
 {
-    // TODO: Implement me.
+    // obtain a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    // Initialize mu by taking mean of a random bunch of data samples.
+    const int m = num_samples();
+    const int n = num_dims();
+    std::vector<int> sample_indices(m);
+    for (int idx = 0; idx < m; ++idx)
+        sample_indices[idx] = idx;
+    std::shuffle(sample_indices.begin(), sample_indices.end(), std::default_random_engine(seed));
+
+    int group_size = m / weights.rows();
+    const int next = group_size * m_id;
+    const int upper = std::min(next + group_size, m);
+    group_size = upper - next + 1;
+    for (int dim = 0; dim < n; ++dim)
+        m_mu.at(dim, 0) = 0.0;
+    for (int idx = next; idx < upper; ++idx)
+    {
+        for (int dim = 0; dim < n; ++dim)
+        {
+            if (idx == next)
+                m_mu.at(dim, 0) = data[idx][dim] / group_size;
+            else
+                m_mu.at(dim, 0) += (data[idx][dim] / group_size);
+        }
+    }
+
+    // Initialize covariance with identity matrix.
+    m_sigma.set_identity();
 }
 
 int gmm::Cluster::num_samples() const { return data.rows(); }
