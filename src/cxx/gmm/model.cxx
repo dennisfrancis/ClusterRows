@@ -23,4 +23,7 @@ gmm::Model::Model(const util::DataMatrix& data, int num_clusters)
     , data(data)
     , num_clusters(num_clusters)
 {
+    init();
 }
+
+void gmm::Model::init() {}
