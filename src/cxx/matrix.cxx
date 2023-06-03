@@ -136,6 +136,19 @@ void Matrix::set_identity()
     }
 }
 
+void Matrix::set(double val)
+{
+    int index = 0;
+    for (int i = 0; i < m_rows; ++i)
+    {
+        for (int j = 0; j < m_rows; ++j)
+        {
+            m_data[index] = val;
+            ++index;
+        }
+    }
+}
+
 double Matrix::sum_of_squares() const
 {
     const auto begin = m_data.get();

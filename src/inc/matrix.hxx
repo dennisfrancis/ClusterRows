@@ -64,6 +64,7 @@ public:
     [[nodiscard]] int cols() const { return m_cols; }
 
     void set_identity();
+    void set(double val);
 
     [[nodiscard]] double sum_of_squares() const;
     [[nodiscard]] double cols_inner_product(int col1, int col2) const;
