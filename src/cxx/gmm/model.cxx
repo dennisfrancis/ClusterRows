@@ -26,4 +26,8 @@ gmm::Model::Model(const util::DataMatrix& data, int num_clusters)
     init();
 }
 
-void gmm::Model::init() {}
+void gmm::Model::init()
+{
+    double prob = 1.0 / num_clusters;
+    m_weights.set(prob);
+}
