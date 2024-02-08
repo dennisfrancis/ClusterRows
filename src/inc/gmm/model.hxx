@@ -36,7 +36,7 @@ private:
     void init();
 
 private:
-    const util::Matrix m_weights; // shape is c x m
+    util::Matrix m_weights; // shape is c x m
     const util::DataMatrix& data; // shape is m x n
     const int num_clusters;
 };
