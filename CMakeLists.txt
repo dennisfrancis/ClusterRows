@@ -24,8 +24,7 @@ set(LO_PATH "/usr/lib/libreoffice" CACHE FILEPATH "LibreOffice install directory
 set(LO_SDK_PATH "/usr/lib/libreoffice/sdk" CACHE FILEPATH "LibreOffice SDK directory")
 option(LOGGING_ENABLED "Enable logging" OFF)
 
-set(LO_IDLC "${LO_SDK_PATH}/bin/idlc")
-set(LO_REGMERGE "${LO_PATH}/program/regmerge")
+set(LO_IDLWRITE "${LO_SDK_PATH}/bin/unoidl-write")
 set(LO_IDL_DIR "${LO_SDK_PATH}/idl")
 set(LO_UNOPKG "${LO_PATH}/program/unopkg")
 
@@ -69,32 +68,20 @@ set(COMP_RDB_NAME "DataCluster.uno.rdb")
 file(GLOB COMP_IDL_FILES "${CMAKE_SOURCE_DIR}/idl/*.idl")
 
 set(COMP_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/build")
-set(COMP_URD_DIR "${COMP_BUILD_DIR}/urd")
 set(COMP_REG_DIR "${COMP_BUILD_DIR}/rdb")
 set(COMP_META_DIR "${COMP_BUILD_DIR}/meta")
 set(COMP_REG_FILE "${COMP_REG_DIR}/${COMP_RDB_NAME}")
 set(EXTENSION_DIR ${CMAKE_SOURCE_DIR}/extension)
 
-# IDL -> URD
-add_custom_command(
-        OUTPUT ${COMP_BUILD_DIR}/urd.done
-        COMMAND ${CMAKE_COMMAND} -E remove_directory ${COMP_URD_DIR}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${COMP_URD_DIR}
-        COMMAND ${LO_IDLC} -I${LO_IDL_DIR} -O${COMP_URD_DIR} ${COMP_IDL_FILES}
-        COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/urd.done
-        COMMENT "Generating URD files from IDL files"
-        DEPENDS ${COMP_IDL_FILES}
-)
-
-# URD -> single RDB
+# IDL files -> single RDB
 add_custom_command(
         OUTPUT ${COMP_BUILD_DIR}/rdb.done
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${COMP_REG_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${COMP_REG_DIR}
-        COMMAND ${LO_REGMERGE} ${COMP_REG_FILE} /UCR ${COMP_URD_DIR}/*.urd
+        COMMAND ${LO_IDLWRITE} ${LO_PATH}/program/types.rdb ${LO_PATH}/program/types/offapi.rdb ${COMP_IDL_FILES} ${COMP_REG_FILE}
         COMMAND ${CMAKE_COMMAND} -E touch ${COMP_BUILD_DIR}/rdb.done
-        COMMENT "Generating RDB file from URD files"
-        DEPENDS ${COMP_BUILD_DIR}/urd.done
+        COMMENT "Generating RDB file from IDL files"
+        DEPENDS ${COMP_IDL_FILES}
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tmpl/manifest.xml.in ${COMP_META_DIR}/manifest.xml)
