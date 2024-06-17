@@ -4,6 +4,7 @@ compile_commands.json
 
 __pycache__
 
+/.cache
 /extension/*.oxt
 /build
 /cross/*
