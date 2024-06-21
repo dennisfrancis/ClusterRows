@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name and version
-project(ClusterRows VERSION 2.0.0)
+project(ClusterRows VERSION 2.0.1)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
