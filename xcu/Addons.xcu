@@ -78,7 +78,7 @@
             <node oor:name="com.github.dennisfrancis.clusterrows.menu" oor:op="replace">
                 <node oor:name="com.github.dennisfrancis.clusterrows.menu.1" oor:op="replace">
                     <prop oor:name="MergePoint">
-                        <value>.uno:DataMenu\.uno:StatisticsMenu\.uno:ChiSquareTestDialog</value>
+                        <value>.uno:DataMenu\.uno:StatisticsMenu</value>
                     </prop>
                     <prop oor:name="MergeCommand">
                         <value>AddAfter</value>
@@ -92,7 +92,7 @@
                     <node oor:name="MenuItems">
                         <node oor:name="com.github.dennisfrancis.clusterrows.menu.1.1" oor:op="replace">
                             <prop oor:name="Title">
-                                <value xml:lang="en-US">Cl~ustering...</value>
+                                <value xml:lang="en-US">Cl~ustering</value>
                             </prop>
                             <prop oor:name="URL">
                                 <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
