@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 
 import sys
 import inspect
@@ -57,7 +57,7 @@ class CRJobImpl(unohelper.Base, XJob):
         self.logger = crlogger.setupLogger(self._getLogPath())
         self.logger.debug("INIT CRJobImpl")
         self.logger.debug(self.platvars)
-        self.dialog: XDialog | None = None
+        self.dialog: Optional[XDialog] = None
         if not self.testMode:
             self.logger.debug(f"extension path = {self._getExtensionPath()}")
 
@@ -192,8 +192,8 @@ class RangeAddress:
 
 class GMMArgs(object):
     def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False):
-        self.rangeAddr: RangeAddress | None = None
-        self.outputAddr: CellAddress | None = CellAddress()
+        self.rangeAddr: Optional[RangeAddress] = None
+        self.outputAddr: Optional[CellAddress] = CellAddress()
         self.numClusters = numClusters
         self.numEpochs = numEpochs
         self.numIterations = numIterations
