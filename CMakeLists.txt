@@ -25,7 +25,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-add_subdirectory(external/eigen)
+add_subdirectory(external)
 
 set(LO_PATH "/usr/lib/libreoffice" CACHE FILEPATH "LibreOffice install directory")
 set(LO_SDK_PATH "/usr/lib/libreoffice/sdk" CACHE FILEPATH "LibreOffice SDK directory")
