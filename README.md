@@ -34,7 +34,7 @@ where **data** is the array(cell-range) holding the data, **numClusters** is the
 
 The project uses an in-house C++ implementation of full [Expectation Maximization](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm) algorithm to compute the clusters. In the auto mode (when number of clusters is specified as 0) it chooses the number of clusters parameter via [Bayesian information criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion).
 
-The project does not depend on any machine learning or linear algebra libraries. Full source code is made available under [GPL3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
+The project does not depend on any machine learning libraries but it uses [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) for its linear algebra capabilities. Full source code of ClusterRows is made available under [GPL3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ## Planned features
 
