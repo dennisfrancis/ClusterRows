@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <cassert>
+#include <stdexcept>
+#include <string>
 namespace util
 {
 class DataMatrix
@@ -37,6 +40,16 @@ public:
     const double* operator[](int row) const { return pData + (row * m_cols); }
     [[nodiscard]] int rows() const { return m_rows; }
     [[nodiscard]] int cols() const { return m_cols; }
+
+    DataMatrix sample(const int row) const
+    {
+        if (row >= m_rows)
+        {
+            throw std::runtime_error("Invalid row : " + std::to_string(row));
+        }
+
+        return DataMatrix(pData + (row * m_cols), 1, m_cols);
+    }
 
 private:
     const double* pData;

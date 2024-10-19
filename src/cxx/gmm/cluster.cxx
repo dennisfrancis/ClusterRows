@@ -16,56 +16,135 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gmm/cluster.hxx"
+#include <cfloat>
+#include <gmm/cluster.hxx>
 
+#include <cmath>
+#include <iostream>
 #include <chrono>
 #include <random>
 
-gmm::Cluster::Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights)
-    : m_id(id)
-    , m_phi(1.0 / weights.rows())
-    , m_mu(data.cols(), 1)
-    , m_sigma(data.cols(), data.cols())
-    , data(data)
-    , weights(weights)
+gmm::Cluster::Cluster(int idx_, const Data& data_, int num_clusters_)
+    : data{ data_ }
+    , mu(data_.cols(), 1)
+    , sigma(data_.cols(), data_.cols())
+    , num_clusters{ num_clusters_ }
+    , idx{ idx_ }
 {
-    init();
 }
 
-void gmm::Cluster::init()
+void gmm::Cluster::init(int use_sample)
 {
-    // obtain a time-based seed:
+    // std::cerr << "[DEBUG] inside Cluster::init() use_sample = " << use_sample << '\n';
+    const int n = dims();
+    const int c = clusters();
+
+    phi = 1.0 / c;
+
+    mu = data(use_sample).reshaped(n, 1);
+    sigma.setIdentity();
+    sigma *= 5;
+}
+
+void gmm::Cluster::init_cheat()
+{
+    const int c = clusters();
+    const int n = dims();
+
+    phi = 1.0 / c;
+    // Original truth
+    const double centers[3][5]
+        = { { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
+    // const double centers[3][5]
+    //     = { { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
+
+    double stds[3][5] = {
+        { 2.5, 1.5, 2.5, 1.5, 1.5 },
+        { 0.2, 1.5, 1.2, 0.5, 1.2 },
+        { 0.7, 2.1, 1.5, 0.7, 1.5 },
+    };
+
+    sigma.setZero();
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
-    // Initialize mu by taking mean of a random bunch of data samples.
-    const int m = num_samples();
-    const int n = num_dims();
-    std::vector<int> sample_indices(m);
-    for (int idx = 0; idx < m; ++idx)
-        sample_indices[idx] = idx;
-    std::shuffle(sample_indices.begin(), sample_indices.end(), std::default_random_engine(seed));
-
-    int group_size = m / weights.rows();
-    const int next = group_size * m_id;
-    const int upper = std::min(next + group_size, m);
-    group_size = upper - next + 1;
+    std::default_random_engine generator(seed);
+    std::normal_distribution<double> normalSampler(0, 0.05);
     for (int dim = 0; dim < n; ++dim)
-        m_mu.at(dim, 0) = 0.0;
-    for (int idx = next; idx < upper; ++idx)
     {
-        for (int dim = 0; dim < n; ++dim)
-        {
-            if (idx == next)
-                m_mu.at(dim, 0) = data[idx][dim] / group_size;
-            else
-                m_mu.at(dim, 0) += (data[idx][dim] / group_size);
-        }
+        mu(dim, 0) = centers[idx][dim] + normalSampler(generator);
+        sigma(dim, dim) = stds[idx][dim];
     }
-
-    // Initialize covariance with identity matrix.
-    m_sigma.set_identity();
 }
 
-int gmm::Cluster::num_samples() const { return data.rows(); }
+void gmm::Cluster::clear_mu_sigma()
+{
+    // std::cerr << "[DEBUG] inside Cluster::clear_mu_sigma()\n";
+    mu.setZero();
+    sigma.setZero();
+}
 
-int gmm::Cluster::num_dims() const { return data.cols(); }
+namespace
+{
+static const double norm_dist_scale = 1.0 / std::sqrt(2 * M_PI);
+double dnorm(double x, double mean, double stdev)
+{
+    const double scale = norm_dist_scale / stdev;
+    double arg = (x - mean) / stdev;
+    return std::exp(-0.5 * (arg * arg)) * scale;
+}
+}
+
+#define USE_VECTORIZED 1
+
+double gmm::Cluster::sample_probability(int sample, const MatrixXd& cov_inv,
+                                        const double cov_determinant) const
+{
+    // if (sample == 0)
+    //     std::cerr << "<<<Data>>> " << data(sample).reshaped(1, dims()) << '\n';
+    double prob;
+    const int n = dims();
+    (void)(n);
+    (void)(dnorm);
+
+#ifdef USE_VECTORIZED
+    MatrixXd X = data(sample).reshaped(dims(), 1);
+    auto res = (X - mu).transpose() * cov_inv * (X - mu);
+    double exp_arg{ -0.5 * res(0, 0) };
+    double density = (exp_arg < DBL_MAX_EXP) ? std::exp(exp_arg) / std::pow(2 * M_PI, dims() / 2.0)
+                                                   / std::sqrt(cov_determinant)
+                                             : 0;
+
+    prob = density * phi;
+    // if (sample == 0)
+    //     std::cerr << "(" << res.rows() << ',' << res.cols() << ") res(0,0) = " << res(0, 0);
+
+    // if (sample == 0)
+    //     std::cerr << '\n';
+    // if (sample < 5)
+    //     std::cerr << "[exp_arg = " << exp_arg << " density = " << density << ", phi = " << phi
+    //               << " prob = " << prob << "]  ";
+    // if (sample == 5)
+    //     std::cerr << '\n';
+#else
+    prob = phi;
+    for (int dim = 0; dim < n; ++dim)
+    {
+        prob *= dnorm(data(sample, dim), mu(dim, 0), std::sqrt(sigma(dim, dim)));
+    }
+#endif
+
+    return prob;
+}
+
+namespace gmm
+{
+std::ostream& operator<<(std::ostream& os, const gmm::Cluster& clusterObj)
+{
+    os << "Cluster(id = " << clusterObj.idx << "): " << "data(" << clusterObj.data.rows() << ", "
+       << clusterObj.data.cols() << ") \tmu(" << clusterObj.mu.rows() << ", "
+       << clusterObj.mu.cols() << ") \t sigma(" << clusterObj.sigma.rows() << ", "
+       << clusterObj.sigma.cols() << ") num_clusters = " << clusterObj.num_clusters
+       << " dims = " << clusterObj.dims() << " samples = " << clusterObj.samples()
+       << " clusters = " << clusterObj.clusters();
+    return os;
+}
+}

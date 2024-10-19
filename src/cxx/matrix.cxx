@@ -20,6 +20,7 @@
 #include "diagonal.hxx"
 #include "svd.hxx"
 
+#include <memory>
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
@@ -60,6 +61,23 @@ Matrix::Matrix(const int rows, const int cols, const double* matrix)
     : Matrix(rows, cols)
 {
     std::copy_n(matrix, rows * cols, m_data.get());
+}
+
+Matrix& Matrix::operator=(const Matrix& other)
+{
+    const int size = m_rows * m_cols;
+    const int size_needed{ other.m_rows * other.m_cols };
+    if (size < size_needed)
+    {
+        std::cerr << "[WARN] copy ctor: Re-allocating Matrix(" << m_rows << ',' << m_cols
+                  << ") to Matrix(" << other.m_rows << ',' << other.m_cols << ")\n";
+        m_data = std::make_unique<double[]>(size_needed);
+    }
+
+    m_rows = other.m_rows;
+    m_cols = other.m_cols;
+
+    return *this;
 }
 
 bool operator==(const Matrix& m1, const Matrix& m2)
@@ -130,7 +148,7 @@ void Matrix::set_identity()
     {
         for (int j = 0; j < m_rows; ++j)
         {
-            m_data[index] = (i == j) ? 1.0 : 0.0;
+            m_data[index] = ((i == j) ? 1.0 : 0.0);
             ++index;
         }
     }
@@ -249,6 +267,13 @@ void Matrix::display() const
             std::cout << m_data[index++] << '\t';
         std::cout << '\n';
     }
+}
+
+void Matrix::swap(Matrix& other)
+{
+    std::swap(m_data, other.m_data);
+    std::swap(m_rows, other.m_rows);
+    std::swap(m_cols, other.m_cols);
 }
 
 }

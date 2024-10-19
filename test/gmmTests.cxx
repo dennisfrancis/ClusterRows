@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cmath>
 #include <gtest/gtest.h>
-#include "../src/inc/em.h"
+#include <em.h>
 
 #include <chrono>
 #include <random>
@@ -55,13 +56,13 @@ TEST(GMMTests, ReturnErrorCases)
     double data[rows][cols];
     int labels[rows];
     double confidence[rows];
-    int ret = gmm(nullptr, rows, cols, 3, 10, 100, labels, confidence);
+    int ret = gmmMain(nullptr, rows, cols, 3, 10, 100, labels, confidence);
     EXPECT_EQ(ret, -1);
 
-    ret = gmm(&data[0][0], rows, cols, 3, 10, 100, nullptr, confidence);
+    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, nullptr, confidence);
     EXPECT_EQ(ret, -1);
 
-    ret = gmm(&data[0][0], rows, cols, 3, 10, 100, labels, nullptr);
+    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, labels, nullptr);
     EXPECT_EQ(ret, -1);
 }
 
@@ -76,25 +77,25 @@ TEST(GMMTests, ConstLabelCases)
     int labelsHigh[rowsHigh];
     double confidenceLow[rowsLow];
     double confidenceHigh[rowsHigh];
-    int ret = gmm(&dataLow[0][0], rowsLow, cols, 1, 10, 100, labelsLow, confidenceLow);
+    int ret = gmmMain(&dataLow[0][0], rowsLow, cols, 1, 10, 100, labelsLow, confidenceLow);
     EXPECT_EQ(ret, 0);
     // All labels must be 0 with 100% confidence for numClusters = 1 even if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, 0, 1.0,
                                       "[numClusters = 1, #rows < 10]"));
 
-    ret = gmm(&dataHigh[0][0], rowsHigh, cols, 1, 10, 100, labelsHigh, confidenceHigh);
+    ret = gmmMain(&dataHigh[0][0], rowsHigh, cols, 1, 10, 100, labelsHigh, confidenceHigh);
     EXPECT_EQ(ret, 0);
     // All labels must be 0 with 100% confidence for numClusters = 1.
     EXPECT_TRUE(hasCorrectConstLabels(labelsHigh, confidenceHigh, rowsHigh, 0, 1.0,
                                       "[numClusters = 1, #rows >= 10]"));
 
-    ret = gmm(&dataLow[0][0], rowsLow, cols, 2, 10, 100, labelsLow, confidenceLow);
+    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 2, 10, 100, labelsLow, confidenceLow);
     EXPECT_EQ(ret, 0);
     // All labels must be -1 with 0% confidence for numSamples != 1 if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, -1, 0.0,
                                       "[numClusters = 2, #rows < 10]"));
 
-    ret = gmm(&dataLow[0][0], rowsLow, cols, 0, 10, 100, labelsLow, confidenceLow);
+    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 0, 10, 100, labelsLow, confidenceLow);
     EXPECT_EQ(ret, 0);
     // All labels must be -1 with 0% confidence for numSamples != 1 if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, -1, 0.0,
@@ -121,6 +122,8 @@ TEST(GMMTests, ThreeClusterCase)
     for (int row = 0; row < rows; ++row)
         labels[rowMap[row]] = row / rows1Cluster;
 
+    // std::cerr << "[TRUTH] labels = " << labels[0] << ',' << labels[1] << ',' << labels[2] << '\n';
+
     double means[numClusters][cols]
         = { { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
     double stds[numClusters][cols] = {
@@ -141,10 +144,10 @@ TEST(GMMTests, ThreeClusterCase)
         }
     }
 
-    int gmmLabels[rows];
-    double gmmConfidences[rows];
+    int gmmLabels[rows]{};
+    double gmmConfidences[rows]{};
 
-    int ret = gmm(&data[0][0], rows, cols, numClusters, 40, 100, gmmLabels, gmmConfidences);
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences);
     EXPECT_EQ(ret, 0);
 
     int confusion[numClusters][numClusters]{ { 0 } };
@@ -179,7 +182,7 @@ TEST(GMMTests, ThreeClusterCase)
                 << " both the real labels " << real << " and " << prevReal
                 << " are mapped to the same actual label " << realToActual[real] << " !";
         }
-        //std::cout << " | " << max << std::endl;
+        // std::cout << " | " << max << std::endl;
         accuracy += (static_cast<double>(max) / rows1Cluster);
     }
 

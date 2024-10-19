@@ -18,27 +18,61 @@
 
 #pragma once
 
-#include "matrix.hxx"
-#include "datamatrix.hxx"
+#include <gmm/data.hxx>
+
+#include "Eigen/Core"
+#include <Eigen/Dense>
+
+#include <memory>
+#include <vector>
 
 namespace gmm
 {
+
+using namespace Eigen;
+class Cluster;
+
 class Model
 {
 public:
-    Model(const util::DataMatrix& data, int num_clusters);
+    Model(const Map<const MatrixXdRM>& data, int num_clusters);
 
-    [[nodiscard]] int cluster_count() const { return num_clusters; }
-    [[nodiscard]] int sample_count() const { return data.rows(); }
-    [[nodiscard]] int dim_count() const { return data.cols(); }
+    [[nodiscard]] int clusters() const { return num_clusters; }
+    [[nodiscard]] int samples() const { return data.rows(); }
+    [[nodiscard]] int dims() const { return data.cols(); }
+
+    double fit(int num_epochs, int num_iterations);
+    void get_labels(int* labels, double* confidence_scores) const;
 
 private:
-    void init();
+    [[nodiscard]] double run_epoch(int num_iterations, MatrixXd& epoch_weights,
+                                   std::vector<Cluster>& epoch_clusters) const;
+    [[nodiscard]] double compute_expectation(MatrixXd& epoch_weights,
+                                             const std::vector<Cluster>& epoch_clusters) const;
+    void maximize_likelihood(const MatrixXd& epoch_weights,
+                             std::vector<Cluster>& epoch_clusters) const;
 
 private:
-    util::Matrix m_weights; // shape is c x m
-    const util::DataMatrix& data; // shape is m x n
+    MatrixXd weights; // shape is c x m
+    Data data; // shape is m x n
     const int num_clusters;
+};
+
+class GMM
+{
+public:
+    GMM(const double* data_, int rows_, int cols_, int min_clusters_, int max_clusters_,
+        int num_epochs_, int num_iterations_);
+    void fit();
+    void get_labels(int* labels, double* confidence_scores) const;
+
+private:
+    const Map<const MatrixXdRM> data;
+    std::unique_ptr<Model> best_model;
+    const int min_clusters;
+    const int max_clusters;
+    const int num_epochs;
+    const int num_iterations;
 };
 
 }

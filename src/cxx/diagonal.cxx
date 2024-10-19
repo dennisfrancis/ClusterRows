@@ -16,8 +16,10 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <iostream>
 #include "diagonal.hxx"
+#include "em.hxx"
 
 namespace util
 {
@@ -37,8 +39,9 @@ DiagonalMatrix::DiagonalMatrix(int size, const double* diagonal_vector)
 
 bool DiagonalMatrix::is_singular() const
 {
+    static constexpr double tiny{ DBL_MIN * 100 };
     for (int index = 0; index < m_size; ++index)
-        if (m_data[index] < 0.0001)
+        if (m_data[index] < tiny)
             return true;
     return false;
 }

@@ -20,6 +20,13 @@ endif ()
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
+# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
+add_subdirectory(external/eigen)
+
 set(LO_PATH "/usr/lib/libreoffice" CACHE FILEPATH "LibreOffice install directory")
 set(LO_SDK_PATH "/usr/lib/libreoffice/sdk" CACHE FILEPATH "LibreOffice SDK directory")
 option(LOGGING_ENABLED "Enable logging" OFF)
@@ -35,7 +42,17 @@ add_library(gmm
         src/cxx/diagonal.cxx
         src/cxx/svd.cxx
         src/cxx/gmm/cluster.cxx
-        src/cxx/gmm/model.cxx)
+        src/cxx/gmm/model.cxx
+        src/cxx/gmm/data.cxx)
+
+target_include_directories(gmm PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/inc
+        ${CMAKE_SOURCE_DIR}/src/inc/gmm)
+
+target_link_libraries(
+        gmm
+        Eigen3::Eigen)
+
 
 set(COMP_NAME ${CMAKE_PROJECT_NAME})
 set(COMP_IMPL_NAME ${COMP_NAME}.py)
@@ -173,7 +190,7 @@ if (NATIVE_BUILD)
     include(FetchContent)
     FetchContent_Declare(
             googletest
-            URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+            URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz
     )
 
     # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -186,32 +203,26 @@ if (NATIVE_BUILD)
     add_executable(
             gmmTests
             ${CMAKE_SOURCE_DIR}/test/gmmTests.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/cluster.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/model.cxx
     )
     target_link_libraries(
             gmmTests
-            gmm
             gtest_main
+            gmm
+            Eigen3::Eigen
     )
+
+    target_include_directories(gmmTests PUBLIC ${CMAKE_SOURCE_DIR}/src/inc ${CMAKE_SOURCE_DIR}/src/inc/gmm)
 
     add_executable(
             utilTests
             ${CMAKE_SOURCE_DIR}/test/utilTests.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/matrix.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/diagonal.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/svd.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/cluster.cxx
-            ${CMAKE_SOURCE_DIR}/src/cxx/gmm/model.cxx
     )
     target_link_libraries(
             utilTests
             gtest_main
+            gmm
     )
-    target_include_directories(utilTests PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
+    target_include_directories(utilTests PUBLIC ${CMAKE_SOURCE_DIR}/src/inc ${CMAKE_SOURCE_DIR}/src/inc/gmm)
 
     include(GoogleTest)
     gtest_discover_tests(gmmTests)

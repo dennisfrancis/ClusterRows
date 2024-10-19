@@ -17,6 +17,7 @@
  */
 
 #pragma once
+#include "macros.h"
 #include <memory>
 #include <cassert>
 
@@ -24,10 +25,10 @@ namespace util
 {
 class DiagonalMatrix;
 
-class Matrix
+class CR_DLLPUBLIC_EXPORT Matrix
 {
 public:
-    Matrix(const int rows, const int cols)
+    CR_DLLPUBLIC_EXPORT Matrix(const int rows, const int cols)
         : m_data(std::make_unique<double[]>(rows * cols))
         , m_rows(rows)
         , m_cols(cols)
@@ -39,7 +40,7 @@ public:
     Matrix(const Matrix& other);
     Matrix(Matrix&& other) = default;
 
-    Matrix& operator=(const Matrix& other) = delete;
+    Matrix& operator=(const Matrix& other);
     Matrix& operator=(Matrix&& other) = default;
 
     [[nodiscard]] const double& at(int row, int col) const
@@ -73,7 +74,9 @@ public:
 
     void display() const;
 
-    friend bool operator==(const Matrix& m1, const Matrix& m2);
+    void swap(Matrix& other);
+
+    friend CR_DLLPUBLIC_EXPORT bool operator==(const Matrix& m1, const Matrix& m2);
 
 private:
     std::unique_ptr<double[]> m_data;

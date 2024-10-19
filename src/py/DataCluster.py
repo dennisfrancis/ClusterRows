@@ -113,7 +113,7 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         labels = (ctypes.c_int * nrows)()
         confidences = (ctypes.c_double * nrows)()
         gmmModule = ctypes.CDLL(self._getGMMLibPath())
-        gmm = gmmModule.gmm
+        gmm = gmmModule.gmmMain
         gmm.argtypes = [
             ctypes.POINTER(ctypes.c_double), # data
             ctypes.c_int, # rows

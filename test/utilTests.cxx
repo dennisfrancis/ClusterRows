@@ -17,9 +17,9 @@
 */
 
 #include <gtest/gtest.h>
-#include "matrix.hxx"
-#include "diagonal.hxx"
-#include "svd.hxx"
+#include <matrix.hxx>
+#include <diagonal.hxx>
+#include <svd.hxx>
 #include <cmath>
 
 TEST(UtilTests, MatrixMoveConstructor)

@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "em.hxx"
-#include "logging.hxx"
+#include <em.hxx>
+#include <logging.hxx>
+#include <model.hxx>
 
 #include <cmath>
 #include <chrono>
@@ -40,9 +41,9 @@ void fillConstLabel(int label, double confidence, int rows, int* clusterLabels,
 
 }
 
-extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, int numClusters,
-                                       int numEpochs, int numIterations, int* clusterLabels,
-                                       double* labelConfidence)
+extern "C" int CR_DLLPUBLIC_EXPORT gmmMain(const double* array, int rows, int cols, int numClusters,
+                                           int numEpochs, int numIterations, int* clusterLabels,
+                                           double* labelConfidence)
 {
     if (!array || !clusterLabels || !labelConfidence)
         return -1;
@@ -59,21 +60,28 @@ extern "C" int CR_DLLPUBLIC_EXPORT gmm(const double* array, int rows, int cols, 
         return 0;
     }
 
-    util::DataMatrix mat(array, rows, cols);
+    bool autoMode{ numClusters <= 0 };
+    int min_clusters = autoMode ? 2 : numClusters;
+    int max_clusters = autoMode ? 5 : numClusters;
+    gmm::GMM trainer{ array, rows, cols, min_clusters, max_clusters, numEpochs, numIterations };
+    trainer.fit();
+    trainer.get_labels(clusterLabels, labelConfidence);
 
-    em::GMM gmm(array, rows, cols, numEpochs, numIterations);
-    if (numClusters <= 0) // Auto computer optimum number of clusters
-    {
-        const std::vector<int> numClustersArray = { 2, 3, 4, 5 };
-        gmm.TrainModel(numClustersArray);
-    }
-    else // numClusters > 1
-    {
-        const std::vector<int> numClustersArray = { numClusters };
-        gmm.TrainModel(numClustersArray);
-    }
+    // util::DataMatrix mat(array, rows, cols);
 
-    gmm.GetClusterLabels(clusterLabels, labelConfidence);
+    // em::GMM gmm(array, rows, cols, numEpochs, numIterations);
+    // if (numClusters <= 0) // Auto computer optimum number of clusters
+    // {
+    //     const std::vector<int> numClustersArray = { 2, 3, 4, 5 };
+    //     gmm.TrainModel(numClustersArray);
+    // }
+    // else // numClusters > 1
+    // {
+    //     const std::vector<int> numClustersArray = { numClusters };
+    //     gmm.TrainModel(numClustersArray);
+    // }
+
+    // gmm.GetClusterLabels(clusterLabels, labelConfidence);
 
     return 0;
 }
@@ -111,6 +119,26 @@ void em::GMM::computeStats()
 
         // Store std-dev.
         var = std::sqrt(var / (mnNumSamples - 1));
+    }
+
+    if (false)
+    {
+        writeLog("\nFirst sample : ");
+        for (int dim = 0; dim < mnNumDimensions; ++dim)
+        {
+            writeLog("%f ", maData[0][dim]);
+        }
+        writeLog("\nmean = ");
+        for (int dim = 0; dim < mnNumDimensions; ++dim)
+        {
+            writeLog("%f ", maMeans[dim]);
+        }
+        writeLog("\nstdev = ");
+        for (int dim = 0; dim < mnNumDimensions; ++dim)
+        {
+            writeLog("%f ", maStds[dim]);
+        }
+        writeLog("\n");
     }
 }
 

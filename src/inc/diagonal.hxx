@@ -17,13 +17,14 @@
 */
 
 #pragma once
+#include "macros.h"
 #include <memory>
 
 namespace util
 {
 
 class Matrix;
-class DiagonalMatrix
+class CR_DLLPUBLIC_EXPORT DiagonalMatrix
 {
     friend class Matrix;
 

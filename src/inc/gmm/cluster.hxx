@@ -18,27 +18,43 @@
 
 #pragma once
 
-#include "matrix.hxx"
-#include "datamatrix.hxx"
+#include <gmm/data.hxx>
+
+#include <Eigen/Dense>
+#include <ostream>
 
 namespace gmm
 {
+using namespace Eigen;
+class Model;
+class Data;
 
 class Cluster
 {
-    int32_t m_id;
-    double m_phi;
-    util::Matrix m_mu;
-    util::Matrix m_sigma;
-    const util::DataMatrix& data;
-    const util::Matrix& weights;
-
-    void init();
-    [[nodiscard]] int num_samples() const;
-    [[nodiscard]] int num_dims() const;
+    const Data& data; // m x n
+    MatrixXd mu;
+    MatrixXd sigma;
+    double phi;
+    int num_clusters;
+    int idx;
 
 public:
-    Cluster(int32_t id, const util::DataMatrix& data, const util::Matrix& weights);
-};
+    [[nodiscard]] int samples() const { return data.rows(); }
+    [[nodiscard]] int dims() const { return data.cols(); }
+    [[nodiscard]] int clusters() const { return num_clusters; }
 
+    Cluster(int idx_, const Data& data_, int num_clusters_);
+    void init(int use_sample);
+    void init_cheat();
+
+    void clear_mu_sigma();
+
+    [[nodiscard]] MatrixXd inv_covar_matrix() const { return sigma.inverse(); }
+    [[nodiscard]] double cov_determinant() const { return sigma.determinant(); }
+    [[nodiscard]] double sample_probability(int sample, const MatrixXd& cov_inv,
+                                            const double cov_determinant) const;
+
+    friend class Model;
+    friend std::ostream& operator<<(std::ostream&, const Cluster&);
+};
 }

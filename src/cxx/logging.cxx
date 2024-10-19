@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <logging.hxx>
+
 #include <cstdarg>
 #include <cstdio>
-#include "../inc/logging.hxx"
 
 void writeLog(const char* format, ...)
 {
