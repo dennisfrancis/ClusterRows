@@ -16,10 +16,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <diagonal.hxx>
 #include <cfloat>
 #include <iostream>
-#include "diagonal.hxx"
-#include "em.hxx"
 
 namespace util
 {

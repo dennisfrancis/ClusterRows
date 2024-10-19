@@ -16,12 +16,12 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cfloat>
-#include <em.hxx>
-#include <logging.hxx>
 #include <gmm/model.hxx>
 #include <gmm/cluster.hxx>
+#include <macros.h>
+#include <logging.hxx>
 
+#include <cfloat>
 #include <cmath>
 #include <iostream>
 #include <memory>

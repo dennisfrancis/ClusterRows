@@ -23,3 +23,5 @@
 #elif defined(__GNUC__)
 #define CR_DLLPUBLIC_EXPORT __attribute__((visibility("default")))
 #endif
+
+#define EPSILON 0.001

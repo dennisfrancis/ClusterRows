@@ -18,12 +18,9 @@
 
 #pragma once
 
-#include "em.h"
 #include "datamatrix.hxx"
 #include <memory>
 #include <vector>
-
-#define EPSILON 0.001
 
 namespace em
 {

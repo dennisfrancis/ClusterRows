@@ -43,7 +43,8 @@ add_library(gmm
         src/cxx/svd.cxx
         src/cxx/gmm/cluster.cxx
         src/cxx/gmm/model.cxx
-        src/cxx/gmm/data.cxx)
+        src/cxx/gmm/data.cxx
+        src/cxx/gmm/legacy_gmm.cxx)
 
 target_include_directories(gmm PUBLIC
         ${CMAKE_SOURCE_DIR}/src/inc
