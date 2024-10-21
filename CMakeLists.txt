@@ -120,6 +120,7 @@ target_include_directories(gmm PUBLIC ${CMAKE_SOURCE_DIR}/src/inc)
 set(COMP_XCU_FILES
         ${CMAKE_SOURCE_DIR}/xcu/DataCluster.xcu
         ${CMAKE_SOURCE_DIR}/xcu/Jobs.xcu
+        ${CMAKE_SOURCE_DIR}/xcu/CRNBUI.xcu
         ${CMAKE_SOURCE_DIR}/xcu/Addons.xcu)
 
 set(COMP_XDL_FILES ${CMAKE_SOURCE_DIR}/xdl/ClusterRows.xdl)

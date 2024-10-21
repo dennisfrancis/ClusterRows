@@ -36,6 +36,28 @@
             </node>
         </node>
 
+        <node oor:name="OfficeNotebookBar">
+            <node oor:name="ClusterRows.OfficeToolBar" oor:op="replace">
+                <node oor:name="m1" oor:op="replace">
+                    <prop oor:name="Context" oor:type="xs:string">
+                        <value>com.sun.star.sheet.SpreadsheetDocument</value>
+                    </prop>
+                    <prop oor:name="URL" oor:type="xs:string">
+                        <value>vnd.sun.star.job:event=onClusterRowsReqDialog</value>
+                    </prop>
+                    <prop oor:name="Title" oor:type="xs:string">
+                        <value>ClusterRows</value>
+                    </prop>
+                    <prop oor:name="Target" oor:type="xs:string">
+                        <value>_self</value>
+                    </prop>
+                    <prop oor:name="Style" oor:type="xs:string">
+                        <value>text+icon</value>
+                    </prop>
+                </node>
+            </node>
+        </node>
+
         <node oor:name="OfficeToolbarMerging">
             <node oor:name="com.github.dennisfrancis.clusterrows" oor:op="replace">
                 <node oor:name="com.github.dennisfrancis.clusterrows.T1" oor:op="replace">
