@@ -5,5 +5,5 @@
     a. random selection of c data points or means of groups.
     b. using K-means algorithm.
 4. Ability to generate a chart from a dataset and labels independent from the GMMCluster formula or Clustering dialog.
-5. Improve notebook bar integration. (Currently no icon for ClusterRows?)
+5. ~~Improve notebook bar integration. (Currently no icon for ClusterRows?)~~
 6. Test GMM using more contrived datasets - centers far away from origin, out of scale dimensions.
