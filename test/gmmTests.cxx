@@ -20,6 +20,9 @@
 #include <gtest/gtest.h>
 #include <em.h>
 
+#include <Eigen/Dense>
+
+#include <fstream>
 #include <chrono>
 #include <random>
 
@@ -102,7 +105,7 @@ TEST(GMMTests, ConstLabelCases)
                                       "[numClusters = 0, #rows < 10]"));
 }
 
-TEST(GMMTests, ThreeClusterCase)
+TEST(GMMTests, ThreeClusterCaseDiagonal)
 {
     constexpr int numClusters = 3;
     constexpr int rows1Cluster = 300;
@@ -143,6 +146,125 @@ TEST(GMMTests, ThreeClusterCase)
             data[row][col] = normalSampler(generator);
         }
     }
+
+    int gmmLabels[rows]{};
+    double gmmConfidences[rows]{};
+
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences);
+    EXPECT_EQ(ret, 0);
+
+    int confusion[numClusters][numClusters]{ { 0 } };
+
+    for (int row = 0; row < rows; ++row)
+    {
+        int actualLabel = gmmLabels[row];
+        ASSERT_LT(actualLabel, numClusters) << " for row " << row;
+        ASSERT_GE(actualLabel, 0) << " for row " << row;
+        ++confusion[labels[row]][gmmLabels[row]];
+    }
+
+    double accuracy = 0;
+    int realToActual[numClusters];
+    for (int real = 0; real < numClusters; ++real)
+    {
+        int max = 0;
+        for (int actual = 0; actual < numClusters; ++actual)
+        {
+            int count = confusion[real][actual];
+            //std::cout << count << "  ";
+            if (count > max)
+            {
+                max = count;
+                realToActual[real] = actual;
+            }
+        }
+
+        for (int prevReal = 0; prevReal < real; ++prevReal)
+        {
+            EXPECT_NE(realToActual[real], realToActual[prevReal])
+                << " both the real labels " << real << " and " << prevReal
+                << " are mapped to the same actual label " << realToActual[real] << " !";
+        }
+        // std::cout << " | " << max << std::endl;
+        accuracy += (static_cast<double>(max) / rows1Cluster);
+    }
+
+    accuracy /= numClusters;
+    EXPECT_GT(accuracy, 0.93);
+    EXPECT_LE(accuracy, 1.0);
+}
+
+TEST(GMMTests, ThreeClusterCaseFull)
+{
+    constexpr int numClusters = 3;
+    constexpr int rows1Cluster = 300;
+    constexpr int rows = rows1Cluster * numClusters;
+    constexpr int cols = 2;
+
+    double data[rows][cols];
+    int rowMap[rows];
+    int labels[rows];
+    for (int row = 0; row < rows; ++row)
+        rowMap[row] = row;
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::shuffle(rowMap, rowMap + rows, generator);
+
+    for (int row = 0; row < rows; ++row)
+        labels[rowMap[row]] = row / rows1Cluster;
+
+    // std::cerr << "[TRUTH] labels = " << labels[0] << ',' << labels[1] << ',' << labels[2] << '\n';
+
+    std::array<Eigen::Matrix<double, cols, 1>, numClusters> means{
+        (Eigen::Matrix<double, cols, 1>() << 0.5, 0.5).finished(),
+        (Eigen::Matrix<double, cols, 1>() << 0.0, 1.5).finished(),
+        (Eigen::Matrix<double, cols, 1>() << 1.5, 0.0).finished()
+    };
+
+    Eigen::Matrix<double, cols, cols> covar{
+        (Eigen::Matrix<double, cols, cols>() << 1.0, 0.95, 0.95, 1).finished()
+    };
+
+    Eigen::Matrix<double, cols, cols> L(covar.llt().matrixL());
+
+    Eigen::Matrix<double, cols, 1> u;
+    Eigen::Matrix<double, cols, 1> output_sample;
+
+    for (int lrow = 0; lrow < rows; ++lrow)
+    {
+        int row = rowMap[lrow];
+        int label = labels[row];
+
+        for (int col = 0; col < cols; ++col)
+        {
+            std::normal_distribution<double> normalSampler(0.0, 1.0);
+            u(col, 0) = normalSampler(generator);
+        }
+
+        output_sample = means[label] + (L * u);
+
+        for (int col = 0; col < cols; ++col)
+        {
+            data[row][col] = output_sample(col, 0);
+        }
+    }
+
+    // if (true)
+    // {
+    //     std::ofstream fout("/home/dennis/full.csv");
+    //     for (int row = 0; row < rows; ++row)
+    //     {
+    //         int label = labels[row];
+    //         for (int col = 0; col < cols; ++col)
+    //         {
+    //             fout << data[row][col] << ',';
+    //         }
+    //         fout << label << std::endl;
+    //     }
+
+    //     fout.close();
+    // }
 
     int gmmLabels[rows]{};
     double gmmConfidences[rows]{};
