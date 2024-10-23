@@ -49,6 +49,14 @@
               <value xml:lang="en">Maximum number of iterations to do in each epoch (optional)</value>
             </prop>
           </node>
+          <node oor:name="fullGMM" oor:op="replace">
+            <prop oor:name="DisplayName">
+              <value xml:lang="en">fullGMM</value>
+            </prop>
+            <prop oor:name="Description">
+              <value xml:lang="en">Whether to perform a full covariance GMM (optional: 0)</value>
+            </prop>
+          </node>
         </node>
       </node>
     </node>

@@ -477,7 +477,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         rangeArg = crrange.cellRangeToString(dataRange, self.model)
         args = self.gmmArgs
         resRangeObj.setArrayFormula(
-            f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations})")
+            f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations};0)")
 
         if args.hasHeader:
             sheet = self.model.Sheets[resultsRange.Sheet]

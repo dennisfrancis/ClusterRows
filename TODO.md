@@ -1,4 +1,4 @@
-0. New contrived 3 cluster dataset on 'make deployrun' with non-diagonal covariances.
+0. ~~New contrived 3 cluster dataset on 'make deployrun' with non-diagonal covariances.~~
 1. Allow user to choose between diagonal vs full GMM clustering.
 2. Introduce K-means clustering.
 3. Allow user to pre-initialize cluster centers using

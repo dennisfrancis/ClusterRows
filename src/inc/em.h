@@ -32,10 +32,11 @@ extern "C"
     /// @param numIterations maximum number of iterations in each epoch.
     /// @param clusterLabels output array to put each row's cluster assignment label.
     /// @param labelConfidence output array to store confidence score of each cluster assignment.
+    /// @param fullGMM specifies whether to perform a full covariance matrix GMM or not.
     /// @return 0 on success and -1 on failure.
     int CR_DLLPUBLIC_EXPORT gmmMain(const double* array, int rows, int cols, int numClusters,
                                     int numEpochs, int numIterations, int* clusterLabels,
-                                    double* labelConfidence);
+                                    double* labelConfidence, int fullGMM);
 
 #ifdef __cplusplus
 }

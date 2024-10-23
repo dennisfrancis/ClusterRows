@@ -23,7 +23,7 @@ import DataCluster
 def main():
     clusterImpl = DataCluster.DataClusterImpl({}, testMode=True)
     data: Tuple[Tuple[float, float]] = tuple(((random.uniform(0,10), random.uniform(20, 30)) for i in range(100)))
-    ret = clusterImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100)
+    ret = clusterImpl.gmmCluster(data, numClusters=3, numEpochs=20, numIterations=100, fullGMM=0)
     print(ret)
 
 if __name__ == "__main__":

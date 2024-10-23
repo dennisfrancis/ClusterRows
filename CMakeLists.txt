@@ -178,8 +178,8 @@ add_custom_target(deploy
         )
 
 add_custom_target(deployrun
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/testdocs/no-results.ods ${CMAKE_BINARY_DIR}/
-        COMMAND soffice --calc ${CMAKE_BINARY_DIR}/no-results.ods
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/testdocs/no-results-full.ods ${CMAKE_BINARY_DIR}/
+        COMMAND soffice --calc ${CMAKE_BINARY_DIR}/no-results-full.ods
         COMMENT "Running system soffice with the built extension"
         DEPENDS deploy
         )

@@ -11,7 +11,8 @@ module com { module github { module dennisfrancis {
             [in] sequence < sequence < double > > data,
             [in] any numClusters,
             [in] any numEpochs,
-            [in] any numIterations);
+            [in] any numIterations,
+            [in] any fullGMM);
     };
 
 }; }; };

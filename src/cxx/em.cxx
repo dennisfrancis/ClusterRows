@@ -18,6 +18,7 @@
 
 #include <em.h>
 #include <model.hxx>
+#include <legacy_gmm.hxx>
 
 namespace
 {
@@ -38,7 +39,7 @@ void fillConstLabel(int label, double confidence, int rows, int* clusterLabels,
 
 extern "C" int CR_DLLPUBLIC_EXPORT gmmMain(const double* array, int rows, int cols, int numClusters,
                                            int numEpochs, int numIterations, int* clusterLabels,
-                                           double* labelConfidence)
+                                           double* labelConfidence, int fullGMM)
 {
     if (!array || !clusterLabels || !labelConfidence)
         return -1;
@@ -55,12 +56,34 @@ extern "C" int CR_DLLPUBLIC_EXPORT gmmMain(const double* array, int rows, int co
         return 0;
     }
 
-    bool autoMode{ numClusters <= 0 };
-    int min_clusters = autoMode ? 2 : numClusters;
-    int max_clusters = autoMode ? 5 : numClusters;
-    gmm::GMM trainer{ array, rows, cols, min_clusters, max_clusters, numEpochs, numIterations };
-    trainer.fit();
-    trainer.get_labels(clusterLabels, labelConfidence);
+    if (fullGMM)
+    {
+        bool autoMode{ numClusters <= 0 };
+        int min_clusters = autoMode ? 2 : numClusters;
+        int max_clusters = autoMode ? 5 : numClusters;
+        gmm::GMM trainer{ array,        rows,      cols,          min_clusters,
+                          max_clusters, numEpochs, numIterations, bool(fullGMM) };
+        trainer.fit();
+        trainer.get_labels(clusterLabels, labelConfidence);
+    }
+    else
+    {
+        util::DataMatrix mat(array, rows, cols);
+
+        em::GMM gmm(array, rows, cols, numEpochs, numIterations);
+        if (numClusters <= 0) // Auto computer optimum number of clusters
+        {
+            const std::vector<int> numClustersArray = { 2, 3, 4, 5 };
+            gmm.TrainModel(numClustersArray);
+        }
+        else // numClusters > 1
+        {
+            const std::vector<int> numClustersArray = { numClusters };
+            gmm.TrainModel(numClustersArray);
+        }
+
+        gmm.GetClusterLabels(clusterLabels, labelConfidence);
+    }
 
     return 0;
 }

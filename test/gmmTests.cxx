@@ -59,13 +59,13 @@ TEST(GMMTests, ReturnErrorCases)
     double data[rows][cols];
     int labels[rows];
     double confidence[rows];
-    int ret = gmmMain(nullptr, rows, cols, 3, 10, 100, labels, confidence);
+    int ret = gmmMain(nullptr, rows, cols, 3, 10, 100, labels, confidence, 0);
     EXPECT_EQ(ret, -1);
 
-    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, nullptr, confidence);
+    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, nullptr, confidence, 0);
     EXPECT_EQ(ret, -1);
 
-    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, labels, nullptr);
+    ret = gmmMain(&data[0][0], rows, cols, 3, 10, 100, labels, nullptr, 0);
     EXPECT_EQ(ret, -1);
 }
 
@@ -80,25 +80,25 @@ TEST(GMMTests, ConstLabelCases)
     int labelsHigh[rowsHigh];
     double confidenceLow[rowsLow];
     double confidenceHigh[rowsHigh];
-    int ret = gmmMain(&dataLow[0][0], rowsLow, cols, 1, 10, 100, labelsLow, confidenceLow);
+    int ret = gmmMain(&dataLow[0][0], rowsLow, cols, 1, 10, 100, labelsLow, confidenceLow, 0);
     EXPECT_EQ(ret, 0);
     // All labels must be 0 with 100% confidence for numClusters = 1 even if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, 0, 1.0,
                                       "[numClusters = 1, #rows < 10]"));
 
-    ret = gmmMain(&dataHigh[0][0], rowsHigh, cols, 1, 10, 100, labelsHigh, confidenceHigh);
+    ret = gmmMain(&dataHigh[0][0], rowsHigh, cols, 1, 10, 100, labelsHigh, confidenceHigh, 0);
     EXPECT_EQ(ret, 0);
     // All labels must be 0 with 100% confidence for numClusters = 1.
     EXPECT_TRUE(hasCorrectConstLabels(labelsHigh, confidenceHigh, rowsHigh, 0, 1.0,
                                       "[numClusters = 1, #rows >= 10]"));
 
-    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 2, 10, 100, labelsLow, confidenceLow);
+    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 2, 10, 100, labelsLow, confidenceLow, 0);
     EXPECT_EQ(ret, 0);
     // All labels must be -1 with 0% confidence for numSamples != 1 if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, -1, 0.0,
                                       "[numClusters = 2, #rows < 10]"));
 
-    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 0, 10, 100, labelsLow, confidenceLow);
+    ret = gmmMain(&dataLow[0][0], rowsLow, cols, 0, 10, 100, labelsLow, confidenceLow, 0);
     EXPECT_EQ(ret, 0);
     // All labels must be -1 with 0% confidence for numSamples != 1 if number of samples is < 10.
     EXPECT_TRUE(hasCorrectConstLabels(labelsLow, confidenceLow, rowsLow, -1, 0.0,
@@ -150,7 +150,7 @@ TEST(GMMTests, ThreeClusterCaseDiagonal)
     int gmmLabels[rows]{};
     double gmmConfidences[rows]{};
 
-    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences);
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences, 0);
     EXPECT_EQ(ret, 0);
 
     int confusion[numClusters][numClusters]{ { 0 } };
@@ -269,7 +269,7 @@ TEST(GMMTests, ThreeClusterCaseFull)
     int gmmLabels[rows]{};
     double gmmConfidences[rows]{};
 
-    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences);
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences, 1);
     EXPECT_EQ(ret, 0);
 
     int confusion[numClusters][numClusters]{ { 0 } };

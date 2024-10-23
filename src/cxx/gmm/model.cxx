@@ -30,10 +30,11 @@
 #include <chrono>
 #include <random>
 
-gmm::Model::Model(const Map<const MatrixXdRM>& data_, int num_clusters_)
+gmm::Model::Model(const Map<const MatrixXdRM>& data_, int num_clusters_, bool full_gmm)
     : weights(num_clusters_, data_.rows()) // c x m
     , data(data_)
     , num_clusters(num_clusters_)
+    , full_gmm{ full_gmm }
 {
 }
 
@@ -42,7 +43,8 @@ namespace
 
 using namespace Eigen;
 
-void init_clusters(std::vector<gmm::Cluster>& clusters, int num_clusters, const gmm::Data& data)
+void init_clusters(std::vector<gmm::Cluster>& clusters, int num_clusters, const gmm::Data& data,
+                   bool full_gmm)
 {
     if (static_cast<int>(clusters.size()) != num_clusters)
     {
@@ -51,7 +53,7 @@ void init_clusters(std::vector<gmm::Cluster>& clusters, int num_clusters, const 
         for (int cidx = 0; cidx < num_clusters; ++cidx)
         {
             // std::cerr << "[INFO] \t cluster = " << cidx << '\n';
-            clusters.push_back({ cidx, data, num_clusters });
+            clusters.push_back({ cidx, data, num_clusters, full_gmm });
         }
     }
 
@@ -85,7 +87,7 @@ double gmm::Model::fit(int num_epochs, int num_iterations)
     {
         // std::cerr << "[INFO] epoch = " << epoch << " started.\n";
         // No need to initialize weights.
-        init_clusters(epoch_clusters, num_clusters, data);
+        init_clusters(epoch_clusters, num_clusters, data, full_gmm);
         writeLog("\tEpoch#%d : ", epoch);
         double epoch_bic = run_epoch(num_iterations, epoch_weights, epoch_clusters);
         writeLog("\n\tepoch_bic = %f\n", epoch_bic);
@@ -110,7 +112,8 @@ double gmm::Model::fit(int num_epochs, int num_iterations)
             std::cerr << "Cluster#" << cluster << ":\n";
             std::cerr << "phi = " << ecluster.phi << '\n';
             std::cerr << "mu = \n" << ecluster.mu << '\n';
-            std::cerr << "sigma = \n" << ecluster.sigma << '\n';
+            if (ecluster.full_gmm)
+                std::cerr << "sigma = \n" << *ecluster.sigma << '\n';
         }
     }
 
@@ -184,13 +187,25 @@ double gmm::Model::compute_expectation(MatrixXd& epoch_weights,
     for (int cluster = 0; cluster < c; ++cluster)
     {
         const auto& ecluster = epoch_clusters[cluster];
-        const auto cov_inverse = ecluster.inv_covar_matrix();
-        const double cov_determinant = ecluster.cov_determinant();
-        for (int sample = 0; sample < m; ++sample)
+        if (full_gmm)
         {
-            double wt = ecluster.sample_probability(sample, cov_inverse, cov_determinant);
-            epoch_weights(cluster, sample) = wt;
-            normalizers[sample] += wt;
+            const auto cov_inverse = ecluster.inv_covar_matrix();
+            const double cov_determinant = ecluster.cov_determinant();
+            for (int sample = 0; sample < m; ++sample)
+            {
+                double wt = ecluster.sample_probability(sample, cov_inverse, cov_determinant);
+                epoch_weights(cluster, sample) = wt;
+                normalizers[sample] += wt;
+            }
+        }
+        else
+        {
+            for (int sample = 0; sample < m; ++sample)
+            {
+                double wt = ecluster.sample_probability(sample);
+                epoch_weights(cluster, sample) = wt;
+                normalizers[sample] += wt;
+            }
         }
     }
 
@@ -249,33 +264,57 @@ void gmm::Model::maximize_likelihood(const MatrixXd& epoch_weights,
     }
 
     // Update sigma
-    for (int cluster = 0; cluster < c; ++cluster)
+    if (full_gmm)
     {
-        auto& ecluster{ epoch_clusters[cluster] };
-        double cluster_weight{ 0.0 };
-        for (int sample = 0; sample < m; ++sample)
+        for (int cluster = 0; cluster < c; ++cluster)
         {
-            double wt = epoch_weights(cluster, sample);
-            cluster_weight += wt;
+            auto& ecluster{ epoch_clusters[cluster] };
+            double cluster_weight{ 0.0 };
+            for (int sample = 0; sample < m; ++sample)
+            {
+                double wt = epoch_weights(cluster, sample);
+                cluster_weight += wt;
 
-            MatrixXd x = data(sample).reshaped(n, 1);
-            ecluster.sigma += (wt * ((x - ecluster.mu) * (x - ecluster.mu).transpose()));
+                MatrixXd x = data(sample).reshaped(n, 1);
+                (*ecluster.sigma) += (wt * ((x - ecluster.mu) * (x - ecluster.mu).transpose()));
+            }
+
+            // if (cluster_weight > DBL_MIN)
+            if (full_gmm)
+            {
+                (*ecluster.sigma) /= cluster_weight;
+            }
         }
-
-        // if (cluster_weight > DBL_MIN)
+    }
+    else
+    {
+        for (int cluster = 0; cluster < c; ++cluster)
         {
-            ecluster.sigma /= cluster_weight;
+            auto& ecluster{ epoch_clusters[cluster] };
+            double den = (m * ecluster.phi);
+            for (int dim = 0; dim < n; ++dim)
+            {
+                const double mean = ecluster.mu(dim, 0);
+                double num = 0.0;
+                for (int sample = 0; sample < m; ++sample)
+                {
+                    const double x = data(sample, dim);
+                    num += (epoch_weights(cluster, sample) * x * x);
+                }
+                (*ecluster.stds)[dim] = std::sqrt((num / den) - (mean * mean));
+            }
         }
     }
 }
 
 gmm::GMM::GMM(const double* data_, int rows_, int cols_, int min_clusters_, int max_clusters_,
-              int num_epochs_, int num_iterations_)
+              int num_epochs_, int num_iterations_, bool full_gmm_)
     : data{ data_, rows_, cols_ }
     , min_clusters{ min_clusters_ }
     , max_clusters{ max_clusters_ }
     , num_epochs{ num_epochs_ }
     , num_iterations{ num_iterations_ }
+    , full_gmm{ full_gmm_ }
 {
 }
 
@@ -286,7 +325,7 @@ void gmm::GMM::fit()
     for (int clusters = min_clusters; clusters <= max_clusters; ++clusters)
     {
         writeLog("\nFitting for #clusters = %d\n", clusters);
-        auto model{ std::make_unique<Model>(data, clusters) };
+        auto model{ std::make_unique<Model>(data, clusters, full_gmm) };
         double bic = model->fit(num_epochs, num_iterations);
         if (bic < best_bic)
         {

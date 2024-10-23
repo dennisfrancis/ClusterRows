@@ -83,27 +83,29 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
         extension_path = self._getExtensionPath()
         return os.path.normpath(os.path.join(extension_path, fname))
 
-    def gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float, ...]]:
+    def gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations, fullGMM) -> Tuple[Tuple[float, ...]]:
         """Compute clusters for each row of input data matrix with
         the given parameters"""
         ret = ((-1, 0),)
         try:
-            ret = self._gmmCluster(data, numClusters=numClusters, numEpochs=numEpochs, numIterations=numIterations)
+            ret = self._gmmCluster(data, numClusters=numClusters, numEpochs=numEpochs, numIterations=numIterations, fullGMM=fullGMM)
         except Exception as e:
             self.logger.exception("_gmmCluster crashed.")
         return ret
 
-    def _gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations) -> Tuple[Tuple[float, ...]]:
+    def _gmmCluster(self, data: Tuple[Tuple[float, ...]], numClusters, numEpochs, numIterations, fullGMM) -> Tuple[Tuple[float, ...]]:
         mainPerf = PerfTimer("gmmCluster", showStart=True, logger=self.logger)
         if numClusters is None: numClusters = 0
         if numEpochs is None: numEpochs = 10
         if numIterations is None: numIterations = 100
+        if fullGMM is None: fullGMM = 0
         self.logger.debug(f"Params: numClusters = {numClusters} numEpochs = {numEpochs} numIterations = {numIterations}")
         if (not DataClusterImpl._isNumeric(numClusters)) \
             or (not DataClusterImpl._isNumeric(numEpochs)) \
                 or (not DataClusterImpl._isNumeric(numIterations)) \
                     or (not isinstance(data, tuple)) or len(data) == 0 \
-                        or (not isinstance(data[0], tuple)):
+                        or (not isinstance(data[0], tuple)
+                            or (not DataClusterImpl._isNumeric(fullGMM))):
                             return ((-1, 0),)
         nrows = len(data)
         ncols = len(data[0])
@@ -123,10 +125,11 @@ class DataClusterImpl(unohelper.Base, XDataCluster):
             ctypes.c_int, # numIterations
             ctypes.POINTER(ctypes.c_int), # clusterLabels
             ctypes.POINTER(ctypes.c_double), # labelConfidence
+            ctypes.c_int, # fullGMM
         ]
         gmm.restype = ctypes.c_int
         gmmPerf = PerfTimer("gmm", level=1, logger=self.logger)
-        status = gmm(arr, nrows, ncols, int(numClusters), int(numEpochs), int(numIterations), labels, confidences)
+        status = gmm(arr, nrows, ncols, int(numClusters), int(numEpochs), int(numIterations), labels, confidences, int(fullGMM))
         gmmPerf.show()
         self.logger.debug("gmm status = {}".format(status))
         resultsToTuplePerf = PerfTimer("resultsToTuple", level=1, logger=self.logger)

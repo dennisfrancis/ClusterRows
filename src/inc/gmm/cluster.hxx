@@ -21,6 +21,7 @@
 #include <gmm/data.hxx>
 
 #include <Eigen/Dense>
+#include <optional>
 #include <ostream>
 
 namespace gmm
@@ -33,26 +34,36 @@ class Cluster
 {
     const Data& data; // m x n
     MatrixXd mu;
-    MatrixXd sigma;
+    std::optional<MatrixXd> sigma; // full
+    std::optional<std::vector<double>> stds;
     double phi;
     int num_clusters;
     int idx;
+    bool full_gmm;
 
 public:
     [[nodiscard]] int samples() const { return data.rows(); }
     [[nodiscard]] int dims() const { return data.cols(); }
     [[nodiscard]] int clusters() const { return num_clusters; }
 
-    Cluster(int idx_, const Data& data_, int num_clusters_);
+    Cluster(int idx_, const Data& data_, int num_clusters_, bool full_gmm);
     void init(int use_sample);
-    void init_cheat();
 
     void clear_mu_sigma();
 
-    [[nodiscard]] MatrixXd inv_covar_matrix() const { return sigma.inverse(); }
-    [[nodiscard]] double cov_determinant() const { return sigma.determinant(); }
+    [[nodiscard]] MatrixXd inv_covar_matrix() const
+    {
+        assert(full_gmm);
+        return sigma->inverse();
+    }
+    [[nodiscard]] double cov_determinant() const
+    {
+        assert(full_gmm);
+        return sigma->determinant();
+    }
     [[nodiscard]] double sample_probability(int sample, const MatrixXd& cov_inv,
                                             const double cov_determinant) const;
+    [[nodiscard]] double sample_probability(int sample) const;
 
     friend class Model;
     friend std::ostream& operator<<(std::ostream&, const Cluster&);

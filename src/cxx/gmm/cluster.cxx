@@ -21,16 +21,23 @@
 
 #include <cmath>
 #include <iostream>
-#include <chrono>
-#include <random>
+#include <optional>
 
-gmm::Cluster::Cluster(int idx_, const Data& data_, int num_clusters_)
+gmm::Cluster::Cluster(int idx_, const Data& data_, int num_clusters_, bool full_gmm_)
     : data{ data_ }
     , mu(data_.cols(), 1)
-    , sigma(data_.cols(), data_.cols())
     , num_clusters{ num_clusters_ }
     , idx{ idx_ }
+    , full_gmm{ full_gmm_ }
 {
+    if (full_gmm)
+    {
+        sigma = std::make_optional<MatrixXd>(data_.cols(), data_.cols());
+    }
+    else
+    {
+        stds = std::make_optional<std::vector<double>>(data_.cols());
+    }
 }
 
 void gmm::Cluster::init(int use_sample)
@@ -42,36 +49,17 @@ void gmm::Cluster::init(int use_sample)
     phi = 1.0 / c;
 
     mu = data(use_sample).reshaped(n, 1);
-    sigma.setIdentity();
-    sigma *= 5;
-}
-
-void gmm::Cluster::init_cheat()
-{
-    const int c = clusters();
-    const int n = dims();
-
-    phi = 1.0 / c;
-    // Original truth
-    const double centers[3][5]
-        = { { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
-    // const double centers[3][5]
-    //     = { { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
-
-    double stds[3][5] = {
-        { 2.5, 1.5, 2.5, 1.5, 1.5 },
-        { 0.2, 1.5, 1.2, 0.5, 1.2 },
-        { 0.7, 2.1, 1.5, 0.7, 1.5 },
-    };
-
-    sigma.setZero();
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
-    std::normal_distribution<double> normalSampler(0, 0.05);
-    for (int dim = 0; dim < n; ++dim)
+    if (full_gmm)
     {
-        mu(dim, 0) = centers[idx][dim] + normalSampler(generator);
-        sigma(dim, dim) = stds[idx][dim];
+        sigma->setIdentity();
+        (*sigma) *= 5;
+    }
+    else
+    {
+        for (int dim = 0; dim < n; ++dim)
+        {
+            (*stds)[dim] = 1.5;
+        }
     }
 }
 
@@ -79,7 +67,18 @@ void gmm::Cluster::clear_mu_sigma()
 {
     // std::cerr << "[DEBUG] inside Cluster::clear_mu_sigma()\n";
     mu.setZero();
-    sigma.setZero();
+    if (full_gmm)
+    {
+        sigma->setZero();
+    }
+    else
+    {
+        const int n = dims();
+        for (int dim = 0; dim < n; ++dim)
+        {
+            (*stds)[dim] = 0.0;
+        }
+    }
 }
 
 namespace
@@ -93,7 +92,16 @@ double dnorm(double x, double mean, double stdev)
 }
 }
 
-#define USE_VECTORIZED 1
+double gmm::Cluster::sample_probability(int sample) const
+{
+    const int n = dims();
+    double prob = phi;
+    for (int dim = 0; dim < n; ++dim)
+    {
+        prob *= dnorm(data(sample, dim), mu(dim, 0), (*stds)[dim]);
+    }
+    return prob;
+}
 
 double gmm::Cluster::sample_probability(int sample, const MatrixXd& cov_inv,
                                         const double cov_determinant) const
@@ -105,7 +113,6 @@ double gmm::Cluster::sample_probability(int sample, const MatrixXd& cov_inv,
     (void)(n);
     (void)(dnorm);
 
-#ifdef USE_VECTORIZED
     MatrixXd X = data(sample).reshaped(dims(), 1);
     auto res = (X - mu).transpose() * cov_inv * (X - mu);
     double exp_arg{ -0.5 * res(0, 0) };
@@ -124,13 +131,6 @@ double gmm::Cluster::sample_probability(int sample, const MatrixXd& cov_inv,
     //               << " prob = " << prob << "]  ";
     // if (sample == 5)
     //     std::cerr << '\n';
-#else
-    prob = phi;
-    for (int dim = 0; dim < n; ++dim)
-    {
-        prob *= dnorm(data(sample, dim), mu(dim, 0), std::sqrt(sigma(dim, dim)));
-    }
-#endif
 
     return prob;
 }
@@ -141,8 +141,7 @@ std::ostream& operator<<(std::ostream& os, const gmm::Cluster& clusterObj)
 {
     os << "Cluster(id = " << clusterObj.idx << "): " << "data(" << clusterObj.data.rows() << ", "
        << clusterObj.data.cols() << ") \tmu(" << clusterObj.mu.rows() << ", "
-       << clusterObj.mu.cols() << ") \t sigma(" << clusterObj.sigma.rows() << ", "
-       << clusterObj.sigma.cols() << ") num_clusters = " << clusterObj.num_clusters
+       << clusterObj.mu.cols() << ") num_clusters = " << clusterObj.num_clusters
        << " dims = " << clusterObj.dims() << " samples = " << clusterObj.samples()
        << " clusters = " << clusterObj.clusters();
     return os;
