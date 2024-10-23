@@ -9,7 +9,8 @@ $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 ```
 
 ## What's new?
-* Support for Windows and MacOSX
+* Support for full covariance GMM in GMMCluster() formula.
+* Support for Windows.
   * Platform specific extension packages in the releases page.
 * Dialog based workflow
 * GMMCluster() formula
@@ -26,9 +27,9 @@ $ unopkg install <path-to-downloaded-extension>/ClusterRows.oxt
 
 The dialog based clustering (described above) uses an in-house array formula `GMMCLUSTER` to compute the clusters and confidence scores. Hence it is possible to directly use this array formula to compute the clusters instead of using the dialog. Doing so has the advantage of specifying the exact data-range (without the header) and placement of the results. In addition the parameters (including the data-range) could be specified programatically as functions of other cells/ranges in general. The syntax of `GMMCLUSTER` is:
 ```
-GMMCLUSTER(data, numClusters, numEpochs, numIterations)
+GMMCLUSTER(data, numClusters, numEpochs, numIterations, fullGMM)
 ```
-where **data** is the array(cell-range) holding the data, **numClusters** is the desired number of clusters (optional, default is to automatically estimate this), **numEpochs** is the maximum number of epochs to use (optional) and **numIteration** is the maximum number of iterations to do in each epoch (optional). Note that after entering the formula expression remember to press `Ctrl+Shift+Enter` instead of just `Enter` to commit the array formula.
+where **data** is the array(cell-range) holding the data, **numClusters** is the desired number of clusters (optional, default is to automatically estimate this), **numEpochs** is the maximum number of epochs to use (optional), **numIteration** is the maximum number of iterations to do in each epoch (optional) and **fullGMM** specified whether to do a full covariance GMM or not (optional, default setting is 0(FALSE)). Note that after entering the formula expression remember to press `Ctrl+Shift+Enter` instead of just `Enter` to commit the array formula.
 
 ## Implementation
 
@@ -38,7 +39,7 @@ The project does not depend on any machine learning libraries but it uses [Eigen
 
 ## Planned features
 
-* Optional 'seed' (5th) parameter for `GMMCLUSTER()` to make the results reproducible.
+* See TODO.md for short term planned features.
 * Add support for other common clustering algorithms.
 
 ## Sample usage of the extension
