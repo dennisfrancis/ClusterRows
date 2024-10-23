@@ -51,6 +51,8 @@ The document also contains visualizations of the data in the sheet `charts`. The
 
 ![Visualization](img/chart.png)
 
+![Visualization](img/chart2.png)
+
 ## Building the extension from source
 
 This is known to work only in GNU/Linux systems. Builds for Windows and MacOS can be done using cmake toolchain files provided with the project.
