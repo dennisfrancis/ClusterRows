@@ -191,12 +191,13 @@ class RangeAddress:
         self.Sheet = sheet
 
 class GMMArgs(object):
-    def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False):
+    def __init__(self, numClusters: int = 0, numEpochs: int = 10, numIterations: int = 100, colorRows: int = True, hasHeader: bool = False, fullGMM: bool = False):
         self.rangeAddr: Optional[RangeAddress] = None
         self.outputAddr: Optional[CellAddress] = CellAddress()
         self.numClusters = numClusters
         self.numEpochs = numEpochs
         self.numIterations = numIterations
+        self.fullGMM = fullGMM
         self.colorRows = colorRows
         self.hasHeader = hasHeader
 
@@ -211,7 +212,7 @@ class GMMArgs(object):
         else:
             outputAddrStr = f"\n\t\tcol = {self.outputAddr.col}, row = {self.outputAddr.row}, sheet = {self.outputAddr.sheet}"
         paramStr = f"numClusters = {self.numClusters}, numEpochs = {self.numEpochs}, numIterations = {self.numIterations}"
-        paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}"
+        paramStr += f"\ncolorRows = {self.colorRows}, hasHeader = {self.hasHeader}, fullGMM = {self.fullGMM}"
         return f"GMMArgs(\n\trangeAddr({rangeAddrStr}),\n\toutputAddr({outputAddrStr})\n\t{paramStr})"
 
     def rows(self) -> int:
@@ -448,6 +449,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         self.gmmArgs.numClusters = int(self.dialog.getControl("NumericField_NumClusters").getValue())
         self.gmmArgs.numEpochs = int(self.dialog.getControl("NumericField_NumEpochs").getValue())
         self.gmmArgs.numIterations = int(self.dialog.getControl("NumericField_NumIter").getValue())
+        self.gmmArgs.fullGMM = bool(self.dialog.getControl("CheckBox_FullGMM").getState())
         self.gmmArgs.colorRows = bool(self.dialog.getControl("CheckBox_ColorRows").getState())
 
     def writeResults(self):
@@ -477,7 +479,7 @@ class CRDialogHandler(unohelper.Base, XDialogEventHandler):
         rangeArg = crrange.cellRangeToString(dataRange, self.model)
         args = self.gmmArgs
         resRangeObj.setArrayFormula(
-            f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations};0)")
+            f"={formulaName}({rangeArg};{args.numClusters};{args.numEpochs};{args.numIterations};{int(args.fullGMM)})")
 
         if args.hasHeader:
             sheet = self.model.Sheets[resultsRange.Sheet]
