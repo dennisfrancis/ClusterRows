@@ -149,10 +149,11 @@ TEST(GMMTests, ThreeClusterCaseDiagonal)
         }
     }
 
-    int gmmLabels[rows]{};
-    double gmmConfidences[rows]{};
+    std::array<int, rows> gmmLabels{};
+    std::array<double, rows> gmmConfidences{};
 
-    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences, 0);
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels.data(),
+                      gmmConfidences.data(), 0);
     EXPECT_EQ(ret, 0);
 
     int confusion[numClusters][numClusters]{ { 0 } };
@@ -268,10 +269,11 @@ TEST(GMMTests, ThreeClusterCaseFull)
     //     fout.close();
     // }
 
-    int gmmLabels[rows]{};
-    double gmmConfidences[rows]{};
+    std::array<int, rows> gmmLabels{};
+    std::array<double, rows> gmmConfidences{};
 
-    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels, gmmConfidences, 1);
+    int ret = gmmMain(&data[0][0], rows, cols, numClusters, 10, 50, gmmLabels.data(),
+                      gmmConfidences.data(), 1);
     EXPECT_EQ(ret, 0);
 
     int confusion[numClusters][numClusters]{ { 0 } };
