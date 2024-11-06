@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <array>
 #include <cmath>
 #include <gtest/gtest.h>
 #include <em.h>
@@ -113,14 +114,14 @@ TEST(GMMTests, ThreeClusterCaseDiagonal)
     constexpr int cols = 5;
 
     double data[rows][cols];
-    int rowMap[rows];
+    std::array<int, rows> rowMap;
     int labels[rows];
     for (int row = 0; row < rows; ++row)
         rowMap[row] = row;
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
-    std::shuffle(rowMap, rowMap + rows, generator);
+    std::shuffle(rowMap.begin(), rowMap.end(), generator);
 
     for (int row = 0; row < rows; ++row)
         labels[rowMap[row]] = row / rows1Cluster;
