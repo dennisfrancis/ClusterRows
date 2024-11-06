@@ -115,7 +115,7 @@ TEST(GMMTests, ThreeClusterCaseDiagonal)
 
     double data[rows][cols];
     std::array<int, rows> rowMap;
-    int labels[rows];
+    std::array<int, rows> labels;
     for (int row = 0; row < rows; ++row)
         rowMap[row] = row;
 
@@ -128,13 +128,14 @@ TEST(GMMTests, ThreeClusterCaseDiagonal)
 
     // std::cerr << "[TRUTH] labels = " << labels[0] << ',' << labels[1] << ',' << labels[2] << '\n';
 
-    double means[numClusters][cols]
-        = { { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } };
-    double stds[numClusters][cols] = {
+    std::array<std::array<double, cols>, numClusters> means{
+        { { 1.0, 2.0, 3.0, 4.0, 5.0 }, { 3.0, 4.0, 5.0, 1.0, 2.0 }, { 5.0, 1.0, 2.0, 3.0, 4.0 } }
+    };
+    std::array<std::array<double, cols>, numClusters> stds{ {
         { 2.5, 1.5, 2.5, 1.5, 1.5 },
         { 0.2, 1.5, 1.2, 0.5, 1.2 },
         { 0.7, 2.1, 1.5, 0.7, 1.5 },
-    };
+    } };
 
     for (int lrow = 0; lrow < rows; ++lrow)
     {
